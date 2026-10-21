@@ -28,7 +28,9 @@ describe('ArticleViewerComponent', () => {
     });
     http = TestBed.inject(HttpTestingController);
     notifications = TestBed.inject(NotificationService);
+    sessionStorage.clear();
     vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
+    vi.spyOn(notifications, 'info').mockResolvedValue({ isConfirmed: true } as never);
   });
 
   afterEach(() => {
@@ -82,6 +84,7 @@ describe('ArticleViewerComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.empty')?.textContent).toContain(
       'could not be opened',
     );
+    expect(notifications.info).not.toHaveBeenCalled();
     http.expectNone('/content/missing-entry.md');
   });
 
@@ -112,5 +115,6 @@ The local file has frontmatter.
     );
     expect(view.textContent).not.toContain('excerpt:');
     expect(notifications.error).not.toHaveBeenCalled();
+    expect(notifications.info).toHaveBeenCalledTimes(1);
   });
 });

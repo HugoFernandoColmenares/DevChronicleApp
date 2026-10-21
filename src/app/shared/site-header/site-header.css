@@ -32,6 +32,12 @@
   letter-spacing: -0.03em;
 }
 
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .nav a {
   color: #cbd5e1;
   text-decoration: none;

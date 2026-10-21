@@ -62,7 +62,7 @@ The layout follows a flat, feature-focused tree:
 | :--- | :--- |
 | `src/app/core` | Models, API fetching, markdown parsing, Highlight.js loading, notifications |
 | `src/app/features` | Landing catalog and article viewer |
-| `src/app/shared` | Cards, tags, copy control, skeleton, site header and footer |
+| `src/app/shared` | Cards, tags, copy control, skeleton, offline medal, site header and footer |
 | `public/content` | Local catalog (`index.json` and `.md`) used when the API is unreachable |
 | `public/fonts` | Vendored Inter and JetBrains Mono |
 
@@ -78,7 +78,7 @@ Internal briefs in `docs/files/design_guidelines.md` and `docs/files/architectur
 
 The catalog is `GET /api/v1/articles`. An entry is `GET /api/v1/articles/{slug}` and returns `{ metadata, markdown }` with no frontmatter in the body. Title, date, author, and tags come from `metadata`. Creating and editing go through the author token on the API; this client has no admin form.
 
-If the API cannot be reached (no connection, a proxy failure, or a 5xx response), the client reads `public/content/index.json` and `public/content/<slug>.md`. Those files still carry frontmatter, which the parser splits before rendering. A `404` from a live API stays “Article not found” and does not open the local file. If the API and the local file both fail, the page shows “Unable to load the journal”.
+If the API cannot be reached (no connection, a proxy failure, or a 5xx response), the client reads `public/content/index.json` and `public/content/<slug>.md`. Those files still carry frontmatter, which the parser splits before rendering. The first failure opens one alert, “API is offline”. A reload in the same tab does not repeat it. After that, `dev-service-status` keeps a medal in the header until a later request succeeds. The medal stays hidden while the API answers, and the next outage may alert once more. A `404` from a live API stays “Article not found” and does not open the local file. If the API and the local file both fail, the page shows “Unable to load the journal”.
 
 ## License
 
