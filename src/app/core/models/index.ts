@@ -1,1 +1,1 @@
-export type { ArticleContent, ArticleMetadata } from './article.model';
+export type { ArticleBody, ArticleContent, ArticleMetadata } from './article.model';

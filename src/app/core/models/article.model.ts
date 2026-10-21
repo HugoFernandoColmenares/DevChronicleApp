@@ -7,8 +7,11 @@ export interface ArticleMetadata {
   excerpt: string;
 }
 
-export interface ArticleContent {
+export interface ArticleBody {
   metadata: ArticleMetadata;
   markdown: string;
+}
+
+export interface ArticleContent extends ArticleBody {
   html: string;
 }

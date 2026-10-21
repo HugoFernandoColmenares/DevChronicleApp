@@ -2,6 +2,6 @@
 export const environment = {
   production: true,
   siteName: 'DevChronicle',
-  contentBasePath: '/content',
+  apiBasePath: '/api/v1',
   analyticsId: '',
 };

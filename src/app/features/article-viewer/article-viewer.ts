@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -35,12 +36,23 @@ export class ArticleViewerComponent {
       filter((slug) => slug.length > 0),
       switchMap((slug) =>
         this.content.getMarkdown(slug).pipe(
-          map((raw) => this.parser.parse(raw, slug)),
-          catchError(() => {
-            void this.notifications.error(
-              'Article not found',
-              'This entry is missing or the link is invalid.',
-            );
+          map((body) => ({
+            metadata: body.metadata,
+            markdown: body.markdown,
+            html: this.parser.compile(body.markdown),
+          })),
+          catchError((error: unknown) => {
+            if (error instanceof HttpErrorResponse && error.status === 404) {
+              void this.notifications.error(
+                'Article not found',
+                'This entry is missing or the link is invalid.',
+              );
+            } else {
+              void this.notifications.error(
+                'Unable to load the journal',
+                'This entry could not be retrieved. Refresh the page to try again.',
+              );
+            }
             return of(null);
           }),
         ),

@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 
-import { ArticleMetadata } from '@core/models/article.model';
+import { ArticleBody, ArticleMetadata } from '@core/models/article.model';
 import { environment } from '@env';
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -10,23 +10,19 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 @Injectable({ providedIn: 'root' })
 export class ContentFetcherService {
   private readonly http = inject(HttpClient);
-  private readonly basePath = environment.contentBasePath.replace(/\/$/, '');
+  private readonly basePath = environment.apiBasePath.replace(/\/$/, '');
 
   getIndex(): Observable<ArticleMetadata[]> {
-    return this.http.get<ArticleMetadata[]>(`${this.basePath}/index.json`);
+    return this.http.get<ArticleMetadata[]>(`${this.basePath}/articles`);
   }
 
-  getMarkdown(slug: string): Observable<string> {
-    return this.http.get(`${this.basePath}/${this.assertSafeSlug(slug)}.md`, {
-      responseType: 'text',
-    });
-  }
-
-  private assertSafeSlug(slug: string): string {
+  getMarkdown(slug: string): Observable<ArticleBody> {
     if (!SLUG_PATTERN.test(slug)) {
-      throw new Error('Invalid article slug.');
+      return throwError(
+        () => new HttpErrorResponse({ status: 404, statusText: 'Invalid article slug.' }),
+      );
     }
 
-    return slug;
+    return this.http.get<ArticleBody>(`${this.basePath}/articles/${slug}`);
   }
 }
