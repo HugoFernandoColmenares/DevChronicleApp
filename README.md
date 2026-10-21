@@ -1,6 +1,6 @@
 # DevChronicle
 
-DevChronicle is a markdown-driven journal built with Angular 22. The reader loads published entries from `/api/v1`. Core services compile the Markdown body and render a Civic Terminal reading surface: a light canvas, slate chrome, and dark code fences. Inter and JetBrains Mono are served from `public/fonts`.
+DevChronicle is a markdown-driven journal built with Angular 22. The reader prefers published entries from `/api/v1`. If that origin does not answer, the same pages fall back to the files in `public/content`. Core services compile the Markdown body and render a Civic Terminal reading surface: a light canvas, slate chrome, and dark code fences. Inter and JetBrains Mono are served from `public/fonts`.
 
 Created by [Hugo Colmenares](https://github.com/HugoFernandoColmenares).
 
@@ -14,7 +14,7 @@ The article route (`/post/:slug`) keeps the body at a maximum of 70 characters, 
 
 ![Article reading view](docs/screenshots/article-desktop.png)
 
-Narrow viewports stack the grid and wrap the display heading.
+Narrow viewports stack the grid and wrap the display heading. The captures below were taken with the API unreachable, so they show that local fallback.
 
 ![Landing page on a narrow viewport](docs/screenshots/landing-mobile.png)
 
@@ -32,7 +32,7 @@ npm install
 
 On macOS or Linux use `cp .env-template .env`.
 
-`.env` is ignored by git. Use it for local values such as `NG_APP_SITE_NAME`, `NG_APP_API_BASE`, and `NG_APP_ANALYTICS_ID`. The running application reads the mirrored defaults in `src/environments/environment.ts`. Development builds replace that file with `environment.development.ts`. `ng serve` forwards `/api` to `http://127.0.0.1:8080` through `proxy.conf.json`.
+`.env` is ignored by git. Use it for local values such as `NG_APP_SITE_NAME`, `NG_APP_API_BASE`, `NG_APP_CONTENT_BASE`, and `NG_APP_ANALYTICS_ID`. The running application reads the mirrored defaults in `src/environments/environment.ts`. Development builds replace that file with `environment.development.ts`. `ng serve` forwards `/api` to `http://127.0.0.1:8080` through `proxy.conf.json`.
 
 ## Scripts
 
@@ -63,7 +63,7 @@ The layout follows a flat, feature-focused tree:
 | `src/app/core` | Models, API fetching, markdown parsing, Highlight.js loading, notifications |
 | `src/app/features` | Landing catalog and article viewer |
 | `src/app/shared` | Cards, tags, copy control, skeleton, site header and footer |
-| `public/content` | Seed corpus (`index.json` and `.md`). The running client does not request it |
+| `public/content` | Local catalog (`index.json` and `.md`) used when the API is unreachable |
 | `public/fonts` | Vendored Inter and JetBrains Mono |
 
 Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The viewer is `/post/:slug`. Unknown paths redirect home.
@@ -78,7 +78,7 @@ Internal briefs in `docs/files/design_guidelines.md` and `docs/files/architectur
 
 The catalog is `GET /api/v1/articles`. An entry is `GET /api/v1/articles/{slug}` and returns `{ metadata, markdown }` with no frontmatter in the body. Title, date, author, and tags come from `metadata`. Creating and editing go through the author token on the API; this client has no admin form.
 
-`public/content` stays as the seed input for that API. A missing article (`404`) shows “Article not found”. A network failure shows “Unable to load the journal”.
+If the API cannot be reached (no connection, a proxy failure, or a 5xx response), the client reads `public/content/index.json` and `public/content/<slug>.md`. Those files still carry frontmatter, which the parser splits before rendering. A `404` from a live API stays “Article not found” and does not open the local file. If the API and the local file both fail, the page shows “Unable to load the journal”.
 
 ## License
 

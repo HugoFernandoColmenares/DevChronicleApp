@@ -82,5 +82,35 @@ describe('ArticleViewerComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.empty')?.textContent).toContain(
       'could not be opened',
     );
+    http.expectNone('/content/missing-entry.md');
+  });
+
+  it('reads the local markdown file when the API is unreachable', async () => {
+    const fixture = await open('angular-signals-in-practice');
+
+    http.expectOne('/api/v1/articles/angular-signals-in-practice').error(new ProgressEvent('error'));
+    const local = http.expectOne('/content/angular-signals-in-practice.md');
+    expect(local.request.responseType).toBe('text');
+    local.flush(`---
+title: Angular signals in practice
+author: Hugo Colmenares
+date: 2026-09-10
+tags: [angular]
+excerpt: Signal inputs.
+---
+
+## Inputs without decorators
+
+The local file has frontmatter.
+`);
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.querySelector('h1')?.textContent).toContain('Angular signals in practice');
+    expect(view.querySelector('.markdown-body h2')?.textContent).toContain(
+      'Inputs without decorators',
+    );
+    expect(view.textContent).not.toContain('excerpt:');
+    expect(notifications.error).not.toHaveBeenCalled();
   });
 });

@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
 import { ArticleMetadata } from '@core/models/article.model';
+import { NotificationService } from '@core/services/notification.service';
 
 import { LandingComponent } from './landing';
 
@@ -29,6 +30,7 @@ const articles: ArticleMetadata[] = [
 
 describe('LandingComponent', () => {
   let http: HttpTestingController;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -41,6 +43,8 @@ describe('LandingComponent', () => {
       ],
     });
     http = TestBed.inject(HttpTestingController);
+    notifications = TestBed.inject(NotificationService);
+    vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
   });
 
   afterEach(() => {
@@ -60,5 +64,21 @@ describe('LandingComponent', () => {
       (node as HTMLElement).textContent?.trim(),
     );
     expect(titles).toEqual(['Angular signals in practice', 'Older note']);
+    expect(notifications.error).not.toHaveBeenCalled();
+  });
+
+  it('reads the local index when the API is unreachable', async () => {
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    http.expectOne('/api/v1/articles').error(new ProgressEvent('error'));
+    http.expectOne('/content/index.json').flush(articles);
+    await fixture.whenStable();
+
+    const titles = [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
+      (node as HTMLElement).textContent?.trim(),
+    );
+    expect(titles).toEqual(['Angular signals in practice', 'Older note']);
+    expect(notifications.error).not.toHaveBeenCalled();
   });
 });

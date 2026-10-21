@@ -3,5 +3,6 @@ export const environment = {
   production: true,
   siteName: 'DevChronicle',
   apiBasePath: '/api/v1',
+  contentBasePath: '/content',
   analyticsId: '',
 };
