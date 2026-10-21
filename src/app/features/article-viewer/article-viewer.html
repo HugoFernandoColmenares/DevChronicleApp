@@ -1,0 +1,34 @@
+<section class="reader">
+  <div class="article-canvas">
+    <a class="back" routerLink="/">All entries</a>
+
+    @if (article(); as entry) {
+      <header class="mast">
+        <div class="mast__meta">
+          <time [attr.datetime]="entry.metadata.date">{{ entry.metadata.date | date: 'MMMM d, y' }}</time>
+          <span>{{ entry.metadata.author }}</span>
+        </div>
+        <h1>{{ entry.metadata.title }}</h1>
+        <div class="mast__tags">
+          @for (tag of entry.metadata.tags; track tag) {
+            <dev-tag [label]="tag" />
+          }
+        </div>
+      </header>
+
+      @defer (when compiledHtml()) {
+        <div
+          class="markdown-body"
+          [innerHTML]="compiledHtml()"
+          [devCodeBlocks]="compiledHtml()"
+        ></div>
+      } @placeholder {
+        <dev-skeleton-loader />
+      }
+    } @else if (article() === null) {
+      <p class="empty">This article could not be opened.</p>
+    } @else {
+      <dev-skeleton-loader />
+    }
+  </div>
+</section>

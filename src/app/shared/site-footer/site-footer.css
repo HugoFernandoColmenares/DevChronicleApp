@@ -1,0 +1,33 @@
+.foot {
+  margin-top: auto;
+  background: var(--color-slate);
+  color: #94a3b8;
+}
+
+.foot__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.foot p {
+  margin: 0;
+}
+
+.foot a {
+  color: #e2e8f0;
+  text-decoration: none;
+  background-image: linear-gradient(var(--color-accent), var(--color-accent));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 0.1rem;
+  transition: background-size 180ms ease;
+}
+
+.foot a:hover,
+.foot a:focus-visible {
+  background-size: 100% 0.1rem;
+}

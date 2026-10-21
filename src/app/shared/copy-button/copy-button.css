@@ -1,0 +1,28 @@
+:host {
+  display: inline-flex;
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid #334155;
+  border-radius: 0.375rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.copy:hover,
+.copy:focus-visible {
+  color: #fafafa;
+  border-color: var(--color-accent);
+}
+
+.copy svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}

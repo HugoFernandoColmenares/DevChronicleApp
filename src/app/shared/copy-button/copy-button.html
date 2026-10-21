@@ -1,0 +1,33 @@
+<button type="button" class="copy" (click)="copy()" [attr.aria-label]="copied() ? 'Copied' : 'Copy code'">
+  @if (copied()) {
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M5 12.5 9.2 16.8 19 7"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  } @else {
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect
+        x="8"
+        y="8"
+        width="11"
+        height="13"
+        rx="1.5"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+      />
+      <path
+        d="M6 16H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 2h9A1.5 1.5 0 0 1 15.5 3.5V5"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+      />
+    </svg>
+  }
+</button>

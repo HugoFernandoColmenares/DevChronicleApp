@@ -1,0 +1,43 @@
+.reader {
+  padding-block: 3rem 5rem;
+}
+
+.back {
+  display: inline-flex;
+  margin-bottom: 2rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--color-accent-ink);
+}
+
+.mast__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+}
+
+.mast h1 {
+  margin: 0.85rem 0 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 680;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+
+.mast__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.empty {
+  color: var(--color-muted);
+}

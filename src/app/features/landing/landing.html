@@ -1,0 +1,47 @@
+<section class="page">
+  <div class="container-fluid">
+    <header class="intro">
+      <h1>Field notes for working software.</h1>
+      <p>
+        DevChronicle collects architecture notes, Angular practice, and reading-room essays as
+        local markdown. Open an entry. Copy the examples. Leave with something you can use.
+      </p>
+    </header>
+
+    @if (loading()) {
+      <dev-skeleton-loader />
+    } @else if (articles().length === 0) {
+      <p class="empty">No entries are published yet.</p>
+    } @else {
+      @if (tags().length > 0) {
+        <div class="filters" role="group" aria-label="Filter by tag">
+          <button type="button" class="filter" [class.filter--on]="selectedTag() === null" (click)="selectTag(null)">
+            All
+          </button>
+          @for (tag of tags(); track tag) {
+            <button
+              type="button"
+              class="filter"
+              [class.filter--on]="selectedTag() === tag"
+              (click)="selectTag(tag)"
+            >
+              <dev-tag [label]="tag" [active]="selectedTag() === tag" />
+            </button>
+          }
+        </div>
+      }
+
+      @if (featured(); as lead) {
+        <dev-article-card [article]="lead" [featured]="true" />
+      }
+
+      @if (rest().length > 0) {
+        <div class="blog-grid">
+          @for (article of rest(); track article.slug) {
+            <dev-article-card [article]="article" />
+          }
+        </div>
+      }
+    }
+  </div>
+</section>

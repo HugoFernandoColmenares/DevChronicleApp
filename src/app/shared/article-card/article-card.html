@@ -1,0 +1,18 @@
+<article class="card" [class.card--featured]="featured()">
+  <div class="card__meta">
+    <time [attr.datetime]="article().date">{{ article().date | date: 'MMM d, y' }}</time>
+    <span>{{ article().author }}</span>
+  </div>
+
+  <h2 class="card__title">
+    <a [routerLink]="['/post', article().slug]">{{ article().title }}</a>
+  </h2>
+
+  <p class="card__excerpt">{{ article().excerpt }}</p>
+
+  <div class="card__tags">
+    @for (tag of article().tags; track tag) {
+      <dev-tag [label]="tag" />
+    }
+  </div>
+</article>
