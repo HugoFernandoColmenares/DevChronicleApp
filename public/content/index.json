@@ -30,5 +30,29 @@
     "date": "2026-09-12",
     "tags": ["markdown", "architecture"],
     "excerpt": "Frontmatter, an index file, and a parser boundary so the UI never owns content formatting."
+  },
+  {
+    "slug": "construyendo-apis-por-capas-dotnet",
+    "title": "Construyendo APIs por capas: .NET 10",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-02",
+    "tags": ["Construyendo APIs por capas", "dotnet", "arquitectura"],
+    "excerpt": "Cómo armo una API .NET 10 en cuatro proyectos, con identidad, JWT fuera de git y el corte de capas que uso de plantilla."
+  },
+  {
+    "slug": "construyendo-apis-por-capas-spring",
+    "title": "Construyendo APIs por capas: Spring Boot y JDBC",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-03",
+    "tags": ["Construyendo APIs por capas", "java", "spring", "arquitectura"],
+    "excerpt": "La misma idea de capas en un módulo Spring Boot 4 con JDBC, SQLite y el flujo real de producir una receta."
+  },
+  {
+    "slug": "construyendo-apis-por-capas-nestjs",
+    "title": "Construyendo APIs por capas: NestJS",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-04",
+    "tags": ["Construyendo APIs por capas", "nestjs", "arquitectura"],
+    "excerpt": "Un módulo NestJS 10 de productos en memoria, y el corte siguiente hacia repositorio, DTOs por uso y un guard de JWT."
   }
 ]
