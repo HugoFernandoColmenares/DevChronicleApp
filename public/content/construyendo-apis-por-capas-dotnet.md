@@ -2,7 +2,8 @@
 title: Construyendo APIs por capas: .NET 10
 author: Hugo Colmenares
 date: 2026-11-02
-tags: [Construyendo APIs por capas, dotnet, arquitectura]
+series: Construyendo APIs por capas
+tags: [construyendo-apis-por-capas, dotnet, arquitectura]
 excerpt: Cómo armo una API .NET 10 en cuatro proyectos, con identidad, JWT fuera de git y el corte de capas que uso de plantilla.
 ---
 

@@ -2,7 +2,8 @@
 title: Construyendo APIs por capas: NestJS
 author: Hugo Colmenares
 date: 2026-11-04
-tags: [Construyendo APIs por capas, nestjs, arquitectura]
+series: Construyendo APIs por capas
+tags: [construyendo-apis-por-capas, nestjs, arquitectura]
 excerpt: Un módulo NestJS 10 de productos en memoria, y el corte siguiente hacia repositorio, DTOs por uso y un guard de JWT.
 ---
 

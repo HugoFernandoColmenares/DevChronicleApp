@@ -19,6 +19,9 @@ test('imports the existing catalog by filename slug', () => {
     [
       'angular-signals-in-practice',
       'civic-terminal-reading',
+      'construyendo-apis-por-capas-dotnet',
+      'construyendo-apis-por-capas-nestjs',
+      'construyendo-apis-por-capas-spring',
       'markdown-as-source-of-truth',
       'welcome-to-devchronicle',
     ],

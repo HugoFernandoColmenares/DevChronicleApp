@@ -2,7 +2,8 @@
 title: Construyendo APIs por capas: Spring Boot y JDBC
 author: Hugo Colmenares
 date: 2026-11-03
-tags: [Construyendo APIs por capas, java, spring, arquitectura]
+series: Construyendo APIs por capas
+tags: [construyendo-apis-por-capas, java, spring, arquitectura]
 excerpt: La misma idea de capas en un módulo Spring Boot 4 con JDBC, SQLite y el flujo real de producir una receta.
 ---
 
