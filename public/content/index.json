@@ -46,5 +46,13 @@
     "date": "2026-11-03",
     "tags": ["Construyendo APIs por capas", "java", "spring", "arquitectura"],
     "excerpt": "La misma idea de capas en un módulo Spring Boot 4 con JDBC, SQLite y el flujo real de producir una receta."
+  },
+  {
+    "slug": "construyendo-apis-por-capas-nestjs",
+    "title": "Construyendo APIs por capas: NestJS",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-04",
+    "tags": ["Construyendo APIs por capas", "nestjs", "arquitectura"],
+    "excerpt": "Un módulo NestJS 10 de productos en memoria, y el corte siguiente hacia repositorio, DTOs por uso y un guard de JWT."
   }
 ]

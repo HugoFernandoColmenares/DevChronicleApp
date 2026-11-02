@@ -747,4 +747,4 @@ La pastelería en Java es la misma división de responsabilidades que la plantil
 
 No hay cuatro class libraries, no hay un DTO por cada verbo, no hay borrado lógico y no hay JWT. El repo anterior, `pasteleriapi-java`, ni siquiera tiene recetas. Si vas a copiar algo, copia `HugoFernandoColmenares/pasteleriapi` y trata el otro como historial.
 
-La entrega anterior de la serie explica el factory de EF, los DTOs separados y el JWT que esta API todavía no tiene: [Construyendo APIs por capas: .NET 10](/post/construyendo-apis-por-capas-dotnet).
+La entrega anterior de la serie explica el factory de EF, los DTOs separados y el JWT que esta API todavía no tiene: [Construyendo APIs por capas: .NET 10](/post/construyendo-apis-por-capas-dotnet). La siguiente lleva el mismo corte a un módulo NestJS que hoy vive en memoria: [Construyendo APIs por capas: NestJS](/post/construyendo-apis-por-capas-nestjs).
