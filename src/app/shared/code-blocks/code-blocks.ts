@@ -1,4 +1,12 @@
-import { afterNextRender, Directive, effect, ElementRef, inject, Injector, input } from '@angular/core';
+import {
+  afterNextRender,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+} from '@angular/core';
 import { SafeHtml } from '@angular/platform-browser';
 
 import { NotificationService } from '@core/services/notification.service';
@@ -69,10 +77,7 @@ export class CodeBlocksDirective {
       button.setAttribute('aria-label', 'Copied');
       await this.notifications.toast('Copied to clipboard');
     } catch {
-      await this.notifications.error(
-        'Copy failed',
-        'The browser blocked access to the clipboard.',
-      );
+      await this.notifications.error('Copy failed', 'The browser blocked access to the clipboard.');
     }
   }
 }

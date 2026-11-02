@@ -62,11 +62,7 @@ export class NotificationService {
       .then((result) => result.isConfirmed);
   }
 
-  private alert(
-    icon: SweetAlertIcon,
-    title: string,
-    text?: string,
-  ): Promise<SweetAlertResult> {
+  private alert(icon: SweetAlertIcon, title: string, text?: string): Promise<SweetAlertResult> {
     return dialog.fire({ icon, title, text, confirmButtonText: 'Close' });
   }
 }

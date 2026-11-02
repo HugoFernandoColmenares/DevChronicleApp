@@ -8,6 +8,14 @@
 *.p12
 credentials.json
 secrets.json
+src/environments/environment.production.ts
+
+# Firebase emulator logs
+.firebase/
+*-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 
 # Internal design and architecture briefs
 docs/design_guidelines.md

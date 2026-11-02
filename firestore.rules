@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// Public readers can only see published entries. Studio writes require a document
+// at admins/{uid}. Those admin documents are created in the Firebase console
+// (or by the Admin SDK). Clients cannot write them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function validEntry(slug) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'slug',
+          'title',
+          'summary',
+          'tags',
+          'category',
+          'series',
+          'author',
+          'status',
+          'publishedAt',
+          'updatedAt',
+          'readingTimeMinutes',
+        ])
+        && data.slug == slug
+        && slug.matches('^[a-z0-9]+(-[a-z0-9]+)*$')
+        && data.title is string
+        && data.title.size() > 0
+        && data.title.size() < 180
+        && data.summary is string
+        && data.summary.size() < 600
+        && data.tags is list
+        && data.tags.size() < 16
+        && data.category is string
+        && data.category.size() > 0
+        && data.category.size() < 80
+        && data.series is string
+        && data.series.size() > 0
+        && data.series.size() < 80
+        && data.author is string
+        && data.author.size() > 0
+        && data.author.size() < 120
+        && data.status in ['draft', 'published']
+        && data.updatedAt is timestamp
+        && data.readingTimeMinutes is int
+        && data.readingTimeMinutes > 0
+        && data.readingTimeMinutes < 600
+        && (
+          (data.status == 'published' && data.publishedAt is timestamp)
+          || (data.status == 'draft' && data.publishedAt == null)
+        );
+    }
+
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    match /entries/{slug} {
+      allow get, list: if isAdmin() || resource.data.status == 'published';
+      allow create, update: if isAdmin() && validEntry(slug);
+      allow delete: if isAdmin();
+
+      // The markdown body is a separate document so the public catalog does not
+      // download every essay, and so a long note can use the 1 MiB document cap
+      // on its own. 200_000 characters stays under that cap even for 4-byte text.
+      match /body/{bodyId} {
+        allow get: if isAdmin()
+          || get(/databases/$(database)/documents/entries/$(slug)).data.status == 'published';
+        allow list: if false;
+        allow create, update: if isAdmin()
+          && bodyId == 'current'
+          && request.resource.data.keys().hasOnly(['markdown'])
+          && request.resource.data.markdown is string
+          && request.resource.data.markdown.size() > 0
+          && request.resource.data.markdown.size() < 200000;
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}

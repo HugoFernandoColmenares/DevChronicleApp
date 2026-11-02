@@ -10,5 +10,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/article-viewer/article-viewer').then((m) => m.ArticleViewerComponent),
   },
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.adminRoutes),
+  },
   { path: '**', redirectTo: '' },
 ];

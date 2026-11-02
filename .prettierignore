@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+.angular
+package-lock.json
+docs/screenshots
+public/fonts
+public/content
+src/environments/environment.production.ts

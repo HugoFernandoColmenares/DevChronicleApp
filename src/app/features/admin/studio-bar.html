@@ -1,0 +1,19 @@
+<header class="studio__bar">
+  <div>
+    <p class="studio__kicker">Studio</p>
+    <h1>{{ heading() }}</h1>
+    @if (user(); as account) {
+      @if (account.email) {
+        <p class="studio__who">{{ account.email }}</p>
+      }
+    }
+  </div>
+  <div class="studio__actions">
+    @if (showNew()) {
+      <a class="btn btn--primary" routerLink="/admin/new">New entry</a>
+    } @else {
+      <a class="btn" routerLink="/admin">All entries</a>
+    }
+    <button type="button" class="btn" (click)="signOut()">Sign out</button>
+  </div>
+</header>

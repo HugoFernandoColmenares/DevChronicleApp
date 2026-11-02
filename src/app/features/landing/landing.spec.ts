@@ -1,110 +1,111 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
-import { ContentFetcherService } from '@core/services/content-fetcher.service';
+import { JournalError } from '@core/models/journal-error';
+import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
 
 import { LandingComponent } from './landing';
 
+function entry(partial: Partial<ArticleMetadata>): ArticleMetadata {
+  return {
+    slug: 'note',
+    title: 'Note',
+    author: 'Hugo Colmenares',
+    summary: 'A note.',
+    tags: [],
+    category: 'journal',
+    series: 'journal',
+    publishedAt: '2026-01-02T12:00:00.000Z',
+    updatedAt: '2026-01-02T12:00:00.000Z',
+    status: 'published',
+    readingTimeMinutes: 2,
+    ...partial,
+  };
+}
+
 const articles: ArticleMetadata[] = [
-  {
+  entry({
     slug: 'older-note',
     title: 'Older note',
-    author: 'Hugo Colmenares',
-    date: '2026-01-02',
+    publishedAt: '2026-01-02T12:00:00.000Z',
     tags: ['notes'],
-    excerpt: 'An earlier entry.',
-  },
-  {
+    summary: 'An earlier entry.',
+  }),
+  entry({
     slug: 'angular-signals-in-practice',
     title: 'Angular signals in practice',
-    author: 'Hugo Colmenares',
-    date: '2026-09-10',
+    publishedAt: '2026-09-10T12:00:00.000Z',
     tags: ['angular'],
-    excerpt: 'How signal inputs keep a content site explicit.',
-  },
+    summary: 'How signal inputs keep a content site explicit.',
+  }),
 ];
 
 describe('LandingComponent', () => {
-  let http: HttpTestingController;
   let notifications: NotificationService;
+  let watchPublished: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    watchPublished = vi.fn(() => of(articles));
     TestBed.configureTestingModule({
       imports: [LandingComponent],
       providers: [
         provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         provideRouter([]),
+        {
+          provide: JournalService,
+          useValue: { offline: signal(false), watchPublished },
+        },
       ],
     });
-    http = TestBed.inject(HttpTestingController);
     notifications = TestBed.inject(NotificationService);
-    sessionStorage.clear();
     vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
-    vi.spyOn(notifications, 'info').mockResolvedValue({ isConfirmed: true } as never);
   });
 
-  afterEach(() => {
-    http.verify();
-  });
-
-  it('paints cards from /api/v1/articles', async () => {
+  it('paints published entries with the newest first', async () => {
     const fixture = TestBed.createComponent(LandingComponent);
-    await fixture.whenStable();
-
-    const request = http.expectOne('/api/v1/articles');
-    expect(request.request.method).toBe('GET');
-    request.flush(articles);
     await fixture.whenStable();
 
     const titles = [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
       (node as HTMLElement).textContent?.trim(),
     );
     expect(titles).toEqual(['Angular signals in practice', 'Older note']);
+    expect(fixture.nativeElement.textContent).toContain('2 min');
     expect(notifications.error).not.toHaveBeenCalled();
-    expect(notifications.info).not.toHaveBeenCalled();
   });
 
-  it('reads the local index when the API is unreachable', async () => {
+  it('filters the catalog by tag', async () => {
     const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
 
-    http.expectOne('/api/v1/articles').error(new ProgressEvent('error'));
-    http.expectOne('/content/index.json').flush(articles);
+    const angular = [...fixture.nativeElement.querySelectorAll('.filter')].find((node) =>
+      (node as HTMLElement).textContent?.includes('angular'),
+    ) as HTMLButtonElement;
+    angular.click();
     await fixture.whenStable();
 
     const titles = [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
       (node as HTMLElement).textContent?.trim(),
     );
-    expect(titles).toEqual(['Angular signals in practice', 'Older note']);
-    expect(notifications.error).not.toHaveBeenCalled();
-    expect(notifications.info).toHaveBeenCalledTimes(1);
-    expect(notifications.info).toHaveBeenCalledWith(
-      'API is offline',
-      'Showing the local journal until the service responds again.',
+    expect(titles).toEqual(['Angular signals in practice']);
+  });
+
+  it('reports a Firestore failure without a local fallback', async () => {
+    watchPublished.mockReturnValue(
+      throwError(() => new JournalError('offline', 'Firestore is unavailable.')),
     );
-
-    const content = TestBed.inject(ContentFetcherService);
-    content.getIndex().subscribe();
-    http.expectOne('/api/v1/articles').error(new ProgressEvent('error'));
-    http.expectOne('/content/index.json').flush(articles);
-    await fixture.whenStable();
-    expect(notifications.info).toHaveBeenCalledTimes(1);
-
-    content.getIndex().subscribe();
-    http.expectOne('/api/v1/articles').flush(articles);
+    const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
 
-    content.getIndex().subscribe();
-    http.expectOne('/api/v1/articles').error(new ProgressEvent('error'));
-    http.expectOne('/content/index.json').flush(articles);
-    await fixture.whenStable();
-    expect(notifications.info).toHaveBeenCalledTimes(2);
+    expect(notifications.error).toHaveBeenCalledWith(
+      'Unable to load the journal',
+      'Firestore did not respond. Refresh the page to try again.',
+    );
+    expect(fixture.nativeElement.textContent).toContain('No entries are published yet.');
+    expect(fixture.nativeElement.textContent).not.toContain('Older note');
   });
 });

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 
-import { ContentFetcherService } from '@core/services/content-fetcher.service';
+import { JournalService } from '@core/services/journal.service';
 
 @Component({
   selector: 'dev-service-status',
@@ -8,7 +8,7 @@ import { ContentFetcherService } from '@core/services/content-fetcher.service';
   styleUrl: './service-status.css',
 })
 export class ServiceStatusComponent {
-  private readonly content = inject(ContentFetcherService);
+  private readonly journal = inject(JournalService);
 
-  readonly offline = this.content.apiOffline;
+  readonly offline = this.journal.offline;
 }

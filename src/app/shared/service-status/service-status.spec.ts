@@ -1,8 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { ContentFetcherService } from '@core/services/content-fetcher.service';
+import { JournalService } from '@core/services/journal.service';
 
 import { ServiceStatusComponent } from './service-status';
 
@@ -10,26 +9,26 @@ describe('ServiceStatusComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ServiceStatusComponent],
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection()],
     });
   });
 
-  it('stays hidden while the API has not failed', async () => {
+  it('stays hidden while Firestore has not failed', async () => {
     const fixture = TestBed.createComponent(ServiceStatusComponent);
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('.medal')).toBeNull();
   });
 
-  it('shows the medal only while the API is offline', async () => {
+  it('shows the medal only while the journal is offline', async () => {
     const fixture = TestBed.createComponent(ServiceStatusComponent);
-    const content = TestBed.inject(ContentFetcherService);
+    const journal = TestBed.inject(JournalService);
 
-    content.apiOffline.set(true);
+    journal.offline.set(true);
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('.medal')?.textContent).toContain('API offline');
+    expect(fixture.nativeElement.querySelector('.medal')?.textContent).toContain('Journal offline');
 
-    content.apiOffline.set(false);
+    journal.offline.set(false);
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('.medal')).toBeNull();
   });

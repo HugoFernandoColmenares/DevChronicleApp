@@ -5,8 +5,11 @@
     @if (article(); as entry) {
       <header class="mast">
         <div class="mast__meta">
-          <time [attr.datetime]="entry.metadata.date">{{ entry.metadata.date | date: 'MMMM d, y' }}</time>
+          @let when = entry.metadata.publishedAt ?? entry.metadata.updatedAt;
+          <time [attr.datetime]="when">{{ when | date: 'MMMM d, y' }}</time>
+          <span>{{ entry.metadata.readingTimeMinutes }} min read</span>
           <span>{{ entry.metadata.author }}</span>
+          <span>{{ entry.metadata.series }}</span>
         </div>
         <h1>{{ entry.metadata.title }}</h1>
         <div class="mast__tags">

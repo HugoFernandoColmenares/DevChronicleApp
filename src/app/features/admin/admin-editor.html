@@ -1,0 +1,97 @@
+<section class="studio">
+  <div class="container-fluid">
+    <dev-studio-bar [heading]="editingSlug() ? 'Edit entry' : 'New entry'" />
+
+    @if (loading()) {
+      <p class="empty">Loading the entry.</p>
+    } @else {
+      <div class="studio__editor">
+        <form class="studio__form" [formGroup]="form" (submit)="$event.preventDefault()">
+          <label class="field">
+            <span>Title</span>
+            <input type="text" formControlName="title" autocomplete="off" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Slug</span>
+              <input
+                type="text"
+                formControlName="slug"
+                autocomplete="off"
+                (input)="markSlugTouched()"
+              />
+            </label>
+            <label class="field">
+              <span>Author</span>
+              <input type="text" formControlName="author" autocomplete="name" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Summary</span>
+            <input type="text" formControlName="summary" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Category</span>
+              <input type="text" formControlName="category" />
+            </label>
+            <label class="field">
+              <span>Series</span>
+              <input type="text" formControlName="series" />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Tags</span>
+              <input type="text" formControlName="tags" placeholder="angular, journal" />
+            </label>
+            <label class="field">
+              <span>Published on</span>
+              <input type="date" formControlName="publishedOn" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Markdown · {{ minutes() }} min</span>
+            <textarea formControlName="markdown" spellcheck="true"></textarea>
+          </label>
+
+          <div class="studio__actions">
+            <button type="button" class="btn" [disabled]="saving()" (click)="save('draft')">
+              Save draft
+            </button>
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="saving()"
+              (click)="save('published')"
+            >
+              Publish
+            </button>
+            @if (editingSlug()) {
+              <button type="button" class="btn btn--quiet" [disabled]="saving()" (click)="remove()">
+                Delete
+              </button>
+            }
+          </div>
+        </form>
+
+        <aside class="preview" aria-label="Markdown preview">
+          <h2>Preview</h2>
+          <div class="article-canvas">
+            <h3 class="preview__title">{{ title() || 'Untitled' }}</h3>
+            <div
+              class="markdown-body"
+              [innerHTML]="previewHtml()"
+              [devCodeBlocks]="previewHtml()"
+            ></div>
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</section>

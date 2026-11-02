@@ -20,10 +20,7 @@ export class CopyButtonComponent {
       await this.notifications.toast('Copied to clipboard');
       window.setTimeout(() => this.copied.set(false), 1600);
     } catch {
-      await this.notifications.error(
-        'Copy failed',
-        'The browser blocked access to the clipboard.',
-      );
+      await this.notifications.error('Copy failed', 'The browser blocked access to the clipboard.');
     }
   }
 }
