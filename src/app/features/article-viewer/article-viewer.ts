@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, filter, map, of, switchMap } from 'rxjs';
 
-import { ContentFetcherService } from '@core/services/content-fetcher.service';
+import { JournalError } from '@core/models/journal-error';
+import { JournalService } from '@core/services/journal.service';
 import { MarkdownParserService } from '@core/services/markdown-parser.service';
 import { NotificationService } from '@core/services/notification.service';
 import { CodeBlocksDirective } from '@shared/code-blocks/code-blocks';
@@ -21,28 +21,30 @@ import { TagComponent } from '@shared/tag/tag';
 })
 export class ArticleViewerComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly content = inject(ContentFetcherService);
+  private readonly journal = inject(JournalService);
   private readonly parser = inject(MarkdownParserService);
   private readonly notifications = inject(NotificationService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly slug = toSignal(
-    this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')),
-    { initialValue: '' },
-  );
+  readonly slug = toSignal(this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')), {
+    initialValue: '',
+  });
 
   readonly article = toSignal(
     toObservable(this.slug).pipe(
       filter((slug) => slug.length > 0),
       switchMap((slug) =>
-        this.content.getMarkdown(slug).pipe(
+        this.journal.watchEntry(slug).pipe(
           map((body) => ({
             metadata: body.metadata,
             markdown: body.markdown,
             html: this.parser.compile(body.markdown),
           })),
           catchError((error: unknown) => {
-            if (error instanceof HttpErrorResponse && error.status === 404) {
+            if (
+              error instanceof JournalError &&
+              (error.code === 'not-found' || error.code === 'invalid-slug')
+            ) {
               void this.notifications.error(
                 'Article not found',
                 'This entry is missing or the link is invalid.',

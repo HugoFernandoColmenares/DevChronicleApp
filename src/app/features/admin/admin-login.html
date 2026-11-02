@@ -1,0 +1,22 @@
+<section class="studio">
+  <div class="studio__narrow">
+    @if (ready()) {
+      <p class="studio__kicker">Studio</p>
+      <h1>Sign in to edit the journal.</h1>
+      <p class="studio__lead">
+        Google is the only sign-in. The account can write entries only when its user id exists in
+        <span class="studio__code">admins</span>.
+      </p>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="busy()"
+        (click)="continueWithGoogle()"
+      >
+        Continue with Google
+      </button>
+    } @else {
+      <p class="empty">Checking the session.</p>
+    }
+  </div>
+</section>

@@ -1,4 +1,3 @@
-import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
@@ -9,7 +8,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideRouter([])],
+      providers: [provideZonelessChangeDetection(), provideRouter([])],
     }).compileComponents();
   });
 
@@ -19,10 +18,11 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the site name', async () => {
+  it('should render the site name and the studio link', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand__name')?.textContent).toContain('DevChronicle');
+    expect(compiled.textContent).toContain('Studio');
   });
 });

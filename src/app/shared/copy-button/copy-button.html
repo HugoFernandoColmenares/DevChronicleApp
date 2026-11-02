@@ -1,4 +1,9 @@
-<button type="button" class="copy" (click)="copy()" [attr.aria-label]="copied() ? 'Copied' : 'Copy code'">
+<button
+  type="button"
+  class="copy"
+  (click)="copy()"
+  [attr.aria-label]="copied() ? 'Copied' : 'Copy code'"
+>
   @if (copied()) {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path

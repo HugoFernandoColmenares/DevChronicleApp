@@ -1,40 +1,64 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
+import { ArticleMetadata } from '@core/models/article.model';
+import { JournalError } from '@core/models/journal-error';
+import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
 
 import { ArticleViewerComponent } from './article-viewer';
 
+function entry(partial: Partial<ArticleMetadata>): ArticleMetadata {
+  return {
+    slug: 'angular-signals-in-practice',
+    title: 'Angular signals in practice',
+    author: 'Hugo Colmenares',
+    summary: 'Signal inputs.',
+    tags: ['angular'],
+    category: 'journal',
+    series: 'Signals',
+    publishedAt: '2026-09-10T12:00:00.000Z',
+    updatedAt: '2026-09-10T12:00:00.000Z',
+    status: 'published',
+    readingTimeMinutes: 4,
+    ...partial,
+  };
+}
+
 describe('ArticleViewerComponent', () => {
-  let http: HttpTestingController;
   let notifications: NotificationService;
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+  let watchEntry: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     params = new BehaviorSubject(convertToParamMap({ slug: 'pending' }));
+    watchEntry = vi.fn((slug: string) => {
+      if (slug === 'missing-entry') {
+        return throwError(() => new JournalError('not-found', 'Article not found'));
+      }
+      if (slug === 'offline-entry') {
+        return throwError(() => new JournalError('offline', 'Firestore is unavailable.'));
+      }
+      return of({
+        metadata: entry({ slug }),
+        markdown: '## Inputs without decorators\n\nThe body has no frontmatter.',
+      });
+    });
+
     TestBed.configureTestingModule({
       imports: [ArticleViewerComponent],
       providers: [
         provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { paramMap: params.asObservable() } },
+        { provide: JournalService, useValue: { offline: signal(false), watchEntry } },
       ],
     });
-    http = TestBed.inject(HttpTestingController);
     notifications = TestBed.inject(NotificationService);
-    sessionStorage.clear();
     vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
-    vi.spyOn(notifications, 'info').mockResolvedValue({ isConfirmed: true } as never);
-  });
-
-  afterEach(() => {
-    http.verify();
   });
 
   async function open(slug: string): Promise<ComponentFixture<ArticleViewerComponent>> {
@@ -44,38 +68,22 @@ describe('ArticleViewerComponent', () => {
     return fixture;
   }
 
-  it('compiles markdown from the API without frontmatter', async () => {
+  it('compiles markdown from Firestore', async () => {
     const fixture = await open('angular-signals-in-practice');
-
-    http.expectOne('/api/v1/articles/angular-signals-in-practice').flush({
-      metadata: {
-        slug: 'angular-signals-in-practice',
-        title: 'Angular signals in practice',
-        author: 'Hugo Colmenares',
-        date: '2026-09-10',
-        tags: ['angular'],
-        excerpt: 'Signal inputs.',
-      },
-      markdown: '## Inputs without decorators\n\nThe body has no frontmatter.',
-    });
-    await fixture.whenStable();
-
     const view = fixture.nativeElement as HTMLElement;
+
     expect(view.querySelector('h1')?.textContent).toContain('Angular signals in practice');
     expect(view.querySelector('.markdown-body h2')?.textContent).toContain(
       'Inputs without decorators',
     );
+    expect(view.textContent).toContain('4 min read');
+    expect(view.textContent).toContain('Signals');
     expect(view.textContent).not.toContain('excerpt:');
+    expect(notifications.error).not.toHaveBeenCalled();
   });
 
-  it('reports a 404 through NotificationService', async () => {
+  it('reports a missing entry through NotificationService', async () => {
     const fixture = await open('missing-entry');
-
-    http.expectOne('/api/v1/articles/missing-entry').flush(
-      { error: 'article_not_found' },
-      { status: 404, statusText: 'Not Found' },
-    );
-    await fixture.whenStable();
 
     expect(notifications.error).toHaveBeenCalledWith(
       'Article not found',
@@ -84,37 +92,16 @@ describe('ArticleViewerComponent', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.empty')?.textContent).toContain(
       'could not be opened',
     );
-    expect(notifications.info).not.toHaveBeenCalled();
-    http.expectNone('/content/missing-entry.md');
   });
 
-  it('reads the local markdown file when the API is unreachable', async () => {
-    const fixture = await open('angular-signals-in-practice');
+  it('reports an unreachable journal without reading a local file', async () => {
+    const fixture = await open('offline-entry');
 
-    http.expectOne('/api/v1/articles/angular-signals-in-practice').error(new ProgressEvent('error'));
-    const local = http.expectOne('/content/angular-signals-in-practice.md');
-    expect(local.request.responseType).toBe('text');
-    local.flush(`---
-title: Angular signals in practice
-author: Hugo Colmenares
-date: 2026-09-10
-tags: [angular]
-excerpt: Signal inputs.
----
-
-## Inputs without decorators
-
-The local file has frontmatter.
-`);
-    await fixture.whenStable();
-
-    const view = fixture.nativeElement as HTMLElement;
-    expect(view.querySelector('h1')?.textContent).toContain('Angular signals in practice');
-    expect(view.querySelector('.markdown-body h2')?.textContent).toContain(
-      'Inputs without decorators',
+    expect(notifications.error).toHaveBeenCalledWith(
+      'Unable to load the journal',
+      'This entry could not be retrieved. Refresh the page to try again.',
     );
-    expect(view.textContent).not.toContain('excerpt:');
-    expect(notifications.error).not.toHaveBeenCalled();
-    expect(notifications.info).toHaveBeenCalledTimes(1);
+    expect(watchEntry).toHaveBeenCalledWith('offline-entry');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('local file');
   });
 });

@@ -1,6 +1,8 @@
 <article class="card" [class.card--featured]="featured()">
   <div class="card__meta">
-    <time [attr.datetime]="article().date">{{ article().date | date: 'MMM d, y' }}</time>
+    @let when = article().publishedAt ?? article().updatedAt;
+    <time [attr.datetime]="when">{{ when | date: 'MMM d, y' }}</time>
+    <span>{{ article().readingTimeMinutes }} min</span>
     <span>{{ article().author }}</span>
   </div>
 
@@ -8,7 +10,7 @@
     <a [routerLink]="['/post', article().slug]">{{ article().title }}</a>
   </h2>
 
-  <p class="card__excerpt">{{ article().excerpt }}</p>
+  <p class="card__excerpt">{{ article().summary }}</p>
 
   <div class="card__tags">
     @for (tag of article().tags; track tag) {

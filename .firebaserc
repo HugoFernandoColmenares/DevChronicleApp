@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "devchronicle-hugo",
+    "demo": "demo-devchronicle"
+  }
+}

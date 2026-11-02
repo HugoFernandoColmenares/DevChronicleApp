@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
-import { ContentFetcherService } from '@core/services/content-fetcher.service';
+import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
 import { ArticleCardComponent } from '@shared/article-card/article-card';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
@@ -16,21 +16,20 @@ import { TagComponent } from '@shared/tag/tag';
   styleUrl: './landing.css',
 })
 export class LandingComponent {
-  private readonly content = inject(ContentFetcherService);
+  private readonly journal = inject(JournalService);
   private readonly notifications = inject(NotificationService);
 
   readonly selectedTag = signal<string | null>(null);
   readonly loading = signal(true);
 
   readonly articles = toSignal(
-    this.content.getIndex().pipe(
-      map((items) => this.sortByDate(items)),
+    this.journal.watchPublished().pipe(
       tap(() => this.loading.set(false)),
       catchError(() => {
         this.loading.set(false);
         void this.notifications.error(
           'Unable to load the journal',
-          'The article index could not be retrieved. Refresh the page to try again.',
+          'Firestore did not respond. Refresh the page to try again.',
         );
         return of([] as ArticleMetadata[]);
       }),
@@ -57,11 +56,13 @@ export class LandingComponent {
 
   private filtered(): ArticleMetadata[] {
     const tag = this.selectedTag();
-    const items = this.articles();
+    const items = this.sortByDate(this.articles());
     return tag ? items.filter((article) => article.tags.includes(tag)) : items;
   }
 
   private sortByDate(items: ArticleMetadata[]): ArticleMetadata[] {
-    return [...items].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+    return [...items].sort(
+      (a, b) => Date.parse(b.publishedAt ?? b.updatedAt) - Date.parse(a.publishedAt ?? a.updatedAt),
+    );
   }
 }
