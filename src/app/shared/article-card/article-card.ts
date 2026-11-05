@@ -14,4 +14,5 @@ import { TagComponent } from '@shared/tag/tag';
 export class ArticleCardComponent {
   readonly article = input.required<ArticleMetadata>();
   readonly featured = input(false);
+  readonly compact = input(false);
 }

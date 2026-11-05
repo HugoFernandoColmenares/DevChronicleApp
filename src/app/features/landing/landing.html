@@ -6,6 +6,10 @@
         DevChronicle collects architecture notes, Angular practice, and reading-room essays. Open an
         entry. Copy the examples. Leave with something you can use.
       </p>
+      <a class="intro__link" routerLink="/articles">
+        Browse every article, newest first
+        <span aria-hidden="true">→</span>
+      </a>
     </header>
 
     @if (loading()) {
@@ -37,17 +41,42 @@
       }
 
       @if (featured(); as lead) {
-        <dev-article-card [article]="lead" [featured]="true" />
+        <section class="block">
+          <header class="block__head">
+            <h2 class="block__title">Featured entry</h2>
+            <span class="block__hint">The newest note in the journal</span>
+          </header>
+          <dev-article-card [article]="lead" [featured]="true" />
+        </section>
       } @else {
         <p class="empty">No entries use this tag.</p>
       }
 
+      @if (recent().length > 0) {
+        <section class="block">
+          <header class="block__head">
+            <h2 class="block__title">Recently published</h2>
+            <a class="block__link" routerLink="/articles">View all articles</a>
+          </header>
+          <div class="recent-grid">
+            @for (article of recent(); track article.slug) {
+              <dev-article-card [article]="article" [compact]="true" />
+            }
+          </div>
+        </section>
+      }
+
       @if (rest().length > 0) {
-        <div class="blog-grid">
-          @for (article of rest(); track article.slug) {
-            <dev-article-card [article]="article" />
-          }
-        </div>
+        <section class="block">
+          <header class="block__head">
+            <h2 class="block__title">Earlier entries</h2>
+          </header>
+          <div class="blog-grid">
+            @for (article of rest(); track article.slug) {
+              <dev-article-card [article]="article" />
+            }
+          </div>
+        </section>
       }
     }
   </div>

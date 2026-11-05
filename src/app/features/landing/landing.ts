@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { catchError, of, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
@@ -11,7 +12,7 @@ import { TagComponent } from '@shared/tag/tag';
 
 @Component({
   selector: 'dev-landing',
-  imports: [ArticleCardComponent, SkeletonLoaderComponent, TagComponent],
+  imports: [ArticleCardComponent, RouterLink, SkeletonLoaderComponent, TagComponent],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -48,7 +49,8 @@ export class LandingComponent {
   });
 
   readonly featured = computed(() => this.filtered()[0] ?? null);
-  readonly rest = computed(() => this.filtered().slice(1));
+  readonly recent = computed(() => this.filtered().slice(1, 4));
+  readonly rest = computed(() => this.filtered().slice(4));
 
   selectTag(tag: string | null): void {
     this.selectedTag.set(this.selectedTag() === tag ? null : tag);

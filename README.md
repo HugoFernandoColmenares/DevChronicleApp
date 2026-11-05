@@ -8,7 +8,9 @@ Operational notes in Spanish live in `docs/files`. Related repositories: [DevChr
 
 ## Surfaces
 
-The landing page lists the latest published entry as a featured slate card, then the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
+The landing page separates the newest entry in a featured slate card from a compact recent-entries rail, then lists the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
+
+The archive at `/articles` lists every published entry from newest to oldest. It has live text search, tag filters, and pagination that resets whenever the filter changes.
 
 ![DevChronicle landing page](docs/screenshots/landing-desktop.png)
 
@@ -87,7 +89,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | Path                     | Responsibility                                                                   |
 | :----------------------- | :------------------------------------------------------------------------------- |
 | `src/app/core`           | Models, Firestore reads and writes, Google auth, Markdown parsing, notifications |
-| `src/app/features`       | Landing catalog, article viewer, studio                                          |
+| `src/app/features`       | Landing catalog, paginated archive, article viewer, studio                       |
 | `src/app/shared`         | Cards, tags, copy control, skeleton, offline status, site header and footer      |
 | `public/content`         | Markdown files imported into Firestore                                           |
 | `firestore.rules`        | Public read of published entries, admin writes, console-only `admins`            |
@@ -95,7 +97,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | `firebase.json`          | Hosting SPA rewrite and emulator ports                                           |
 | `docs/files`             | Spanish notes, one file per aspect                                               |
 
-Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The viewer is `/post/:slug`. Studio is `/admin`. Unknown paths redirect home.
+Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. Unknown paths redirect home.
 
 Components use signal inputs, deferred views for compiled HTML, and zoneless change detection. Parser output is purified with DOMPurify before it is bound with `[innerHTML]`. A content request is sent only when the slug matches `[a-z0-9-]+`.
 

@@ -1,4 +1,4 @@
-<article class="card" [class.card--featured]="featured()">
+<article class="card" [class.card--featured]="featured()" [class.card--compact]="compact()">
   <div class="card__meta">
     @let when = article().publishedAt ?? article().updatedAt;
     <time [attr.datetime]="when">{{ when | date: 'MMM d, y' }}</time>

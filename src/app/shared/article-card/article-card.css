@@ -27,6 +27,32 @@
   color: #e2e8f0;
 }
 
+.card--compact {
+  padding: 1.15rem 1.25rem;
+  border-left: 3px solid var(--color-accent);
+}
+
+.card--compact .card__meta {
+  font-size: 0.8125rem;
+}
+
+.card--compact .card__title {
+  margin-top: 0.55rem;
+  font-size: 1.1rem;
+}
+
+.card--compact .card__excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.card--compact .card__tags {
+  margin-top: 0.9rem;
+}
+
 .card__meta {
   display: flex;
   flex-wrap: wrap;

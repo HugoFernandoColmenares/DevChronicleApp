@@ -6,6 +6,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/landing/landing').then((m) => m.LandingComponent),
   },
   {
+    path: 'articles',
+    loadComponent: () => import('./features/articles/articles').then((m) => m.ArticlesComponent),
+  },
+  {
+    path: 'articulos',
+    redirectTo: 'articles',
+  },
+  {
     path: 'post/:slug',
     loadComponent: () =>
       import('./features/article-viewer/article-viewer').then((m) => m.ArticleViewerComponent),

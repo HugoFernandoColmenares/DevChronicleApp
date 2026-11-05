@@ -1,0 +1,116 @@
+<section class="page">
+  <div class="container-fluid">
+    <header class="intro">
+      <div class="intro__copy">
+        <p class="kicker">Archive</p>
+        <h1>Every article, newest first.</h1>
+        <p>
+          Read the journal from the most recent entry down. Search by title, summary, author, or
+          series, or narrow the list with a tag.
+        </p>
+      </div>
+      <a class="btn" routerLink="/">Back to the journal</a>
+    </header>
+
+    @if (loading()) {
+      <dev-skeleton-loader />
+    } @else if (articles().length === 0) {
+      <p class="empty">No entries are published yet.</p>
+    } @else {
+      <div class="toolbar">
+        <label class="search">
+          <span class="search__label">Search articles</span>
+          <input
+            type="search"
+            [value]="search()"
+            (input)="onSearch($event)"
+            placeholder="Title, tag, author…"
+            autocomplete="off"
+          />
+        </label>
+        @if (search().trim().length > 0) {
+          <button type="button" class="btn btn--quiet" (click)="clearSearch()">Clear search</button>
+        }
+        <p class="sort">Newest first</p>
+      </div>
+
+      @if (tags().length > 0) {
+        <div class="filters" role="group" aria-label="Filter by tag">
+          <button
+            type="button"
+            class="filter"
+            [class.filter--on]="selectedTag() === null"
+            (click)="selectTag(null)"
+          >
+            All
+          </button>
+          @for (tag of tags(); track tag) {
+            <button
+              type="button"
+              class="filter"
+              [class.filter--on]="selectedTag() === tag"
+              (click)="selectTag(tag)"
+            >
+              <dev-tag [label]="tag" [active]="selectedTag() === tag" />
+            </button>
+          }
+        </div>
+      }
+
+      @if (filtered().length === 0) {
+        <div class="empty-state">
+          <p class="empty">No articles match these filters.</p>
+          <button type="button" class="btn" (click)="clearFilters()">Clear filters</button>
+        </div>
+      } @else {
+        <p class="results" role="status" aria-live="polite">
+          Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }}
+          {{ filtered().length === 1 ? 'article' : 'articles' }}
+        </p>
+
+        <div class="blog-grid">
+          @for (article of pageItems(); track article.slug) {
+            <dev-article-card [article]="article" />
+          }
+        </div>
+
+        @if (totalPages() > 1) {
+          <nav class="pager" aria-label="Article pages">
+            <button
+              type="button"
+              class="pager__step"
+              (click)="previous()"
+              [disabled]="currentPage() === 1"
+            >
+              Previous
+            </button>
+
+            <div class="pager__pages">
+              @for (number of visiblePages(); track number) {
+                <button
+                  type="button"
+                  class="pager__page"
+                  [class.pager__page--on]="number === currentPage()"
+                  [attr.aria-current]="number === currentPage() ? 'page' : null"
+                  [attr.aria-label]="'Page ' + number"
+                  (click)="goTo(number)"
+                >
+                  {{ number }}
+                </button>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="pager__step"
+              (click)="next()"
+              [disabled]="currentPage() === totalPages()"
+            >
+              Next
+            </button>
+          </nav>
+        }
+      }
+    }
+  </div>
+</section>

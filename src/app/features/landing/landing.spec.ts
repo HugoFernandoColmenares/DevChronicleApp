@@ -74,6 +74,9 @@ describe('LandingComponent', () => {
       (node as HTMLElement).textContent?.trim(),
     );
     expect(titles).toEqual(['Angular signals in practice', 'Older note']);
+    expect(fixture.nativeElement.textContent).toContain('Featured entry');
+    expect(fixture.nativeElement.textContent).toContain('Recently published');
+    expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
     expect(notifications.error).not.toHaveBeenCalled();
   });
