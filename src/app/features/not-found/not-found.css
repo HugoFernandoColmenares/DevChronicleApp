@@ -1,0 +1,58 @@
+.page {
+  padding-block: 4rem 5rem;
+}
+
+.not-found {
+  max-width: 44rem;
+}
+
+.not-found__code {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-accent) 22%, var(--color-canvas));
+  font-family: var(--font-mono);
+  font-size: clamp(5rem, 18vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+}
+
+.not-found__kicker {
+  margin: 1.5rem 0 0;
+  color: var(--color-accent-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.not-found h1 {
+  margin: 0.6rem 0 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 680;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.not-found__copy {
+  margin: 1rem 0 0;
+  color: var(--color-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 40rem) {
+  .page {
+    padding-block: 2.5rem 3.5rem;
+  }
+
+  .not-found__actions .btn {
+    flex: 1 1 100%;
+  }
+}

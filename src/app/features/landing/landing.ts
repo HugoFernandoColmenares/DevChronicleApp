@@ -6,9 +6,11 @@ import { catchError, of, tap } from 'rxjs';
 import { ArticleMetadata } from '@core/models/article.model';
 import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
+import { SeoService } from '@core/services/seo.service';
 import { ArticleCardComponent } from '@shared/article-card/article-card';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
 import { TagComponent } from '@shared/tag/tag';
+import { environment } from '@env';
 
 @Component({
   selector: 'dev-landing',
@@ -19,6 +21,7 @@ import { TagComponent } from '@shared/tag/tag';
 export class LandingComponent {
   private readonly journal = inject(JournalService);
   private readonly notifications = inject(NotificationService);
+  private readonly seo = inject(SeoService);
 
   readonly selectedTag = signal<string | null>(null);
   readonly loading = signal(true);
@@ -51,6 +54,23 @@ export class LandingComponent {
   readonly featured = computed(() => this.filtered()[0] ?? null);
   readonly recent = computed(() => this.filtered().slice(1, 4));
   readonly rest = computed(() => this.filtered().slice(4));
+
+  constructor() {
+    this.seo.setPage({
+      title: 'Field notes for working software',
+      description: environment.defaultDescription,
+      path: '/',
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: environment.siteName,
+        url: `${environment.siteUrl}/`,
+        description: environment.defaultDescription,
+        inLanguage: 'en',
+        publisher: { '@type': 'Organization', name: environment.siteName },
+      },
+    });
+  }
 
   selectTag(tag: string | null): void {
     this.selectedTag.set(this.selectedTag() === tag ? null : tag);

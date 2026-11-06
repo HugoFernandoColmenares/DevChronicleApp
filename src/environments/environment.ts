@@ -4,6 +4,10 @@ export const environment = {
   production: true,
   siteName: 'DevChronicle',
   authorName: 'Hugo Colmenares',
+  siteUrl: 'https://devchronicle-hugo.web.app',
+  defaultDescription:
+    'DevChronicle is a markdown-driven journal for software notes, architecture, and Angular practice.',
+  socialImage: '/social/devchronicle-cover.png',
   useEmulators: false,
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,

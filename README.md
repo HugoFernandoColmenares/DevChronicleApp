@@ -6,11 +6,15 @@ The Spark plan is the deployment target: Firebase Authentication (Google) for th
 
 Operational notes in Spanish live in `docs/files`. Related repositories: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) and [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi). The Firebase project id placeholder is `devchronicle-hugo`. Local emulators use `demo-devchronicle`.
 
+Scoped robustness improvements that keep the Spark/MVP boundary are listed in [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md).
+
 ## Surfaces
 
 The landing page separates the newest entry in a featured slate card from a compact recent-entries rail, then lists the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
 
 The archive at `/articles` lists every published entry from newest to oldest. It has live text search, tag filters, and pagination that resets whenever the filter changes.
+
+![Article archive](docs/screenshots/articles-desktop.png)
 
 ![DevChronicle landing page](docs/screenshots/landing-desktop.png)
 
@@ -25,6 +29,12 @@ Narrow viewports stack the grid and wrap the display heading.
 `/admin` is the authoring studio. Google sign-in is required, and the account must have an `admins/{uid}` document. The editor previews Markdown before publish.
 
 ![Studio editor](docs/screenshots/admin-editor.png)
+
+Unknown URLs render a 404 view instead of redirecting home.
+
+![Not found page](docs/screenshots/not-found-desktop.png)
+
+Every route sets its title, description, canonical link, Open Graph tags, and JSON-LD, while `/admin` stays `noindex`. `robots.txt` and `sitemap.xml` are generated from `NG_APP_SITE_URL` at build time, and `public/social/devchronicle-cover.png` is the site-level share card. Social crawlers do not run the client, so per-article previews would need prerendering; see [`docs/files/acabado-publico.md`](docs/files/acabado-publico.md).
 
 ## Requirements
 
@@ -53,6 +63,19 @@ npm start
 The app is at `http://127.0.0.1:4200/`. Emulator UI is at `http://127.0.0.1:4000/`. Start the emulators with project `demo-devchronicle` (the npm script does this). The default alias in `.firebaserc` is the future cloud project, not the emulator project.
 
 In the Auth emulator sign-in widget, use `admin@devchronicle.test` after `npm run seed:admin`.
+
+### Local verification
+
+Run the four commands above, then walk the surface with real emulator data:
+
+1. `/` renders the featured entry, the recent rail, all 7 published entries, and the tag filters.
+2. `/articles` shows 6 entries per page with “Showing 1–6 of 7 articles”. Search for `nestjs` returns one entry, and changing a filter resets pagination.
+3. `/post/construyendo-apis-por-capas-nestjs` renders the Markdown body, 19 `h2` headings, and code fences with the `TS`/`HTML` toolbar and copy control.
+4. `/ruta-inexistente` and `/post/no-existe` render the 404 view with `noindex` and links back to the archive and the journal.
+5. `/admin` accepts `admin@devchronicle.test`; the list shows all 7 entries, and the editor previews Markdown before publishing.
+6. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
+
+The images under `docs/screenshots` come from this local flow, captured at 1440 px wide (390 px for the mobile landing).
 
 ## Scripts
 
@@ -97,7 +120,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | `firebase.json`          | Hosting SPA rewrite and emulator ports                                           |
 | `docs/files`             | Spanish notes, one file per aspect                                               |
 
-Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. Unknown paths redirect home.
+Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. The wildcard route renders the 404 view, and `/404` is an explicit alias.
 
 Components use signal inputs, deferred views for compiled HTML, and zoneless change detection. Parser output is purified with DOMPurify before it is bound with `[innerHTML]`. A content request is sent only when the slug matches `[a-z0-9-]+`.
 

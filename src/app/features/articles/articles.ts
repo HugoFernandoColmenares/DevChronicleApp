@@ -6,9 +6,11 @@ import { catchError, of, tap } from 'rxjs';
 import { ArticleMetadata } from '@core/models/article.model';
 import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
+import { SeoService } from '@core/services/seo.service';
 import { ArticleCardComponent } from '@shared/article-card/article-card';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
 import { TagComponent } from '@shared/tag/tag';
+import { environment } from '@env';
 
 const PAGE_SIZE = 6;
 
@@ -21,6 +23,7 @@ const PAGE_SIZE = 6;
 export class ArticlesComponent {
   private readonly journal = inject(JournalService);
   private readonly notifications = inject(NotificationService);
+  private readonly seo = inject(SeoService);
 
   readonly search = signal('');
   readonly selectedTag = signal<string | null>(null);
@@ -88,6 +91,28 @@ export class ArticlesComponent {
     const start = Math.max(1, Math.min(current - 2, total - 4));
     return Array.from({ length: 5 }, (_, index) => start + index);
   });
+
+  constructor() {
+    this.seo.setPage({
+      title: 'Articles',
+      description:
+        'Every DevChronicle entry, newest first. Search by title, summary, author, or series, and narrow the archive by tag.',
+      path: '/articles',
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Articles',
+        url: `${environment.siteUrl}/articles`,
+        description:
+          'Every DevChronicle entry, newest first. Search by title, summary, author, or series, and narrow the archive by tag.',
+        isPartOf: {
+          '@type': 'WebSite',
+          name: environment.siteName,
+          url: `${environment.siteUrl}/`,
+        },
+      },
+    });
+  }
 
   onSearch(event: Event): void {
     const target = event.target as HTMLInputElement;

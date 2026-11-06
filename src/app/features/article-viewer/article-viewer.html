@@ -29,7 +29,26 @@
         <dev-skeleton-loader />
       }
     } @else if (article() === null) {
-      <p class="empty">This article could not be opened.</p>
+      <div class="error-state">
+        @if (errorKind() === 'not-found') {
+          <p class="error-state__code" aria-hidden="true">404</p>
+          <h1>This entry is not published.</h1>
+          <p class="error-state__copy">
+            The link may be broken, or the entry was removed from the journal.
+          </p>
+        } @else {
+          <p class="error-state__code" aria-hidden="true">503</p>
+          <h1>The journal could not be loaded.</h1>
+          <p class="error-state__copy">
+            Check your connection and refresh the page. The reading view will recover when the
+            journal responds.
+          </p>
+        }
+        <div class="error-state__actions">
+          <a class="btn btn--primary" routerLink="/articles">Browse all articles</a>
+          <a class="btn" routerLink="/">Back to the journal</a>
+        </div>
+      </div>
     } @else {
       <dev-skeleton-loader />
     }

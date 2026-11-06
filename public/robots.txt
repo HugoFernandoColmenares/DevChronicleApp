@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/**
+Disallow: /articulos
+
+Sitemap: https://devchronicle-hugo.web.app/sitemap.xml

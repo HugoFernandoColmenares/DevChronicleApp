@@ -1,14 +1,15 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, filter, map, of, switchMap } from 'rxjs';
+import { catchError, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { JournalError } from '@core/models/journal-error';
 import { JournalService } from '@core/services/journal.service';
 import { MarkdownParserService } from '@core/services/markdown-parser.service';
 import { NotificationService } from '@core/services/notification.service';
+import { SeoService } from '@core/services/seo.service';
 import { CodeBlocksDirective } from '@shared/code-blocks/code-blocks';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
 import { TagComponent } from '@shared/tag/tag';
@@ -25,6 +26,9 @@ export class ArticleViewerComponent {
   private readonly parser = inject(MarkdownParserService);
   private readonly notifications = inject(NotificationService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly seo = inject(SeoService);
+
+  readonly errorKind = signal<'not-found' | 'unavailable' | null>(null);
 
   readonly slug = toSignal(this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')), {
     initialValue: '',
@@ -33,6 +37,7 @@ export class ArticleViewerComponent {
   readonly article = toSignal(
     toObservable(this.slug).pipe(
       filter((slug) => slug.length > 0),
+      tap(() => this.errorKind.set(null)),
       switchMap((slug) =>
         this.journal.watchEntry(slug).pipe(
           map((body) => ({
@@ -41,15 +46,13 @@ export class ArticleViewerComponent {
             html: this.parser.compile(body.markdown),
           })),
           catchError((error: unknown) => {
-            if (
+            const missing =
               error instanceof JournalError &&
-              (error.code === 'not-found' || error.code === 'invalid-slug')
-            ) {
-              void this.notifications.error(
-                'Article not found',
-                'This entry is missing or the link is invalid.',
-              );
-            } else {
+              (error.code === 'not-found' || error.code === 'invalid-slug');
+
+            this.errorKind.set(missing ? 'not-found' : 'unavailable');
+
+            if (!missing) {
               void this.notifications.error(
                 'Unable to load the journal',
                 'This entry could not be retrieved. Refresh the page to try again.',
@@ -66,4 +69,31 @@ export class ArticleViewerComponent {
     const article = this.article();
     return article ? this.sanitizer.bypassSecurityTrustHtml(article.html) : null;
   });
+
+  constructor() {
+    effect(() => {
+      const entry = this.article();
+      if (entry) {
+        this.seo.setArticle(entry.metadata);
+        return;
+      }
+
+      const error = this.errorKind();
+      if (error === 'not-found') {
+        this.seo.setPage({
+          title: 'Article not found',
+          description: 'This entry is missing or the link is invalid.',
+          path: '/404',
+          noindex: true,
+        });
+      } else if (error === 'unavailable') {
+        this.seo.setPage({
+          title: 'Journal unavailable',
+          description: 'The DevChronicle entry could not be retrieved.',
+          path: '/404',
+          noindex: true,
+        });
+      }
+    });
+  }
 }

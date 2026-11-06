@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 
@@ -80,18 +81,19 @@ describe('ArticleViewerComponent', () => {
     expect(view.textContent).toContain('Signals');
     expect(view.textContent).not.toContain('excerpt:');
     expect(notifications.error).not.toHaveBeenCalled();
+    expect(TestBed.inject(Title).getTitle()).toBe('Angular signals in practice · DevChronicle');
+    expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('index, follow');
   });
 
-  it('reports a missing entry through NotificationService', async () => {
+  it('renders a 404 state for a missing entry without a blocking alert', async () => {
     const fixture = await open('missing-entry');
+    const view = fixture.nativeElement as HTMLElement;
 
-    expect(notifications.error).toHaveBeenCalledWith(
-      'Article not found',
-      'This entry is missing or the link is invalid.',
-    );
-    expect((fixture.nativeElement as HTMLElement).querySelector('.empty')?.textContent).toContain(
-      'could not be opened',
-    );
+    expect(view.querySelector('.error-state')?.textContent).toContain('not published');
+    expect(view.textContent).toContain('Browse all articles');
+    expect(notifications.error).not.toHaveBeenCalled();
+    expect(TestBed.inject(Title).getTitle()).toBe('Article not found · DevChronicle');
+    expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('noindex, nofollow');
   });
 
   it('reports an unreachable journal without reading a local file', async () => {
