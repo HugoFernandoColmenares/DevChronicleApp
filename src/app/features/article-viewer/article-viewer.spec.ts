@@ -7,8 +7,8 @@ import { BehaviorSubject, of, throwError } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
+import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
-import { NotificationService } from '@core/services/notification.service';
 
 import { ArticleViewerComponent } from './article-viewer';
 
@@ -30,7 +30,6 @@ function entry(partial: Partial<ArticleMetadata>): ArticleMetadata {
 }
 
 describe('ArticleViewerComponent', () => {
-  let notifications: NotificationService;
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   let watchEntry: ReturnType<typeof vi.fn>;
 
@@ -54,12 +53,11 @@ describe('ArticleViewerComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
         { provide: ActivatedRoute, useValue: { paramMap: params.asObservable() } },
         { provide: JournalService, useValue: { offline: signal(false), watchEntry } },
       ],
     });
-    notifications = TestBed.inject(NotificationService);
-    vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
   });
 
   async function open(slug: string): Promise<ComponentFixture<ArticleViewerComponent>> {
@@ -80,7 +78,6 @@ describe('ArticleViewerComponent', () => {
     expect(view.textContent).toContain('4 min read');
     expect(view.textContent).toContain('Signals');
     expect(view.textContent).not.toContain('excerpt:');
-    expect(notifications.error).not.toHaveBeenCalled();
     expect(TestBed.inject(Title).getTitle()).toBe('Angular signals in practice · DevChronicle');
     expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('index, follow');
   });
@@ -91,19 +88,34 @@ describe('ArticleViewerComponent', () => {
 
     expect(view.querySelector('.error-state')?.textContent).toContain('not published');
     expect(view.textContent).toContain('Browse all articles');
-    expect(notifications.error).not.toHaveBeenCalled();
+    expect(view.textContent).not.toContain('Try again');
     expect(TestBed.inject(Title).getTitle()).toBe('Article not found · DevChronicle');
     expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('noindex, nofollow');
   });
 
-  it('reports an unreachable journal without reading a local file', async () => {
-    const fixture = await open('offline-entry');
+  it('offers a manual retry when the journal is unreachable', async () => {
+    const retryable = of({
+      metadata: entry({ slug: 'offline-entry' }),
+      markdown: '## Recovered\n\nThe journal answered on the next attempt.',
+    });
+    watchEntry
+      .mockImplementationOnce(() => throwError(() => new JournalError('offline', 'down')))
+      .mockImplementationOnce(() => retryable);
 
-    expect(notifications.error).toHaveBeenCalledWith(
-      'Unable to load the journal',
-      'This entry could not be retrieved. Refresh the page to try again.',
-    );
-    expect(watchEntry).toHaveBeenCalledWith('offline-entry');
-    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('local file');
+    const fixture = await open('offline-entry');
+    const view = fixture.nativeElement as HTMLElement;
+
+    expect(view.querySelector('.error-state')?.textContent).toContain('could not be loaded');
+    expect(view.textContent).toContain('Try again');
+
+    const retry = [...view.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Try again'),
+    ) as HTMLButtonElement;
+    retry.click();
+    await fixture.whenStable();
+
+    expect(view.querySelector('h1')?.textContent).toContain('Angular signals in practice');
+    expect(view.querySelector('.markdown-body h2')?.textContent).toContain('Recovered');
+    expect(TestBed.inject(Title).getTitle()).toBe('Angular signals in practice · DevChronicle');
   });
 });

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, HostListener, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -36,6 +36,7 @@ export class AdminEditorComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly formBuilder = inject(FormBuilder);
   private slugTouched = false;
+  private baseline = '';
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -86,6 +87,29 @@ export class AdminEditorComponent {
     this.slugTouched = true;
   }
 
+  hasUnsavedChanges(): boolean {
+    if (this.loading() || this.saving()) {
+      return false;
+    }
+    return JSON.stringify(this.form.getRawValue()) !== this.baseline;
+  }
+
+  confirmDiscard(): Promise<boolean> {
+    return this.notifications.confirm(
+      'Discard unsaved changes?',
+      'Leaving Studio now loses the edits in this entry.',
+    );
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.hasUnsavedChanges()) {
+      return;
+    }
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
   async save(status: EntryStatus): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -116,6 +140,7 @@ export class AdminEditorComponent {
         },
         { create: creating },
       );
+      this.markClean();
       void this.notifications.toast(status === 'published' ? 'Published' : 'Draft saved');
       if (creating) {
         await this.router.navigate(['/admin/edit', value.slug], { replaceUrl: true });
@@ -143,6 +168,7 @@ export class AdminEditorComponent {
     this.saving.set(true);
     try {
       await this.journal.remove(slug);
+      this.markClean();
       void this.notifications.toast('Entry deleted');
       await this.router.navigateByUrl('/admin');
     } catch (error) {
@@ -171,6 +197,7 @@ export class AdminEditorComponent {
       this.markdown.set('');
       this.title.set('');
       this.loading.set(false);
+      this.markClean();
       return;
     }
 
@@ -192,12 +219,17 @@ export class AdminEditorComponent {
       });
       this.markdown.set(entry.markdown);
       this.title.set(entry.metadata.title);
+      this.markClean();
     } catch (error) {
       void this.notifications.error('Entry unavailable', this.message(error));
       await this.router.navigateByUrl('/admin');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private markClean(): void {
+    this.baseline = JSON.stringify(this.form.getRawValue());
   }
 
   private message(error: unknown): string {

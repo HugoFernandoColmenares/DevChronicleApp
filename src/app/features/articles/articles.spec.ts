@@ -6,8 +6,8 @@ import { of, throwError } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
+import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
-import { NotificationService } from '@core/services/notification.service';
 
 import { ArticlesComponent } from './articles';
 
@@ -67,7 +67,7 @@ const articles: ArticleMetadata[] = [
   entry({
     slug: 'spring-layers',
     title: 'Construyendo APIs por capas: Spring Boot',
-    summary: 'The same layers inside one Maven module.',
+    summary: 'El mismo módulo Spring Boot con capas y JDBC.',
     publishedAt: '2026-11-03T12:00:00.000Z',
     tags: ['spring', 'arquitectura'],
   }),
@@ -99,8 +99,13 @@ function buttonWithText(root: HTMLElement, selector: string, text: string): HTML
   ) as HTMLButtonElement;
 }
 
+function search(root: HTMLElement, value: string): void {
+  const input = root.querySelector('input[type="search"]') as HTMLInputElement;
+  input.value = value;
+  input.dispatchEvent(new Event('input'));
+}
+
 describe('ArticlesComponent', () => {
-  let notifications: NotificationService;
   let watchPublished: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -110,14 +115,13 @@ describe('ArticlesComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
         {
           provide: JournalService,
           useValue: { offline: signal(false), watchPublished },
         },
       ],
     });
-    notifications = TestBed.inject(NotificationService);
-    vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
   });
 
   it('lists the newest articles first and paginates the catalog', async () => {
@@ -148,36 +152,61 @@ describe('ArticlesComponent', () => {
     buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
     await fixture.whenStable();
 
-    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
-    input.value = 'modulo';
-    input.dispatchEvent(new Event('input'));
+    search(fixture.nativeElement, 'modulo');
     await fixture.whenStable();
 
-    expect(titles(fixture)).toEqual(['Construyendo APIs por capas: NestJS']);
+    expect(titles(fixture)).toEqual([
+      'Construyendo APIs por capas: NestJS',
+      'Construyendo APIs por capas: Spring Boot',
+    ]);
 
-    input.value = 'signals';
-    input.dispatchEvent(new Event('input'));
+    search(fixture.nativeElement, 'signals');
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice']);
     expect(fixture.nativeElement.textContent).toContain('Showing 1–1 of 1 article');
   });
 
-  it('filters by tag and clears every active filter', async () => {
+  it('folds accents and case when searching tags and summaries', async () => {
     const fixture = TestBed.createComponent(ArticlesComponent);
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.filter', 'architecture').click();
+    search(fixture.nativeElement, 'MÓDULO');
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual([
-      'Angular signals in practice',
-      'Markdown as the source of truth',
+      'Construyendo APIs por capas: NestJS',
+      'Construyendo APIs por capas: Spring Boot',
     ]);
 
-    const input = fixture.nativeElement.querySelector('input[type="search"]') as HTMLInputElement;
-    input.value = 'nothing matches this';
-    input.dispatchEvent(new Event('input'));
+    search(fixture.nativeElement, 'ARQUITECTURA');
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual([
+      'Construyendo APIs por capas: NestJS',
+      'Construyendo APIs por capas: Spring Boot',
+      'Construyendo APIs por capas: .NET 10',
+    ]);
+  });
+
+  it('filters by tag, resets pagination, and clears every active filter', async () => {
+    const fixture = TestBed.createComponent(ArticlesComponent);
+    await fixture.whenStable();
+
+    buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
+    await fixture.whenStable();
+
+    buttonWithText(fixture.nativeElement, '.filter', 'arquitectura').click();
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual([
+      'Construyendo APIs por capas: NestJS',
+      'Construyendo APIs por capas: Spring Boot',
+      'Construyendo APIs por capas: .NET 10',
+    ]);
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–3 of 3 articles');
+
+    search(fixture.nativeElement, 'nothing matches this');
     await fixture.whenStable();
 
     expect(fixture.nativeElement.textContent).toContain('No articles match these filters.');
@@ -189,18 +218,90 @@ describe('ArticlesComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Showing 1–6 of 8 articles');
   });
 
-  it('reports a Firestore failure without a local fallback', async () => {
+  it('deduplicates tags shared by several entries', async () => {
+    const fixture = TestBed.createComponent(ArticlesComponent);
+    await fixture.whenStable();
+
+    const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
+    const architecture = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+
+    expect(architecture).toHaveLength(1);
+    expect(filters).toHaveLength(12);
+  });
+
+  it('falls back to updatedAt when an entry has no publish date', async () => {
     watchPublished.mockReturnValue(
+      of([
+        entry({
+          slug: 'draft-date',
+          title: 'Undated note',
+          publishedAt: null,
+          updatedAt: '2026-11-05T12:00:00.000Z',
+        }),
+        entry({
+          slug: 'dated-note',
+          title: 'Dated note',
+          publishedAt: '2026-11-04T12:00:00.000Z',
+          updatedAt: '2026-11-04T12:00:00.000Z',
+        }),
+      ]),
+    );
+
+    const fixture = TestBed.createComponent(ArticlesComponent);
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual(['Undated note', 'Dated note']);
+  });
+
+  it('keeps the page window inside the catalog bounds', async () => {
+    const many = Array.from({ length: 61 }, (_, index) =>
+      entry({
+        slug: `entry-${index}`,
+        title: `Entry ${index}`,
+        publishedAt: new Date(Date.UTC(2026, 0, 1, 12, 0, 0) - index * 86_400_000).toISOString(),
+      }),
+    );
+    watchPublished.mockReturnValue(of(many));
+
+    const fixture = TestBed.createComponent(ArticlesComponent);
+    await fixture.whenStable();
+    fixture.componentInstance.goTo(8);
+    await fixture.whenStable();
+
+    const pageButtons = [...fixture.nativeElement.querySelectorAll('.pager__page')].map((node) =>
+      (node as HTMLElement).textContent?.trim(),
+    );
+    expect(pageButtons).toEqual(['6', '7', '8', '9', '10']);
+    expect(fixture.nativeElement.textContent).toContain('Showing 43–48 of 61 articles');
+
+    fixture.componentInstance.goTo(99);
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.textContent).toContain('Showing 61–61 of 61 articles');
+  });
+
+  it('offers a manual retry after a Firestore failure without a local fallback', async () => {
+    watchPublished.mockReturnValueOnce(
       throwError(() => new JournalError('offline', 'Firestore is unavailable.')),
     );
     const fixture = TestBed.createComponent(ArticlesComponent);
     await fixture.whenStable();
 
-    expect(notifications.error).toHaveBeenCalledWith(
-      'Unable to load the journal',
-      'Firestore did not respond. Refresh the page to try again.',
-    );
-    expect(fixture.nativeElement.textContent).toContain('No entries are published yet.');
-    expect(fixture.nativeElement.textContent).not.toContain('Older note');
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.textContent).toContain('The journal could not be loaded.');
+    expect(view.textContent).not.toContain('Older note');
+
+    buttonWithText(view, '.empty-state .btn', 'Try again').click();
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual([
+      'Construyendo APIs por capas: NestJS',
+      'Construyendo APIs por capas: Spring Boot',
+      'Construyendo APIs por capas: .NET 10',
+      'Angular signals in practice',
+      'Civic Terminal, built for reading',
+      'Markdown as the source of truth',
+    ]);
+    expect(view.textContent).toContain('Showing 1–6 of 8 articles');
   });
 });

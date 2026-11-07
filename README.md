@@ -6,8 +6,6 @@ The Spark plan is the deployment target: Firebase Authentication (Google) for th
 
 Operational notes in Spanish live in `docs/files`. Related repositories: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) and [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi). The Firebase project id placeholder is `devchronicle-hugo`. Local emulators use `demo-devchronicle`.
 
-Scoped robustness improvements that keep the Spark/MVP boundary are listed in [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md).
-
 ## Surfaces
 
 The landing page separates the newest entry in a featured slate card from a compact recent-entries rail, then lists the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
@@ -35,6 +33,16 @@ Unknown URLs render a 404 view instead of redirecting home.
 ![Not found page](docs/screenshots/not-found-desktop.png)
 
 Every route sets its title, description, canonical link, Open Graph tags, and JSON-LD, while `/admin` stays `noindex`. `robots.txt` and `sitemap.xml` are generated from `NG_APP_SITE_URL` at build time, and `public/social/devchronicle-cover.png` is the site-level share card. Social crawlers do not run the client, so per-article previews would need prerendering; see [`docs/files/acabado-publico.md`](docs/files/acabado-publico.md).
+
+## Resilience
+
+The public views retry transient Firestore failures twice with backoff (400 ms and 800 ms). If the journal is still unreachable, the page replaces the empty state with an inline **Try again** control that re-subscribes without a reload. Permanent failures (missing entry, invalid slug, permissions) are not retried.
+
+![Archive showing the inline retry state](docs/screenshots/articles-retry-desktop.png)
+
+Studio tracks the last loaded or saved form state. Navigating away with pending edits asks for confirmation, and reloading or closing the tab triggers the browser's `beforeunload` warning. Saving, publishing, or deleting marks the editor clean, so the next navigation is not interrupted. See [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md) for the remaining backlog.
+
+![Studio asking before discarding unsaved changes](docs/screenshots/admin-unsaved-changes.png)
 
 ## Requirements
 
@@ -73,7 +81,9 @@ Run the four commands above, then walk the surface with real emulator data:
 3. `/post/construyendo-apis-por-capas-nestjs` renders the Markdown body, 19 `h2` headings, and code fences with the `TS`/`HTML` toolbar and copy control.
 4. `/ruta-inexistente` and `/post/no-existe` render the 404 view with `noindex` and links back to the archive and the journal.
 5. `/admin` accepts `admin@devchronicle.test`; the list shows all 7 entries, and the editor previews Markdown before publishing.
-6. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
+6. Edit the title or Markdown, then click **All entries**: Studio asks before discarding. Cancel keeps the draft; confirm leaves.
+7. Stop the Firestore emulator, reload `/articles`, and confirm the inline **Try again** state. Start Firestore again and use the button; the catalog recovers without a reload.
+8. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
 
 The images under `docs/screenshots` come from this local flow, captured at 1440 px wide (390 px for the mobile landing).
 

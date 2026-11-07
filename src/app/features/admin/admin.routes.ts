@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { adminGuard } from '@core/guards/admin.guard';
+import { unsavedChangesGuard } from '@core/guards/unsaved-changes.guard';
 
 export const adminRoutes: Routes = [
   {
@@ -19,11 +20,13 @@ export const adminRoutes: Routes = [
   {
     path: 'new',
     canActivate: [adminGuard],
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./admin-editor').then((m) => m.AdminEditorComponent),
   },
   {
     path: 'edit/:slug',
     canActivate: [adminGuard],
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./admin-editor').then((m) => m.AdminEditorComponent),
   },
 ];

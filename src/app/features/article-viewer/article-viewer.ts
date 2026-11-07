@@ -3,12 +3,12 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, filter, map, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { JournalError } from '@core/models/journal-error';
+import { READ_RETRY, retryTransient } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
 import { MarkdownParserService } from '@core/services/markdown-parser.service';
-import { NotificationService } from '@core/services/notification.service';
 import { SeoService } from '@core/services/seo.service';
 import { CodeBlocksDirective } from '@shared/code-blocks/code-blocks';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
@@ -24,9 +24,10 @@ export class ArticleViewerComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly journal = inject(JournalService);
   private readonly parser = inject(MarkdownParserService);
-  private readonly notifications = inject(NotificationService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly seo = inject(SeoService);
+  private readonly retryOptions = inject(READ_RETRY);
+  private readonly attempt = signal(0);
 
   readonly errorKind = signal<'not-found' | 'unavailable' | null>(null);
 
@@ -35,11 +36,13 @@ export class ArticleViewerComponent {
   });
 
   readonly article = toSignal(
-    toObservable(this.slug).pipe(
+    combineLatest([toObservable(this.slug), toObservable(this.attempt)]).pipe(
+      map(([slug]) => slug),
       filter((slug) => slug.length > 0),
       tap(() => this.errorKind.set(null)),
       switchMap((slug) =>
         this.journal.watchEntry(slug).pipe(
+          retryTransient(this.retryOptions),
           map((body) => ({
             metadata: body.metadata,
             markdown: body.markdown,
@@ -51,13 +54,6 @@ export class ArticleViewerComponent {
               (error.code === 'not-found' || error.code === 'invalid-slug');
 
             this.errorKind.set(missing ? 'not-found' : 'unavailable');
-
-            if (!missing) {
-              void this.notifications.error(
-                'Unable to load the journal',
-                'This entry could not be retrieved. Refresh the page to try again.',
-              );
-            }
             return of(null);
           }),
         ),
@@ -95,5 +91,9 @@ export class ArticleViewerComponent {
         });
       }
     });
+  }
+
+  retry(): void {
+    this.attempt.update((value) => value + 1);
   }
 }

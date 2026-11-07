@@ -6,8 +6,8 @@ import { of, throwError } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
+import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
-import { NotificationService } from '@core/services/notification.service';
 
 import { LandingComponent } from './landing';
 
@@ -45,8 +45,19 @@ const articles: ArticleMetadata[] = [
   }),
 ];
 
+function titles(fixture: { nativeElement: HTMLElement }): string[] {
+  return [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
+    (node as HTMLElement).textContent?.trim(),
+  );
+}
+
+function buttonWithText(root: HTMLElement, selector: string, text: string): HTMLButtonElement {
+  return [...root.querySelectorAll(selector)].find((node) =>
+    (node as HTMLElement).textContent?.includes(text),
+  ) as HTMLButtonElement;
+}
+
 describe('LandingComponent', () => {
-  let notifications: NotificationService;
   let watchPublished: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -56,59 +67,90 @@ describe('LandingComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
         {
           provide: JournalService,
           useValue: { offline: signal(false), watchPublished },
         },
       ],
     });
-    notifications = TestBed.inject(NotificationService);
-    vi.spyOn(notifications, 'error').mockResolvedValue({ isConfirmed: true } as never);
   });
 
   it('paints published entries with the newest first', async () => {
     const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
 
-    const titles = [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
-      (node as HTMLElement).textContent?.trim(),
-    );
-    expect(titles).toEqual(['Angular signals in practice', 'Older note']);
+    expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
     expect(fixture.nativeElement.textContent).toContain('Featured entry');
     expect(fixture.nativeElement.textContent).toContain('Recently published');
     expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
-    expect(notifications.error).not.toHaveBeenCalled();
   });
 
-  it('filters the catalog by tag', async () => {
+  it('filters the catalog by tag and deduplicates shared tags', async () => {
+    watchPublished.mockReturnValue(
+      of([
+        entry({
+          slug: 'one',
+          title: 'One',
+          tags: ['angular', 'angular'],
+          publishedAt: '2026-02-02',
+        }),
+        entry({ slug: 'two', title: 'Two', tags: ['angular'], publishedAt: '2026-02-01' }),
+      ]),
+    );
+
     const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
 
-    const angular = [...fixture.nativeElement.querySelectorAll('.filter')].find((node) =>
-      (node as HTMLElement).textContent?.includes('angular'),
-    ) as HTMLButtonElement;
-    angular.click();
+    const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
+    expect(filters.filter((node) => node.textContent?.trim() === 'angular')).toHaveLength(1);
+
+    buttonWithText(fixture.nativeElement, '.filter', 'angular').click();
     await fixture.whenStable();
 
-    const titles = [...fixture.nativeElement.querySelectorAll('.card__title')].map((node) =>
-      (node as HTMLElement).textContent?.trim(),
-    );
-    expect(titles).toEqual(['Angular signals in practice']);
+    expect(titles(fixture)).toEqual(['One', 'Two']);
   });
 
-  it('reports a Firestore failure without a local fallback', async () => {
+  it('falls back to updatedAt when an entry has no publish date', async () => {
     watchPublished.mockReturnValue(
+      of([
+        entry({
+          slug: 'undated',
+          title: 'Undated note',
+          publishedAt: null,
+          updatedAt: '2026-11-05T12:00:00.000Z',
+        }),
+        entry({
+          slug: 'dated',
+          title: 'Dated note',
+          publishedAt: '2026-11-04T12:00:00.000Z',
+          updatedAt: '2026-11-04T12:00:00.000Z',
+        }),
+      ]),
+    );
+
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual(['Undated note', 'Dated note']);
+  });
+
+  it('offers a manual retry after a Firestore failure without a local fallback', async () => {
+    watchPublished.mockReturnValueOnce(
       throwError(() => new JournalError('offline', 'Firestore is unavailable.')),
     );
     const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
 
-    expect(notifications.error).toHaveBeenCalledWith(
-      'Unable to load the journal',
-      'Firestore did not respond. Refresh the page to try again.',
-    );
-    expect(fixture.nativeElement.textContent).toContain('No entries are published yet.');
-    expect(fixture.nativeElement.textContent).not.toContain('Older note');
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.textContent).toContain('The journal could not be loaded.');
+    expect(view.textContent).not.toContain('Older note');
+
+    buttonWithText(view, '.empty-state .btn', 'Try again').click();
+    await fixture.whenStable();
+
+    expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
+    expect(view.textContent).toContain('Featured entry');
   });
 });

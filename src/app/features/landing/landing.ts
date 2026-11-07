@@ -1,11 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
+import { READ_RETRY, retryTransient } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
-import { NotificationService } from '@core/services/notification.service';
 import { SeoService } from '@core/services/seo.service';
 import { ArticleCardComponent } from '@shared/article-card/article-card';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
@@ -20,23 +20,34 @@ import { environment } from '@env';
 })
 export class LandingComponent {
   private readonly journal = inject(JournalService);
-  private readonly notifications = inject(NotificationService);
   private readonly seo = inject(SeoService);
+  private readonly retryOptions = inject(READ_RETRY);
+  private readonly attempt = signal(0);
 
   readonly selectedTag = signal<string | null>(null);
   readonly loading = signal(true);
+  readonly failed = signal(false);
 
   readonly articles = toSignal(
-    this.journal.watchPublished().pipe(
-      tap(() => this.loading.set(false)),
-      catchError(() => {
-        this.loading.set(false);
-        void this.notifications.error(
-          'Unable to load the journal',
-          'Firestore did not respond. Refresh the page to try again.',
-        );
-        return of([] as ArticleMetadata[]);
+    toObservable(this.attempt).pipe(
+      tap(() => {
+        this.loading.set(true);
+        this.failed.set(false);
       }),
+      switchMap(() =>
+        this.journal.watchPublished().pipe(
+          retryTransient(this.retryOptions),
+          tap(() => {
+            this.loading.set(false);
+            this.failed.set(false);
+          }),
+          catchError(() => {
+            this.loading.set(false);
+            this.failed.set(true);
+            return of([] as ArticleMetadata[]);
+          }),
+        ),
+      ),
     ),
     { initialValue: [] as ArticleMetadata[] },
   );
@@ -74,6 +85,10 @@ export class LandingComponent {
 
   selectTag(tag: string | null): void {
     this.selectedTag.set(this.selectedTag() === tag ? null : tag);
+  }
+
+  retry(): void {
+    this.attempt.update((value) => value + 1);
   }
 
   private filtered(): ArticleMetadata[] {

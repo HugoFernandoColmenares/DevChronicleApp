@@ -14,6 +14,11 @@
 
     @if (loading()) {
       <dev-skeleton-loader />
+    } @else if (failed()) {
+      <div class="empty-state" role="alert">
+        <p class="empty">The journal could not be loaded. Check your connection and try again.</p>
+        <button type="button" class="btn" (click)="retry()">Try again</button>
+      </div>
     } @else if (articles().length === 0) {
       <p class="empty">No entries are published yet.</p>
     } @else {

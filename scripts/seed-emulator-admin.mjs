@@ -20,15 +20,41 @@ process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || '12
 const uid = 'local-admin';
 const email = 'admin@devchronicle.test';
 const displayName = 'Hugo Colmenares';
+const googleProvider = {
+  providerId: 'google.com',
+  uid: 'google-local-admin',
+  email,
+  displayName,
+};
 
 initializeApp({ projectId });
 
 const auth = getAuth();
+
+async function createGoogleAdmin() {
+  await auth.importUsers([
+    {
+      uid,
+      email,
+      displayName,
+      emailVerified: true,
+      providerData: [googleProvider],
+    },
+  ]);
+}
+
 try {
-  await auth.getUser(uid);
-  await auth.updateUser(uid, { email, displayName, emailVerified: true });
+  const existing = await auth.getUser(uid);
+  const hasGoogle = existing.providerData.some((item) => item.providerId === 'google.com');
+
+  if (!hasGoogle) {
+    // The emulator sign-in widget only lists federated accounts. Recreate the local
+    // user so `npm run seed:admin` leaves a Google account the widget can select.
+    await auth.deleteUser(uid);
+    await createGoogleAdmin();
+  }
 } catch {
-  await auth.createUser({ uid, email, displayName, emailVerified: true });
+  await createGoogleAdmin();
 }
 
 await getFirestore().doc(`admins/${uid}`).set(
@@ -41,6 +67,4 @@ await getFirestore().doc(`admins/${uid}`).set(
 );
 
 console.log(`Emulator admin ready in ${projectId}: uid=${uid} email=${email}`);
-console.log(
-  'In the Auth emulator sign-in widget, choose that email or sign in as a new Google user and then copy that uid into admins/{uid}.',
-);
+console.log('In the Auth emulator sign-in widget, choose admin@devchronicle.test.');

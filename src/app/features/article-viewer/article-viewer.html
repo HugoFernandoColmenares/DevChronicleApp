@@ -45,8 +45,13 @@
           </p>
         }
         <div class="error-state__actions">
-          <a class="btn btn--primary" routerLink="/articles">Browse all articles</a>
-          <a class="btn" routerLink="/">Back to the journal</a>
+          @if (errorKind() === 'unavailable') {
+            <button type="button" class="btn btn--primary" (click)="retry()">Try again</button>
+            <a class="btn" routerLink="/">Back to the journal</a>
+          } @else {
+            <a class="btn btn--primary" routerLink="/articles">Browse all articles</a>
+            <a class="btn" routerLink="/">Back to the journal</a>
+          }
         </div>
       </div>
     } @else {

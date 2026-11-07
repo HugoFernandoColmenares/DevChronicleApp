@@ -4,6 +4,21 @@ El objetivo de este documento es priorizar mejoras que reduzcan fallos reales si
 Angular en Hosting, Firestore, Auth de Google y plan Spark. Nada de aquí exige Cloud Functions, un
 backend nuevo ni un plan de pago.
 
+## Sesión 1 aplicada
+
+La primera iteración del backlog ya está en el código:
+
+- **Guard de cambios:** `src/app/core/guards/unsaved-changes.guard.ts` se registra como
+  `canDeactivate` en `/admin/new` y `/admin/edit/:slug`. El editor compara el formulario con la última
+  versión guardada, pide confirmación con SweetAlert2 y añade el aviso nativo de `beforeunload` al
+  recargar. Guardar o borrar marca el formulario como limpio.
+- **Reintento de lectura:** `src/app/core/rxjs/retry-transient.ts` reintenta solo errores
+  `offline` dos veces con backoff (400 ms y 800 ms). Portada, archivo y lector muestran después un
+  botón **Try again** que vuelve a suscribirse, sin recargar la página ni abrir un modal.
+- **Pruebas:** 43 pruebas unitarias cubren acentos y mayúsculas, tags compartidos, cambio de filtro
+  que vuelve a la página 1, fechas de publicación nulas, ventana de paginación, fallo de Firestore y
+  reintento manual, además del guard.
+
 ## Lo que ya está cubierto
 
 Antes de añadir nada, conviene no repetir lo que ya existe:

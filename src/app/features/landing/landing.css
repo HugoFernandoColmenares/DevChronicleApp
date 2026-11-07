@@ -121,6 +121,13 @@
   color: var(--color-muted);
 }
 
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+
 .blog-grid {
   margin-top: 2rem;
 }
