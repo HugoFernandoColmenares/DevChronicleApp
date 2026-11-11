@@ -54,5 +54,13 @@
     "date": "2026-11-04",
     "tags": ["construyendo-apis-por-capas", "nestjs", "arquitectura"],
     "excerpt": "Un módulo NestJS 10 de productos en memoria, y el corte siguiente hacia repositorio, DTOs por uso y un guard de JWT."
+  },
+  {
+    "slug": "maquetar-libros-angular-fastapi-typst-bookpublisher",
+    "title": "Maquetar libros con Angular, FastAPI y Typst",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-11",
+    "tags": ["angular", "fastapi", "typst", "python", "bookpublisher"],
+    "excerpt": "Un recorrido por BookPublisher, un estudio local para pasar de un manuscrito a un PDF de aspecto profesional, con cuatro temas: Códice, Novela clásica, Manual técnico y Sencillo."
   }
 ]
