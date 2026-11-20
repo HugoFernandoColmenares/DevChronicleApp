@@ -26,7 +26,9 @@ describe('ServiceStatusComponent', () => {
 
     journal.offline.set(true);
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('.medal')?.textContent).toContain('Journal offline');
+    expect(fixture.nativeElement.querySelector('.medal')?.textContent).toContain(
+      'Diario sin conexión',
+    );
 
     journal.offline.set(false);
     await fixture.whenStable();

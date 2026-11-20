@@ -2,52 +2,54 @@
   <div class="container-fluid">
     <header class="intro">
       <div class="intro__copy">
-        <p class="kicker">Archive</p>
-        <h1>Every article, newest first.</h1>
+        <p class="kicker">Archivo</p>
+        <h1>Todos los artículos, del más reciente al más antiguo.</h1>
         <p>
-          Read the journal from the most recent entry down. Search by title, summary, author, or
-          series, or narrow the list with a tag.
+          Lee el diario desde la entrada más reciente hacia atrás. Busca por título, resumen, autor
+          o serie, o reduce la lista con una etiqueta.
         </p>
       </div>
-      <a class="btn" routerLink="/">Back to the journal</a>
+      <a class="btn" routerLink="/">Volver al diario</a>
     </header>
 
     @if (loading()) {
       <dev-skeleton-loader />
     } @else if (failed()) {
       <div class="empty-state" role="alert">
-        <p class="empty">The journal could not be loaded. Check your connection and try again.</p>
-        <button type="button" class="btn" (click)="retry()">Try again</button>
+        <p class="empty">No se pudo cargar el diario. Revisa tu conexión e inténtalo de nuevo.</p>
+        <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
       </div>
     } @else if (articles().length === 0) {
-      <p class="empty">No entries are published yet.</p>
+      <p class="empty">Aún no hay entradas publicadas.</p>
     } @else {
       <div class="toolbar">
         <label class="search">
-          <span class="search__label">Search articles</span>
+          <span class="search__label">Buscar artículos</span>
           <input
             type="search"
             [value]="search()"
             (input)="onSearch($event)"
-            placeholder="Title, tag, author…"
+            placeholder="Título, etiqueta, autor…"
             autocomplete="off"
           />
         </label>
         @if (search().trim().length > 0) {
-          <button type="button" class="btn btn--quiet" (click)="clearSearch()">Clear search</button>
+          <button type="button" class="btn btn--quiet" (click)="clearSearch()">
+            Limpiar búsqueda
+          </button>
         }
-        <p class="sort">Newest first</p>
+        <p class="sort">Más recientes primero</p>
       </div>
 
       @if (tags().length > 0) {
-        <div class="filters" role="group" aria-label="Filter by tag">
+        <div class="filters" role="group" aria-label="Filtrar por etiqueta">
           <button
             type="button"
             class="filter"
             [class.filter--on]="selectedTag() === null"
             (click)="selectTag(null)"
           >
-            All
+            Todas
           </button>
           @for (tag of tags(); track tag) {
             <button
@@ -64,13 +66,13 @@
 
       @if (filtered().length === 0) {
         <div class="empty-state">
-          <p class="empty">No articles match these filters.</p>
-          <button type="button" class="btn" (click)="clearFilters()">Clear filters</button>
+          <p class="empty">Ningún artículo coincide con estos filtros.</p>
+          <button type="button" class="btn" (click)="clearFilters()">Limpiar filtros</button>
         </div>
       } @else {
         <p class="results" role="status" aria-live="polite">
-          Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ filtered().length }}
-          {{ filtered().length === 1 ? 'article' : 'articles' }}
+          Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ filtered().length }}
+          {{ filtered().length === 1 ? 'artículo' : 'artículos' }}
         </p>
 
         <div class="blog-grid">
@@ -80,14 +82,14 @@
         </div>
 
         @if (totalPages() > 1) {
-          <nav class="pager" aria-label="Article pages">
+          <nav class="pager" aria-label="Páginas de artículos">
             <button
               type="button"
               class="pager__step"
               (click)="previous()"
               [disabled]="currentPage() === 1"
             >
-              Previous
+              Anterior
             </button>
 
             <div class="pager__pages">
@@ -97,7 +99,7 @@
                   class="pager__page"
                   [class.pager__page--on]="number === currentPage()"
                   [attr.aria-current]="number === currentPage() ? 'page' : null"
-                  [attr.aria-label]="'Page ' + number"
+                  [attr.aria-label]="'Página ' + number"
                   (click)="goTo(number)"
                 >
                   {{ number }}
@@ -111,7 +113,7 @@
               (click)="next()"
               [disabled]="currentPage() === totalPages()"
             >
-              Next
+              Siguiente
             </button>
           </nav>
         }

@@ -68,7 +68,7 @@ export class LandingComponent {
 
   constructor() {
     this.seo.setPage({
-      title: 'Field notes for working software',
+      title: 'Notas de campo para software que funciona',
       description: environment.defaultDescription,
       path: '/',
       jsonLd: {
@@ -77,7 +77,7 @@ export class LandingComponent {
         name: environment.siteName,
         url: `${environment.siteUrl}/`,
         description: environment.defaultDescription,
-        inLanguage: 'en',
+        inLanguage: 'es',
         publisher: { '@type': 'Organization', name: environment.siteName },
       },
     });

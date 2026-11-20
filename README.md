@@ -1,77 +1,77 @@
 # DevChronicleApp
 
-DevChronicleApp is the Angular 22 client for DevChronicle, a markdown journal. Published entries live in Cloud Firestore. The browser compiles Markdown to HTML and renders the Civic Terminal reading surface: a light canvas, slate chrome, and dark code fences. Inter and JetBrains Mono are served from `public/fonts`.
+DevChronicleApp es el cliente Angular 22 de DevChronicle, un diario en Markdown. Las entradas publicadas viven en Cloud Firestore. El navegador compila el Markdown a HTML y dibuja la superficie de lectura Civic Terminal: un lienzo claro, marco color pizarra y bloques de código oscuros. Inter y JetBrains Mono se sirven desde `public/fonts`.
 
-The Spark plan is the deployment target: Firebase Authentication (Google) for the author, Firestore for entries, and Firebase Hosting for the SPA. The app does not use Cloud Functions, Cloud Storage, or other paid products. The Rust API and the local `index.json` fallback are no longer the runtime source. `public/content` remains the import source.
+El plan Spark es el destino del despliegue: Firebase Authentication (Google) para el autor, Firestore para las entradas y Firebase Hosting para la SPA. La app no usa Cloud Functions, Cloud Storage ni otros productos de pago. La API en Rust y el respaldo local con `index.json` ya no son la fuente en ejecución. `public/content` sigue siendo la fuente de importación.
 
-Operational notes in Spanish live in `docs/files`. Related repositories: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) and [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi). The Firebase project id placeholder is `devchronicle-hugo`. Local emulators use `demo-devchronicle`.
+Las notas operativas están en `docs/files`. Repositorios relacionados: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) y [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi). El identificador del proyecto de Firebase es `devchronicle-hugo`. Los emuladores locales usan `demo-devchronicle`.
 
-## Documentation
+## Documentación
 
-| Document                                                           | Contents                                                        |
-| :----------------------------------------------------------------- | :-------------------------------------------------------------- |
-| [`docs/files/architecture.md`](docs/files/architecture.md)         | Runtime topology, routes, data model, build commands            |
-| [`docs/files/design.md`](docs/files/design.md)                     | Civic Terminal tokens, layout patterns, art direction           |
-| [`docs/files/audit.md`](docs/files/audit.md)                       | Ranked findings (Critical → Low) with screenshot evidence       |
-| [`docs/files/improvement-plan.md`](docs/files/improvement-plan.md) | Phased backlog (quick wins → security → design → nice-to-haves) |
-| [`docs/screenshots/`](docs/screenshots/)                           | Desktop and mobile captures of public and Studio states         |
+| Documento                                                          | Contenido                                                                |
+| :----------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| [`docs/files/architecture.md`](docs/files/architecture.md)         | Topología en ejecución, rutas, modelo de datos y comandos de compilación |
+| [`docs/files/design.md`](docs/files/design.md)                     | Tokens de Civic Terminal, patrones de composición y dirección de arte    |
+| [`docs/files/audit.md`](docs/files/audit.md)                       | Hallazgos ordenados (de críticos a bajos) con capturas como evidencia    |
+| [`docs/files/improvement-plan.md`](docs/files/improvement-plan.md) | Plan por fases (mejoras rápidas → seguridad → diseño → extras)           |
+| [`docs/screenshots/`](docs/screenshots/)                           | Capturas de escritorio y móvil de los estados públicos y del Estudio     |
 
-Spanish operational notes (`autenticacion.md`, `modelo-de-datos.md`, `robustez-mvp.md`, and others) remain alongside the English audit set in `docs/files`.
+Las notas operativas (`autenticacion.md`, `modelo-de-datos.md`, `robustez-mvp.md` y otras) conviven en `docs/files` con el conjunto de auditoría.
 
-## Surfaces
+## Superficies
 
-The landing page separates the newest entry in a featured slate card from a compact recent-entries rail, then lists the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
+La portada separa la entrada más reciente en una tarjeta destacada color pizarra de un riel compacto de entradas recientes, y luego lista el resto de los artículos en una cuadrícula adaptable. Las etiquetas filtran el catálogo sin salir de la página.
 
-The archive at `/articles` lists every published entry from newest to oldest. It has live text search, tag filters, and pagination that resets whenever the filter changes.
+El archivo en `/articles` lista todas las entradas publicadas, de la más reciente a la más antigua. Tiene búsqueda de texto en vivo, filtros por etiqueta y una paginación que vuelve a la primera página cada vez que cambia el filtro.
 
-![Article archive](docs/screenshots/articles-desktop.png)
+![Archivo de artículos](docs/screenshots/articles-desktop.png)
 
-![DevChronicle landing page](docs/screenshots/landing-desktop.png)
+![Portada de DevChronicle](docs/screenshots/landing-desktop.png)
 
-The article route (`/post/:slug`) keeps the body within 70 characters, lazy-loads syntax highlighting, and offers a copy control on each fence.
+La ruta de artículo (`/post/:slug`) mantiene el cuerpo dentro de 70 caracteres, carga el resaltado de sintaxis de forma diferida y ofrece un control para copiar en cada bloque de código.
 
-![Article reading view](docs/screenshots/article-desktop.png)
+![Vista de lectura de un artículo](docs/screenshots/article-desktop.png)
 
-Narrow viewports stack the grid and wrap the display heading.
+En pantallas estrechas la cuadrícula se apila y el título grande se ajusta.
 
-![Landing page on a narrow viewport](docs/screenshots/landing-mobile.png)
+![Portada en una pantalla estrecha](docs/screenshots/landing-mobile.png)
 
-`/admin` is the authoring studio. Google sign-in is required, and the account must have an `admins/{uid}` document. The editor previews Markdown before publish.
+`/admin` es el estudio de autoría. Requiere iniciar sesión con Google, y la cuenta debe tener un documento `admins/{uid}`. El editor muestra una vista previa del Markdown antes de publicar.
 
-![Studio editor](docs/screenshots/admin-editor.png)
+![Editor del Estudio](docs/screenshots/admin-editor.png)
 
-Unknown URLs render a 404 view instead of redirecting home.
+Las URL desconocidas muestran una vista 404 en lugar de redirigir a la portada.
 
-![Not found page](docs/screenshots/not-found-desktop.png)
+![Página no encontrada](docs/screenshots/not-found-desktop.png)
 
-Every route sets its title, description, canonical link, Open Graph tags, and JSON-LD, while `/admin` stays `noindex`. `robots.txt` and `sitemap.xml` are generated from `NG_APP_SITE_URL` at build time, and `public/social/devchronicle-cover.png` is the site-level share card. Social crawlers do not run the client, so per-article previews would need prerendering; see [`docs/files/acabado-publico.md`](docs/files/acabado-publico.md).
+Cada ruta define su título, descripción, enlace canónico, etiquetas Open Graph y JSON-LD, mientras que `/admin` se mantiene en `noindex`. `robots.txt` y `sitemap.xml` se generan en la compilación a partir de `NG_APP_SITE_URL` (el mapa del sitio incluye la portada, el archivo y cada artículo de `public/content`), y `public/social/devchronicle-cover.png` es la tarjeta para compartir del sitio. Los rastreadores sociales no ejecutan el cliente, así que las vistas previas por artículo requerirían prerenderizado; consulta [`docs/files/acabado-publico.md`](docs/files/acabado-publico.md).
 
-## Resilience
+## Resiliencia
 
-The public views retry transient Firestore failures twice with backoff (400 ms and 800 ms). If the journal is still unreachable, the page replaces the empty state with an inline **Try again** control that re-subscribes without a reload. Permanent failures (missing entry, invalid slug, permissions) are not retried.
+Las vistas públicas reintentan dos veces, con espera creciente (400 ms y 800 ms), los fallos transitorios de Firestore. Si el diario sigue sin responder, la página reemplaza el estado vacío por un control en línea **Intentar de nuevo** que vuelve a suscribirse sin recargar. Sin red y sin caché, Firestore responde con una lista vacía marcada como "desde caché"; la app la trata como una caída y no como un diario vacío. Los fallos permanentes (entrada inexistente, slug inválido, permisos) no se reintentan.
 
-![Archive showing the inline retry state](docs/screenshots/articles-retry-desktop.png)
+![Archivo con el estado de reintento en línea](docs/screenshots/articles-retry-desktop.png)
 
-Studio tracks the last loaded or saved form state. Navigating away with pending edits asks for confirmation, and reloading or closing the tab triggers the browser's `beforeunload` warning. Saving, publishing, or deleting marks the editor clean, so the next navigation is not interrupted. See [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md) for the remaining backlog.
+El Estudio recuerda el último estado del formulario cargado o guardado. Salir con ediciones pendientes pide confirmación, y recargar o cerrar la pestaña activa la advertencia `beforeunload` del navegador. Guardar, publicar o eliminar marca el editor como limpio, así la siguiente navegación no se interrumpe. Consulta [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md) para ver el resto de pendientes.
 
-![Studio asking before discarding unsaved changes](docs/screenshots/admin-unsaved-changes.png)
+![El Estudio pidiendo confirmación antes de descartar cambios](docs/screenshots/admin-unsaved-changes.png)
 
-## Requirements
+## Requisitos
 
-- Node.js 22 or later
-- npm 12 or later (this repository pins `packageManager`)
-- A JDK 21 when running the Firestore emulator
+- Node.js 22 o superior
+- npm 12 o superior (este repositorio fija `packageManager`)
+- Un JDK 21 para ejecutar el emulador de Firestore
 
-## Setup
+## Instalación
 
 ```bash
 cp .env.example .env
 npm install
 ```
 
-`.env` is ignored by git. Web config keys belong there. They are public in the built client. Do not put a service-account JSON in the repository. `npm run build` writes `src/environments/environment.production.ts` from those variables. `ng serve` does not need them: the development environment talks to the emulators.
+`.env` está ignorado por git. Ahí van las claves de configuración web, que son públicas en el cliente compilado. No pongas el JSON de una cuenta de servicio en el repositorio. `npm run build` escribe `src/environments/environment.production.ts` a partir de esas variables. `ng serve` no las necesita: el entorno de desarrollo habla con los emuladores.
 
-## Emulators
+## Emuladores
 
 ```bash
 npm run emulators
@@ -80,24 +80,24 @@ npm run seed:admin
 npm start
 ```
 
-The app is at `http://127.0.0.1:4200/`. Emulator UI is at `http://127.0.0.1:4000/`. Start the emulators with project `demo-devchronicle` (the npm script does this). The default alias in `.firebaserc` is the future cloud project, not the emulator project.
+La app queda en `http://127.0.0.1:4200/`. La interfaz de los emuladores queda en `http://127.0.0.1:4000/`. Inicia los emuladores con el proyecto `demo-devchronicle` (el script de npm ya lo hace). El alias por defecto en `.firebaserc` es el proyecto en la nube, no el de los emuladores.
 
-In the Auth emulator sign-in widget, use `admin@devchronicle.test` after `npm run seed:admin`.
+En el widget de inicio de sesión del emulador de Auth, usa `admin@devchronicle.test` después de `npm run seed:admin`.
 
-### Local verification
+### Verificación local
 
-Run the four commands above, then walk the surface with real emulator data:
+Ejecuta los cuatro comandos anteriores y recorre la superficie con datos reales del emulador:
 
-1. `/` renders the featured entry, the recent rail, the published entries from the importer, and the tag filters.
-2. `/articles` shows 6 entries per page (for example “Showing 1–6 of 11 articles” after a full `import:emulator`). Search for `nestjs` returns one entry, and changing a filter resets pagination.
-3. `/post/construyendo-apis-por-capas-nestjs` renders the Markdown body, 19 `h2` headings, and code fences with the `TS`/`HTML` toolbar and copy control.
-4. `/ruta-inexistente` and `/post/no-existe` render the 404 view with `noindex` and links back to the archive and the journal.
-5. `/admin` accepts `admin@devchronicle.test`; the list shows every imported entry, and the editor previews Markdown before publishing.
-6. Edit the title or Markdown, then click **All entries**: Studio asks before discarding. Cancel keeps the draft; confirm leaves.
-7. Stop the Firestore emulator, reload `/articles`, and confirm the inline **Try again** state. Start Firestore again and use the button; the catalog recovers without a reload.
-8. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
+1. `/` muestra la entrada destacada, el riel de recientes, las entradas publicadas que trajo el importador y los filtros por etiqueta.
+2. `/articles` muestra 6 entradas por página (por ejemplo "Mostrando 1–6 de 11 artículos" después de un `import:emulator` completo). Buscar `nestjs` devuelve una entrada, y cambiar un filtro reinicia la paginación.
+3. `/post/construyendo-apis-por-capas-nestjs` muestra el cuerpo en Markdown, 19 encabezados `h2` y bloques de código con la barra `TS`/`HTML` y el control de copiar.
+4. `/ruta-inexistente` y `/post/no-existe` muestran la vista 404 con `noindex` y enlaces al archivo y al diario.
+5. `/admin` acepta `admin@devchronicle.test`; la lista muestra todas las entradas importadas y el editor previsualiza el Markdown antes de publicar.
+6. Edita el título o el Markdown y pulsa **Todas las entradas**: el Estudio pregunta antes de descartar. Cancelar conserva el borrador; confirmar sale.
+7. Detén el emulador de Firestore, recarga `/articles` y confirma el estado en línea **Intentar de nuevo**. Vuelve a iniciar Firestore y usa el botón; el catálogo se recupera sin recargar.
+8. Cada ruta define su propio `<title>`, descripción, canónico, etiquetas Open Graph y JSON-LD.
 
-The images under `docs/screenshots` come from this local flow, captured at 1440 px wide (390 px for the mobile landing).
+Las imágenes de `docs/screenshots` salen de este flujo local, capturadas a 1440 px de ancho (390 px para la portada móvil).
 
 ## Scripts
 
@@ -105,13 +105,13 @@ The images under `docs/screenshots` come from this local flow, captured at 1440 
 npm start
 ```
 
-Serves the development build against the emulators.
+Sirve la compilación de desarrollo contra los emuladores.
 
 ```bash
 npm run build
 ```
 
-Writes an optimized bundle to `dist/DevChronicle`.
+Escribe un paquete optimizado en `dist/DevChronicle`.
 
 ```bash
 npm test
@@ -120,60 +120,60 @@ npm run test:rules
 npm run lint
 ```
 
-`test` runs the Vitest suite through the Angular unit-test builder. `test:import` checks the Markdown parser used by the importer. `test:rules` starts the Firestore emulator and runs `@firebase/rules-unit-testing`. `lint` runs Prettier.
+`test` ejecuta la suite de Vitest con el constructor de pruebas unitarias de Angular. `test:import` verifica el analizador de Markdown que usa el importador. `test:rules` inicia el emulador de Firestore y ejecuta `@firebase/rules-unit-testing`. `lint` ejecuta Prettier.
 
 ```bash
 npm run import:emulator
 node scripts/import-content.mjs --project devchronicle-hugo
 ```
 
-The importer upserts `public/content/*.md` by slug. A cloud import requires `--project` and `GOOGLE_APPLICATION_CREDENTIALS` or `FIREBASE_SERVICE_ACCOUNT`.
+El importador hace upsert de `public/content/*.md` por slug. Una importación a la nube requiere `--project` y `GOOGLE_APPLICATION_CREDENTIALS` o `FIREBASE_SERVICE_ACCOUNT`.
 
-## Architecture
+## Arquitectura
 
-| Path                     | Responsibility                                                                   |
-| :----------------------- | :------------------------------------------------------------------------------- |
-| `src/app/core`           | Models, Firestore reads and writes, Google auth, Markdown parsing, notifications |
-| `src/app/features`       | Landing catalog, paginated archive, article viewer, studio                       |
-| `src/app/shared`         | Cards, tags, copy control, skeleton, offline status, site header and footer      |
-| `public/content`         | Markdown files imported into Firestore                                           |
-| `firestore.rules`        | Public read of published entries, admin writes, console-only `admins`            |
-| `firestore.indexes.json` | `status` + `publishedAt` for the public catalog                                  |
-| `firebase.json`          | Hosting SPA rewrite and emulator ports                                           |
-| `docs/files`             | English architecture/design/audit/plan plus Spanish operational notes            |
+| Ruta                     | Responsabilidad                                                                         |
+| :----------------------- | :-------------------------------------------------------------------------------------- |
+| `src/app/core`           | Modelos, lecturas y escrituras en Firestore, autenticación con Google, Markdown, avisos |
+| `src/app/features`       | Catálogo de la portada, archivo paginado, visor de artículos, estudio                   |
+| `src/app/shared`         | Tarjetas, etiquetas, control de copiar, esqueleto, estado sin conexión, cabecera y pie  |
+| `public/content`         | Archivos Markdown que se importan a Firestore                                           |
+| `firestore.rules`        | Lectura pública de entradas publicadas, escrituras de admins, `admins` solo por consola |
+| `firestore.indexes.json` | `status` + `publishedAt` para el catálogo público                                       |
+| `firebase.json`          | Reescritura de la SPA en Hosting y puertos de los emuladores                            |
+| `docs/files`             | Arquitectura, diseño, auditoría y plan, más las notas operativas                        |
 
-Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. The wildcard route renders the 404 view, and `/404` is an explicit alias.
+El enrutamiento vive en `src/app/app.routes.ts`. El catálogo es `/`. El archivo es `/articles` (el alias `/articulos` redirige ahí). El visor es `/post/:slug`. El Estudio es `/admin`. La ruta comodín muestra la vista 404, y `/404` es un alias explícito.
 
-Components use signal inputs, deferred views for compiled HTML, and zoneless change detection. Parser output is purified with DOMPurify before it is bound with `[innerHTML]`. A content request is sent only when the slug matches `[a-z0-9-]+`.
+Los componentes usan entradas con signals, vistas diferidas para el HTML compilado y detección de cambios sin zonas. La salida del analizador se purifica con DOMPurify antes de enlazarla con `[innerHTML]`. Solo se consulta una entrada cuando el slug cumple `[a-z0-9-]+`.
 
-User-facing alerts go through `NotificationService` (`src/app/core/services/notification.service.ts`), which styles SweetAlert2 to the Civic Terminal palette.
+Los avisos al usuario pasan por `NotificationService` (`src/app/core/services/notification.service.ts`), que da a SweetAlert2 la paleta de Civic Terminal.
 
-## Reading entries
+## Lectura de entradas
 
-The catalog listens to `entries` where `status == published`, ordered by `publishedAt`. Opening an entry reads that document and `entries/{slug}/body/current`, then compiles the Markdown in the browser. The body document holds the Markdown without frontmatter so the list stays small and each document stays under the 1 MiB Firestore limit. See `docs/files/modelo-de-datos.md`.
+El catálogo escucha `entries` donde `status == published`, ordenado por `publishedAt`. Al abrir una entrada se lee ese documento y `entries/{slug}/body/current`, y luego se compila el Markdown en el navegador. El documento del cuerpo guarda el Markdown sin frontmatter para que la lista sea liviana y cada documento quede por debajo del límite de 1 MiB de Firestore. Consulta `docs/files/modelo-de-datos.md`.
 
-If Firestore cannot be reached, the header shows “Journal offline” and the page reports that the journal could not be loaded. There is no local file fallback.
+Si no se puede llegar a Firestore, la cabecera muestra "Diario sin conexión" y la página avisa que no se pudo cargar el diario. No hay respaldo con archivos locales.
 
-## Authoring
+## Autoría
 
-Studio creates, edits, publishes, unpublishes (by saving a draft), and deletes entries. Admins are documents in `admins/{uid}` created from the Firebase console. Security rules reject client writes to that collection.
+El Estudio crea, edita, publica, despublica (guardando como borrador) y elimina entradas. Los admins son documentos en `admins/{uid}` creados desde la consola de Firebase. Las reglas de seguridad rechazan las escrituras del cliente en esa colección.
 
-## Deploy
+## Despliegue
 
-Pushes to `main` run `.github/workflows/firebase-hosting.yml`. The workflow builds even when Firebase secrets are missing, and it skips Hosting deploy instead of failing. The secrets and the one-time project setup are listed in `docs/files/hosting.md`.
+Cada push a `main` ejecuta `.github/workflows/firebase-hosting.yml`. El flujo compila aunque falten los secretos de Firebase, y en ese caso omite el despliegue a Hosting en lugar de fallar. Los secretos y la configuración inicial del proyecto están en `docs/files/hosting.md`.
 
-## Author
+## Autor
 
-Hugo Fernando Colmenares. Public repositories: [HugoFernandoColmenares](https://github.com/HugoFernandoColmenares?tab=repositories).
+Hugo Fernando Colmenares. Repositorios públicos: [HugoFernandoColmenares](https://github.com/HugoFernandoColmenares?tab=repositories).
 
-This repository is [DevChronicleApp](https://github.com/HugoFernandoColmenares/DevChronicleApp).
+Este repositorio es [DevChronicleApp](https://github.com/HugoFernandoColmenares/DevChronicleApp).
 
-| Project                                                                      | Role                                               |
-| :--------------------------------------------------------------------------- | :------------------------------------------------- |
-| [DevChronicleApp](https://github.com/HugoFernandoColmenares/DevChronicleApp) | Angular client, Firestore, Auth, Hosting           |
-| [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi) | Previous Rust API and SQLite                       |
-| [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle)       | Docker Compose orchestration of the previous stack |
+| Proyecto                                                                     | Rol                                                 |
+| :--------------------------------------------------------------------------- | :-------------------------------------------------- |
+| [DevChronicleApp](https://github.com/HugoFernandoColmenares/DevChronicleApp) | Cliente Angular, Firestore, Auth, Hosting           |
+| [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi) | API anterior en Rust y SQLite                       |
+| [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle)       | Orquestación con Docker Compose de la pila anterior |
 
-## License
+## Licencia
 
-Private project. All rights reserved unless the repository owner states otherwise.
+Proyecto privado. Todos los derechos reservados, salvo que el propietario del repositorio indique lo contrario.

@@ -1,11 +1,11 @@
 <section class="studio">
   <div class="container-fluid">
-    <dev-studio-bar heading="Entries" [showNew]="true" />
+    <dev-studio-bar heading="Entradas" [showNew]="true" />
 
     @if (loading()) {
-      <p class="empty">Loading entries.</p>
+      <p class="empty">Cargando entradas.</p>
     } @else if (entries().length === 0) {
-      <p class="empty">No entries yet. Create the first note.</p>
+      <p class="empty">Aún no hay entradas. Crea la primera nota.</p>
     } @else {
       <div class="studio__rows">
         @for (entry of entries(); track entry.slug) {
@@ -16,7 +16,7 @@
             <span class="studio__row-title">{{ entry.title }}</span>
             <span class="studio__row-meta">
               {{ entry.category }}
-              · {{ entry.readingTimeMinutes }} min · {{ entry.updatedAt | date: 'MMM d, y' }}
+              · {{ entry.readingTimeMinutes }} min · {{ entry.updatedAt | date: 'd MMM y' }}
             </span>
           </a>
         }

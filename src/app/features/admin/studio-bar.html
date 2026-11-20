@@ -1,6 +1,6 @@
 <header class="studio__bar">
   <div>
-    <p class="studio__kicker">Studio</p>
+    <p class="studio__kicker">Estudio</p>
     <h1>{{ heading() }}</h1>
     @if (user(); as account) {
       @if (account.email) {
@@ -10,10 +10,10 @@
   </div>
   <div class="studio__actions">
     @if (showNew()) {
-      <a class="btn btn--primary" routerLink="/admin/new">New entry</a>
+      <a class="btn btn--primary" routerLink="/admin/new">Nueva entrada</a>
     } @else {
-      <a class="btn" routerLink="/admin">All entries</a>
+      <a class="btn" routerLink="/admin">Todas las entradas</a>
     }
-    <button type="button" class="btn" (click)="signOut()">Sign out</button>
+    <button type="button" class="btn" (click)="signOut()">Cerrar sesión</button>
   </div>
 </header>

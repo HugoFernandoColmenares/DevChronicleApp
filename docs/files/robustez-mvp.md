@@ -14,7 +14,7 @@ La primera iteración del backlog ya está en el código:
   recargar. Guardar o borrar marca el formulario como limpio.
 - **Reintento de lectura:** `src/app/core/rxjs/retry-transient.ts` reintenta solo errores
   `offline` dos veces con backoff (400 ms y 800 ms). Portada, archivo y lector muestran después un
-  botón **Try again** que vuelve a suscribirse, sin recargar la página ni abrir un modal.
+  botón **Intentar de nuevo** que vuelve a suscribirse, sin recargar la página ni abrir un modal.
 - **Pruebas:** 43 pruebas unitarias cubren acentos y mayúsculas, tags compartidos, cambio de filtro
   que vuelve a la página 1, fechas de publicación nulas, ventana de paginación, fallo de Firestore y
   reintento manual, además del guard.
@@ -29,7 +29,7 @@ Antes de añadir nada, conviene no repetir lo que ya existe:
 - Validación de slug, saneado del HTML con DOMPurify y render diferido del artículo.
 - Estados de error diferenciados: `not-found` (404 interno) y `unavailable` (503), sin modal para un
   enlace roto.
-- Confirmación antes de borrar y aviso de conexión (“Journal offline”).
+- Confirmación antes de borrar y aviso de conexión (“Diario sin conexión”).
 - SEO por ruta, `robots.txt`, `sitemap.xml`, 404 con `noindex` y cabeceras de seguridad en Hosting.
 - Pruebas unitarias de catálogo, archivo, lector, Studio, guard de admin y SEO.
 

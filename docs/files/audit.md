@@ -1,249 +1,252 @@
-# DevChronicleApp — Product & Engineering Audit
+# DevChronicleApp — Auditoría de producto e ingeniería
 
-**Product:** DevChronicle (Angular package `dev-chronicle`)  
-**Domain:** Markdown-driven journal for architecture notes, Angular practice, and technical essays  
-**Audit date:** 20 Nov 2026 (America/Bogota)  
-**Environment audited:** `npm run emulators` + `import:emulator` + `seed:admin` + `npm start` at `http://127.0.0.1:4200/`  
-**Evidence:** Screenshots in [`docs/screenshots/`](../screenshots/); architecture in [`architecture.md`](./architecture.md); design system in [`design.md`](./design.md)
+**Producto:** DevChronicle (paquete Angular `dev-chronicle`)  
+**Dominio:** diario basado en Markdown para notas de arquitectura, práctica con Angular y ensayos técnicos  
+**Fecha de la auditoría:** 20 nov 2026 (America/Bogota)  
+**Entorno auditado:** `npm run emulators` + `import:emulator` + `seed:admin` + `npm start` en `http://127.0.0.1:4200/`  
+**Evidencia:** capturas en [`docs/screenshots/`](../screenshots/); arquitectura en [`architecture.md`](./architecture.md); sistema de diseño en [`design.md`](./design.md)
 
-This document ranks findings by severity. It does **not** implement fixes.
+Este documento ordena los hallazgos por gravedad. **No** implementa correcciones.
 
----
-
-## Executive summary
-
-The public reading surface works end-to-end against emulators: catalog, search, tags, pagination, reader with code copy, soft 404s, Google Studio auth, unsaved-change guards, and production `npm run build` all succeed. The main risks are (1) Firestore failures that present as an empty journal instead of a recoverable error, (2) HTML sanitizer CVEs on the Markdown → `[innerHTML]` path, (3) SEO limits of a pure SPA (soft 404s, thin sitemap, generic social previews), and (4) a visual identity that reads as a competent default kit rather than a hand-crafted field journal.
+> **Estado posterior (revisión del 20 nov 2026, tarde):** después de esta auditoría se corrigieron C1 (DOMPurify actualizado a 3.4.18), C2 (una caída de Firestore ya no se muestra como diario vacío), H2 (el mapa del sitio incluye cada artículo), H6 (la prueba del importador ya no fija una lista de slugs), M8 (conteos del README) y L5 en parte (los cuatro ensayos base se reescribieron en español y describen Firestore como fuente en ejecución). Quedan abiertos el resto de los hallazgos, entre ellos H5 en lo que depende de Angular y Firebase. Las capturas de esta auditoría muestran la interfaz en inglés de esa fecha, antes de pasarla a español.
 
 ---
 
-## Method
+## Resumen ejecutivo
 
-| Angle            | What was exercised                                                                                                                                                                                       |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Regular user     | Landing, tag filters, archive search (hit + empty), article read + code copy, 404s, Studio login gate, mobile 390px                                                                                      |
-| QA / engineering | Routing & redirects, admin / denied / list / editor, unsaved dialog, rules review, DOMPurify usage, SEO meta sampling, a11y spot checks, `npm test` / `lint` / `build`, `npm audit`, importer test drift |
-| Design taste     | Tokens, typography, chrome, tag density, Studio vs public consistency, originality vs generic AI/default patterns                                                                                        |
-
-Roles: **anonymous reader** and **single admin author** (`admins/{uid}`). There is no third role.
+La superficie de lectura pública funciona de punta a punta contra los emuladores: catálogo, búsqueda, etiquetas, paginación, lector con copia de código, 404 blandos, autenticación de Google para el Estudio, protecciones contra cambios sin guardar y `npm run build` de producción. Los principales riesgos son (1) fallos de Firestore que se presentan como un diario vacío en lugar de un error recuperable, (2) CVE del sanitizador de HTML en la ruta de Markdown → `[innerHTML]`, (3) los límites de SEO de una SPA pura (404 blandos, mapa del sitio escaso, vistas previas sociales genéricas) y (4) una identidad visual que se lee como un kit competente por defecto y no como un diario de campo hecho a mano.
 
 ---
 
-## Critical
+## Método
 
-### C1 — Sanitizer dependency CVEs on the HTML render path
+| Ángulo          | Qué se ejercitó                                                                                                                                                                                                                                                               |
+| :-------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Usuario común   | Portada, filtros por etiqueta, búsqueda en el archivo (con y sin resultados), lectura de un artículo y copia de código, 404, la puerta de acceso al Estudio, móvil a 390 px                                                                                                   |
+| QA / ingeniería | Rutas y redirecciones, admin / denegado / lista / editor, diálogo de cambios sin guardar, revisión de reglas, uso de DOMPurify, muestreo de metadatos SEO, revisión puntual de accesibilidad, `npm test` / `lint` / `build`, `npm audit`, desfase de la prueba del importador |
+| Gusto de diseño | Tokens, tipografía, marco, densidad de etiquetas, coherencia entre el Estudio y lo público, originalidad frente a patrones genéricos de IA o por defecto                                                                                                                      |
 
-- **Evidence:** `npm audit --omit=dev` reports multiple **DOMPurify** advisories (≤3.4.16), including DOM XSS classes (detached subtree handlers, template/reparse issues). Production path: `MarkdownParserService.compile` → `DOMPurify.sanitize` → `bypassSecurityTrustHtml` in the reader and Studio preview (`src/app/core/services/markdown-parser.service.ts`, `article-viewer.ts`, `admin-editor.ts`).
-- **Why critical:** Published Markdown is the product. Any sanitizer bypass becomes stored XSS for every reader.
-- **Screenshot / code:** Rendered article with HTML body — [`article-desktop.png`](../screenshots/article-desktop.png), [`article-code-desktop.png`](../screenshots/article-code-desktop.png).
-
-### C2 — Firestore outage presented as an empty catalog
-
-- **Evidence:** With Firestore requests forced to fail (`8080` aborted / HTTP 500), `/articles` and `/` rendered **“No entries are published yet.”** with **zero** “Try again” buttons and **no** “Journal offline” medal—after several seconds. Designed failure UI exists in `articles.html` / `landing.html` (`failed()` → alert + Try again) and is covered by unit tests, but the live failure mode observed did not flip `failed()`.
-- **Why critical:** Readers (and the author) conclude the journal was wiped or unpublished; recovery affordance never appears. README verification step 7 assumes the opposite.
-- **Screenshots:** [`articles-failure-as-empty-desktop.png`](../screenshots/articles-failure-as-empty-desktop.png), [`landing-retry-desktop.png`](../screenshots/landing-retry-desktop.png). Designed retry chrome (DOM using production classes when live path did not engage): [`articles-retry-desktop.png`](../screenshots/articles-retry-desktop.png).
+Roles: **lector anónimo** y **único autor administrador** (`admins/{uid}`). No existe un tercer rol.
 
 ---
 
-## High
+## Crítico
 
-### H1 — Soft HTTP 200 for unknown URLs and missing posts
+### C1 — CVE de la dependencia del sanitizador en la ruta de render de HTML
 
-- **Evidence:** Hosting SPA rewrite serves `index.html` for all paths; client shows NotFound / “not published” UI with `noindex`, but status remains 200. Documented in Spanish ops notes and README.
-- **Impact:** Crawlers and uptime monitors mis-classify missing URLs; link equity and monitoring suffer.
-- **Screenshots:** [`not-found-desktop.png`](../screenshots/not-found-desktop.png), [`article-not-found-desktop.png`](../screenshots/article-not-found-desktop.png), [`not-found-mobile.png`](../screenshots/not-found-mobile.png).
+- **Evidencia:** `npm audit --omit=dev` reporta varios avisos de **DOMPurify** (≤3.4.16), incluidas clases de XSS en el DOM (manejadores de subárboles desconectados, reanálisis de plantillas). Ruta de producción: `MarkdownParserService.compile` → `DOMPurify.sanitize` → `bypassSecurityTrustHtml` en el lector y en la vista previa del Estudio (`src/app/core/services/markdown-parser.service.ts`, `article-viewer.ts`, `admin-editor.ts`).
+- **Por qué es crítico:** el Markdown publicado es el producto. Cualquier evasión del sanitizador se convierte en XSS almacenado para todos los lectores.
+- **Captura / código:** artículo renderizado con cuerpo HTML — [`article-desktop.png`](../screenshots/article-desktop.png), [`article-code-desktop.png`](../screenshots/article-code-desktop.png).
 
-### H2 — Sitemap omits every article slug
+### C2 — Una caída de Firestore se presenta como un catálogo vacío
 
-- **Evidence:** Generated `public/sitemap.xml` lists only `/` and `/articles`. Eleven published posts are invisible to sitemap consumers.
-- **Impact:** Discovery of the core content graph depends entirely on crawl from the catalog HTML.
-
-### H3 — Per-article Open Graph previews impossible without prerender
-
-- **Evidence:** Live meta on `/post/welcome-to-devchronicle` is correct **after** JS (`BlogPosting` JSON-LD, canonical, description). Social crawlers see only `index.html` site-wide card (`acabado-publico.md`).
-- **Impact:** Shares of individual essays look generic.
-
-### H4 — No optimistic concurrency on Studio saves
-
-- **Evidence:** `JournalService.save` batches `set` without reading/comparing `updatedAt`. Two tabs → silent last-write-wins. Called out in `robustez-mvp.md`.
-- **Impact:** For a long Markdown essay, silent overwrite is data loss.
-
-### H5 — Production dependency advisories beyond DOMPurify
-
-- **Evidence:** `npm audit --omit=dev`: **@angular/router** DoS advisories (22.0.0–22.2.0; less severe without SSR but still unpatched in tree), **@grpc/grpc-js** via Firebase, **zod** transitive. Full tree reports 39 issues including criticals in dev tooling.
-- **Impact:** Upgrade hygiene and supply-chain risk; Node engine warnings already show Firebase packages wanting Node ≥24 while the repo requires Node 22.
-
-### H6 — Importer unit test out of date with the content corpus
-
-- **Evidence:** `npm run test:import` fails: expected 7 slugs, catalog now has 11 (new tutorials under `public/content/`). Assertion is a hard-coded list in `tests/markdown-entry.test.mjs`.
-- **Impact:** CI signal is red/noisy; regressions in the importer can hide behind an already-failing suite.
-
-### H7 — Public nav exposes Studio to every visitor
-
-- **Evidence:** Header always links Journal / Articles / **Studio** ([`landing-desktop.png`](../screenshots/landing-desktop.png)). Anonymous users hit a Google wall that explains `admins` internals ([`admin-login-desktop.png`](../screenshots/admin-login-desktop.png)).
-- **Impact:** Confuses readers; leaks authoring surface; weakens first-run story (“is this my blog admin?”).
-
-### H8 — Tag cloud dominates first viewport
-
-- **Evidence:** Landing places a dense, bilingual chip wall above the featured entry ([`landing-desktop.png`](../screenshots/landing-desktop.png), [`landing-mobile.png`](../screenshots/landing-mobile.png)). Mobile especially pushes the featured card below the fold.
-- **Impact:** Core content (the newest essay) loses discoverability to filter chrome.
+- **Evidencia:** con las peticiones a Firestore forzadas a fallar (`8080` abortado / HTTP 500), `/articles` y `/` mostraron **"Aún no hay entradas publicadas."** con **cero** botones "Intentar de nuevo" y **sin** la medalla "Diario sin conexión", varios segundos después. La interfaz de fallo diseñada existe en `articles.html` / `landing.html` (`failed()` → alerta + botón) y tiene pruebas unitarias, pero el modo de fallo observado en vivo no activó `failed()`.
+- **Por qué es crítico:** los lectores (y el autor) concluyen que el diario se borró o se despublicó; nunca aparece la forma de recuperarse. El paso 7 de verificación del README supone lo contrario.
+- **Capturas:** [`articles-failure-as-empty-desktop.png`](../screenshots/articles-failure-as-empty-desktop.png), [`landing-retry-desktop.png`](../screenshots/landing-retry-desktop.png). Diseño previsto del reintento (DOM con las clases de producción cuando la ruta en vivo no se activó): [`articles-retry-desktop.png`](../screenshots/articles-retry-desktop.png).
 
 ---
 
-## Medium
+## Alto
 
-### M1 — Accessibility gaps vs WCAG-minded baselines
+### H1 — HTTP 200 blando para URL desconocidas y entradas inexistentes
 
-- **Evidence:** Spot check on `/`: `<main>` present but **no `id`**, **no skip link**; no route-change focus management found. Kickers/muted text and accent-washed pills may fail contrast in places (`.pill--on` uses 16% accent wash + `#0369a1`). SweetAlert discard dialog is custom-styled ([`admin-unsaved-changes.png`](../screenshots/admin-unsaved-changes.png))—focus trap/labeling not covered by automated a11y CI (none configured).
-- **Impact:** Keyboard and screen-reader users work harder; regressions undetected.
+- **Evidencia:** la reescritura de la SPA en Hosting sirve `index.html` para todas las rutas; el cliente muestra la interfaz de no encontrado / "no publicada" con `noindex`, pero el estado sigue siendo 200. Documentado en las notas operativas en español y en el README.
+- **Impacto:** los rastreadores y monitores de disponibilidad clasifican mal las URL inexistentes; se resienten la autoridad de los enlaces y el monitoreo.
+- **Capturas:** [`not-found-desktop.png`](../screenshots/not-found-desktop.png), [`article-not-found-desktop.png`](../screenshots/article-not-found-desktop.png), [`not-found-mobile.png`](../screenshots/not-found-mobile.png).
 
-### M2 — Bundle weight: syntax highlighter lazy chunk ~976 kB raw
+### H2 — El mapa del sitio omite todos los slugs de artículos
 
-- **Evidence:** Production build lists lazy `index` chunk **975.62 kB** (gzip ~244 kB)—highlight.js path. Initial total ~776 kB raw / ~208 kB transfer. Budgets exist (`900kB` / `1.2MB` initial) but the lazy highlight payload is large for a reading site.
-- **Impact:** First code fence visit pays a heavy download on slower networks.
+- **Evidencia:** el `public/sitemap.xml` generado lista solo `/` y `/articles`. Once artículos publicados son invisibles para quien consuma el mapa.
+- **Impacto:** el descubrimiento del grafo de contenido depende por completo del rastreo desde el HTML del catálogo.
 
-### M3 — English UI / Spanish content friction
+### H3 — Las vistas previas Open Graph por artículo son imposibles sin prerenderizado
 
-- **Evidence:** UI strings English; titles, summaries, and many tags Spanish ([`articles-desktop.png`](../screenshots/articles-desktop.png)). Duplicate conceptual tags (`architecture` / `arquitectura`).
-- **Impact:** Search and filters feel inconsistent; tag cloud noise increases.
+- **Evidencia:** los metadatos en vivo de `/post/welcome-to-devchronicle` son correctos **después** de ejecutar JS (JSON-LD `BlogPosting`, canónico, descripción). Los rastreadores sociales solo ven la tarjeta general del sitio en `index.html` (`acabado-publico.md`).
+- **Impacto:** al compartir ensayos individuales, la vista previa se ve genérica.
 
-### M4 — Empty and error copy are easy to confuse
+### H4 — Sin concurrencia optimista al guardar en el Estudio
 
-- **Evidence:** Empty catalog (“No entries are published yet.”) vs failed load vs “No articles match these filters.” ([`articles-empty-search-desktop.png`](../screenshots/articles-empty-search-desktop.png)). Combined with C2, empty becomes the wrong default metaphor for failure.
+- **Evidencia:** `JournalService.save` envía un lote de `set` sin leer ni comparar `updatedAt`. Con dos pestañas, gana la última escritura sin avisar. Señalado en `robustez-mvp.md`.
+- **Impacto:** en un ensayo largo en Markdown, una sobrescritura silenciosa es pérdida de datos.
 
-### M5 — Denied state is sparse; login explains security internals
+### H5 — Avisos de dependencias de producción más allá de DOMPurify
 
-- **Evidence:** [`admin-denied-desktop.png`](../screenshots/admin-denied-desktop.png), [`admin-login-desktop.png`](../screenshots/admin-login-desktop.png). Login mentions `admins` collection by name—accurate for the author, odd for anyone else who clicks Studio.
+- **Evidencia:** `npm audit --omit=dev`: avisos de DoS en **@angular/router** (22.0.0–22.2.0; menos graves sin SSR, pero sin parchear en el árbol), **@grpc/grpc-js** vía Firebase y **zod** transitivo. El árbol completo reporta 39 problemas, con críticos en herramientas de desarrollo.
+- **Impacto:** higiene de actualizaciones y riesgo de cadena de suministro; las advertencias de motor de Node ya muestran paquetes de Firebase que piden Node ≥24 mientras el repositorio exige Node 22.
 
-### M6 — No E2E suite; rules tests collide with a running emulator
+### H6 — La prueba unitaria del importador quedó desactualizada frente al corpus
 
-- **Evidence:** No Playwright/Cypress in repo. `npm run test:rules` failed here with “port 8080 taken” while `npm run emulators` was already up—docs assume exclusive emulator use.
-- **Impact:** Auth popup, Hosting headers, and true offline medal flows are manual-only.
+- **Evidencia:** `npm run test:import` falla: esperaba 7 slugs y el catálogo ahora tiene 11 (tutoriales nuevos en `public/content/`). La aserción es una lista fija en `tests/markdown-entry.test.mjs`.
+- **Impacto:** la señal de CI es roja o ruidosa; las regresiones del importador pueden esconderse detrás de una suite que ya falla.
 
-### M7 — App Check, export, and automated backup absent
+### H7 — La navegación pública expone el Estudio a todos los visitantes
 
-- **Evidence:** Spark MVP backlog in `robustez-mvp.md`. Client can be scripted against public reads; author has no one-click export from Studio.
+- **Evidencia:** la cabecera siempre enlaza Diario / Artículos / **Estudio** ([`landing-desktop.png`](../screenshots/landing-desktop.png)). Los usuarios anónimos chocan con un muro de Google que explica detalles internos de `admins` ([`admin-login-desktop.png`](../screenshots/admin-login-desktop.png)).
+- **Impacto:** confunde a los lectores; filtra la superficie de autoría; debilita la primera impresión ("¿esto es el panel de mi blog?").
 
-### M8 — README local verification counts are stale
+### H8 — La nube de etiquetas domina la primera pantalla
 
-- **Evidence:** README still says “7 published entries” / “Showing 1–6 of 7”; emulator import now yields **11** entries ([`articles-desktop.png`](../screenshots/articles-desktop.png) “Showing 1–6 of 11”).
-
----
-
-## Low
-
-### L1 — Brand mark is a flat accent square
-
-- **Evidence:** Header/footer mark across all shots. Memorable name, forgettable glyph.
-
-### L2 — Inter + sky `#0ea5e9` + `#fafafa` reads as default kit
-
-- **Evidence:** Token set in `styles.css`; landing/archive screenshots. Overlaps common AI/Tailwind starter aesthetics (see Design taste).
-
-### L3 — Studio active nav state easy to miss
-
-- **Evidence:** On list/editor screens, slate-on-slate active styles are subtle ([`admin-list-desktop.png`](../screenshots/admin-list-desktop.png)).
-
-### L4 — Angular CLI analytics flag written locally
-
-- **Evidence:** `angular.json` gained `"analytics": false` during this audit’s first `ng serve`. Harmless but noisy in PRs if unintended.
-
-### L5 — Legacy content still describes `index.json` as runtime
-
-- **Evidence:** Welcome entry preview text still narrates file-based publishing ([`admin-editor.png`](../screenshots/admin-editor.png) preview pane) while runtime is Firestore—confusing for new readers of that essay.
-
-### L6 — `packageManager` pins npm 12; environment had npm 10.9.9
-
-- **Evidence:** Install succeeded with engine warnings. Minor contributor friction.
+- **Evidencia:** la portada coloca un muro denso de chips bilingües encima de la entrada destacada ([`landing-desktop.png`](../screenshots/landing-desktop.png), [`landing-mobile.png`](../screenshots/landing-mobile.png)). En móvil, sobre todo, la tarjeta destacada queda bajo el pliegue.
+- **Impacto:** el contenido principal (el ensayo más reciente) pierde visibilidad frente al marco de filtros.
 
 ---
 
-## Angle A — Regular user
+## Medio
 
-**First impression:** Calm, readable, professional. The line “Field notes for working software.” is clear. The slate featured card signals “this is a reading product.”
+### M1 — Brechas de accesibilidad frente a las referencias tipo WCAG
 
-**Friction:**
+- **Evidencia:** revisión puntual en `/`: `<main>` existe pero **sin `id`**, **sin enlace para saltar al contenido**; no se encontró manejo del foco al cambiar de ruta. Los antetítulos, el texto atenuado y los indicadores con tinte de acento pueden no cumplir el contraste en algunos casos (`.pill--on` usa un tinte de acento al 16 % con `#0369a1`). El diálogo de descartar de SweetAlert tiene estilo propio ([`admin-unsaved-changes.png`](../screenshots/admin-unsaved-changes.png)); la trampa de foco y el etiquetado no están cubiertos por un CI automático de accesibilidad (no hay ninguno configurado).
+- **Impacto:** a los usuarios de teclado y lector de pantalla les cuesta más; las regresiones pasan inadvertidas.
 
-1. Tag wall before content (especially mobile).
-2. Studio in primary nav invites a dead-end Google prompt.
-3. Mixed languages without explanation.
-4. Search lives only on `/articles`—landing has filters but no text search.
-5. If Firestore blips, the site can look abandoned (C2).
+### M2 — Peso del paquete: el fragmento diferido del resaltador pesa ~976 kB sin comprimir
 
-**What works:** Archive search (`nestjs` → one hit — [`articles-search-desktop.png`](../screenshots/articles-search-desktop.png)); empty search clear CTA ([`articles-empty-search-desktop.png`](../screenshots/articles-empty-search-desktop.png)); reader column and copy-on-fence; 404s offer two exits; unsaved guard protects the author ([`admin-unsaved-changes.png`](../screenshots/admin-unsaved-changes.png)).
+- **Evidencia:** la compilación de producción lista el fragmento diferido `index` con **975,62 kB** (gzip ~244 kB), la ruta de highlight.js. El total inicial es ~776 kB sin comprimir / ~208 kB de transferencia. Hay presupuestos (`900kB` / `1.2MB` iniciales), pero la carga diferida del resaltador es grande para un sitio de lectura.
+- **Impacto:** la primera visita a un bloque de código paga una descarga pesada en redes lentas.
 
----
+### M3 — Fricción entre la interfaz en inglés y el contenido en español
 
-## Angle B — QA & engineering checklist
+- **Evidencia:** la interfaz estaba en inglés; los títulos, resúmenes y muchas etiquetas, en español ([`articles-desktop.png`](../screenshots/articles-desktop.png)). Etiquetas conceptualmente duplicadas (`architecture` / `arquitectura`).
+- **Impacto:** la búsqueda y los filtros se sienten inconsistentes; aumenta el ruido de la nube de etiquetas.
+- **Estado:** la interfaz y los documentos públicos ya están en español; queda unificar las etiquetas duplicadas.
 
-| Area                 | Status              | Notes                                                                               |
-| :------------------- | :------------------ | :---------------------------------------------------------------------------------- |
-| Routing / deep links | OK                  | `/articulos` → `/articles`; wildcard 404; invalid slug treated as not published     |
-| Auth / RBAC          | OK for MVP          | Google + `admins/{uid}`; denied page works; clients cannot write `admins`           |
-| Rules                | Strong              | Field validation, body size, published-only public reads; `test:rules` suite exists |
-| Validation           | OK                  | Slug pattern before fetch; reactive form validators in editor                       |
-| Editor robustness    | Good                | Dirty tracking, `beforeunload`, SweetAlert confirm                                  |
-| Concurrency          | Gap                 | H4                                                                                  |
-| Search               | Good                | Accent folding in archive; unit coverage                                            |
-| SEO / metadata       | Partial             | Client meta solid; H1–H3 limit production sharing/crawl                             |
-| a11y                 | Partial             | M1                                                                                  |
-| Performance          | Mixed               | Initial OK-ish; highlight chunk heavy (M2)                                          |
-| Console / network    | Clean on happy path | No page errors observed on public routes during capture                             |
-| Tests                | Mixed               | 43/43 unit pass; `test:import` fail (H6); rules need free Firestore port            |
-| Dependencies         | At risk             | C1, H5                                                                              |
-| Build / deploy       | OK                  | `npm run build` succeeded; Hosting workflow present                                 |
+### M4 — Los textos de vacío y de error se confunden con facilidad
 
----
+- **Evidencia:** catálogo vacío ("Aún no hay entradas publicadas.") frente a carga fallida frente a "Ningún artículo coincide con estos filtros." ([`articles-empty-search-desktop.png`](../screenshots/articles-empty-search-desktop.png)). Combinado con C2, el vacío se vuelve la metáfora equivocada por defecto para un fallo.
 
-## Angle C — Design taste verdict
+### M5 — El estado denegado es escaso; el acceso explica detalles internos de seguridad
 
-The UI is **competent and coherent**, not broken: slate chrome, canvas page, sky accent, Inter + JetBrains Mono, featured slate card. It does **not** yet feel hand-crafted for a personal engineering chronicle. Concrete tells:
+- **Evidencia:** [`admin-denied-desktop.png`](../screenshots/admin-denied-desktop.png), [`admin-login-desktop.png`](../screenshots/admin-login-desktop.png). El acceso menciona la colección `admins` por nombre: correcto para el autor, raro para cualquier otra persona que pulse Estudio.
 
-- Inter + `#0ea5e9` on `#fafafa` is a stock “modern SaaS/docs” combo.
-- Logo is a literal accent square.
-- Tag pills and card grids look like a component-library catalog, not a notebook.
-- No photographic or illustrative anchor—atmosphere is flat fill only.
-- SweetAlert question-mark modal is generic third-party chrome on an otherwise custom shell.
+### M6 — Sin suite E2E; las pruebas de reglas chocan con un emulador en ejecución
 
-**Suggested art direction:** “Field notebook under a desk lamp”—warm paper or cool blueprint grain (not cream cliché #F4F1EA + terracotta), a display face with ink character (avoid Inter), monospace for brand numerals/kickers, one full-bleed texture or photograph of a real desk/terminal behind the landing intro, and a landing composition that is **brand + one line + one featured entry** without a pill stadium in the first viewport. Keep slate code fences; they are the strongest distinctive element today.
+- **Evidencia:** no hay Playwright ni Cypress en el repositorio. `npm run test:rules` falló aquí con "puerto 8080 ocupado" mientras `npm run emulators` ya estaba activo: la documentación supone uso exclusivo de los emuladores.
+- **Impacto:** la ventana de Auth, las cabeceras de Hosting y los flujos reales de la medalla sin conexión solo se prueban a mano.
+
+### M7 — Faltan App Check, exportación y copia de seguridad automática
+
+- **Evidencia:** pendientes del MVP en Spark en `robustez-mvp.md`. Se puede automatizar un cliente contra las lecturas públicas; el autor no tiene exportación de un clic desde el Estudio.
+
+### M8 — Los conteos de verificación local del README estaban desactualizados
+
+- **Evidencia:** el README aún decía "7 entradas publicadas" / "Mostrando 1–6 de 7"; la importación al emulador ahora da **11** entradas ([`articles-desktop.png`](../screenshots/articles-desktop.png) "Mostrando 1–6 de 11").
 
 ---
 
-## Screenshot index
+## Bajo
 
-| File                                                 | State                        |
-| :--------------------------------------------------- | :--------------------------- |
-| `landing-desktop.png`                                | Home, desktop                |
-| `landing-mobile.png`                                 | Home, mobile                 |
-| `landing-tag-filter-desktop.png`                     | Tag filter active            |
-| `landing-series.png` / `landing-earlier-desktop.png` | Recent / earlier sections    |
-| `landing-retry-desktop.png`                          | Failure presented as empty   |
-| `articles-desktop.png`                               | Archive                      |
-| `articles-mobile.png`                                | Archive mobile               |
-| `articles-search-desktop.png`                        | Search `nestjs`              |
-| `articles-empty-search-desktop.png`                  | No matches                   |
-| `articles-failure-as-empty-desktop.png`              | Outage → empty copy          |
-| `articles-retry-desktop.png`                         | Designed Try again UI        |
-| `article-desktop.png` / `article-mobile.png`         | Reader                       |
-| `article-code-desktop.png`                           | Code fence                   |
-| `post-*.png`                                         | Sample posts / code / mobile |
-| `article-not-found-desktop.png`                      | Missing slug                 |
-| `not-found-desktop.png` / `not-found-mobile.png`     | Wildcard 404                 |
-| `admin-login-desktop.png` / `admin-login-mobile.png` | Unauthenticated Studio       |
-| `admin-auth-emulator-widget.png`                     | Auth emulator account picker |
-| `admin-denied-desktop.png`                           | Non-author                   |
-| `admin-list-desktop.png`                             | Entry list                   |
-| `admin-editor.png` / `admin-editor-new-desktop.png`  | Edit / create                |
-| `admin-unsaved-changes.png`                          | Discard confirm              |
+### L1 — La marca es un cuadrado plano de acento
+
+- **Evidencia:** la marca de la cabecera y del pie en todas las capturas. Un nombre memorable, un glifo olvidable.
+
+### L2 — Inter + celeste `#0ea5e9` + `#fafafa` se lee como un kit por defecto
+
+- **Evidencia:** conjunto de tokens en `styles.css`; capturas de portada y archivo. Se solapa con estéticas comunes de IA y de iniciadores de Tailwind (ver Gusto de diseño).
+
+### L3 — El estado activo de la navegación del Estudio es fácil de pasar por alto
+
+- **Evidencia:** en las pantallas de lista y editor, los estilos activos pizarra sobre pizarra son sutiles ([`admin-list-desktop.png`](../screenshots/admin-list-desktop.png)).
+
+### L4 — El indicador de analíticas del CLI de Angular quedó escrito en local
+
+- **Evidencia:** `angular.json` ganó `"analytics": false` durante el primer `ng serve` de esta auditoría. Inofensivo, pero ruidoso en los PR si no fue intencional.
+
+### L5 — Contenido heredado que aún describe `index.json` como fuente en ejecución
+
+- **Evidencia:** el texto de vista previa de la entrada de bienvenida aún narra la publicación basada en archivos ([`admin-editor.png`](../screenshots/admin-editor.png), panel de vista previa) mientras que en ejecución se usa Firestore: confuso para quien lea ese ensayo por primera vez.
+
+### L6 — `packageManager` fija npm 12; el entorno tenía npm 10.9.9
+
+- **Evidencia:** la instalación funcionó con advertencias de motor. Fricción menor para quien contribuya.
 
 ---
 
-## Verification commands run
+## Ángulo A — Usuario común
 
-| Command                | Result                                                   |
-| :--------------------- | :------------------------------------------------------- |
-| `npm test`             | Pass — 43 tests                                          |
-| `npm run lint`         | Pass                                                     |
-| `npm run build`        | Pass → `dist/DevChronicle`                               |
-| `npm run test:import`  | Fail — stale slug list (H6)                              |
-| `npm run test:rules`   | Could not start second Firestore emulator (port in use)  |
-| `npm audit --omit=dev` | 7 production-tree issues (incl. DOMPurify, router, grpc) |
+**Primera impresión:** tranquilo, legible, profesional. La línea "Notas de campo para software que funciona." es clara. La tarjeta destacada color pizarra indica "esto es un producto de lectura".
+
+**Fricciones:**
+
+1. Muro de etiquetas antes del contenido (sobre todo en móvil).
+2. El Estudio en la navegación principal invita a una ventana de Google sin salida.
+3. Idiomas mezclados sin explicación.
+4. La búsqueda vive solo en `/articles`: la portada tiene filtros pero no búsqueda de texto.
+5. Si Firestore parpadea, el sitio puede parecer abandonado (C2).
+
+**Lo que funciona:** la búsqueda del archivo (`nestjs` → un resultado — [`articles-search-desktop.png`](../screenshots/articles-search-desktop.png)); el botón para limpiar una búsqueda sin resultados ([`articles-empty-search-desktop.png`](../screenshots/articles-empty-search-desktop.png)); la columna del lector y la copia en los bloques de código; los 404 ofrecen dos salidas; la protección de cambios sin guardar cuida al autor ([`admin-unsaved-changes.png`](../screenshots/admin-unsaved-changes.png)).
+
+---
+
+## Ángulo B — Lista de verificación de QA e ingeniería
+
+| Área                     | Estado                     | Notas                                                                                                       |
+| :----------------------- | :------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| Rutas / enlaces directos | Bien                       | `/articulos` → `/articles`; 404 comodín; un slug inválido se trata como no publicado                        |
+| Auth / RBAC              | Bien para el MVP           | Google + `admins/{uid}`; la página de denegado funciona; los clientes no pueden escribir `admins`           |
+| Reglas                   | Sólidas                    | Validación de campos, tamaño del cuerpo, lecturas públicas solo de publicadas; existe la suite `test:rules` |
+| Validación               | Bien                       | Patrón del slug antes de consultar; validadores de formulario reactivo en el editor                         |
+| Robustez del editor      | Buena                      | Seguimiento de cambios, `beforeunload`, confirmación con SweetAlert                                         |
+| Concurrencia             | Brecha                     | H4                                                                                                          |
+| Búsqueda                 | Buena                      | Se ignoran los acentos en el archivo; con cobertura unitaria                                                |
+| SEO / metadatos          | Parcial                    | Metadatos del cliente sólidos; H1–H3 limitan el uso al compartir y al rastrear en producción                |
+| Accesibilidad            | Parcial                    | M1                                                                                                          |
+| Rendimiento              | Mixto                      | Carga inicial aceptable; fragmento del resaltador pesado (M2)                                               |
+| Consola / red            | Limpias en el camino feliz | No se observaron errores de página en las rutas públicas durante la captura                                 |
+| Pruebas                  | Mixtas                     | 43/43 unitarias pasan; `test:import` falla (H6); las reglas necesitan un puerto libre de Firestore          |
+| Dependencias             | En riesgo                  | C1, H5                                                                                                      |
+| Compilación / despliegue | Bien                       | `npm run build` funcionó; existe el flujo de Hosting                                                        |
+
+---
+
+## Ángulo C — Veredicto de gusto de diseño
+
+La interfaz es **competente y coherente**, no está rota: marco color pizarra, página en lienzo, acento celeste, Inter + JetBrains Mono, tarjeta destacada color pizarra. Todavía **no** se siente hecha a mano para una crónica personal de ingeniería. Señales concretas:
+
+- Inter + `#0ea5e9` sobre `#fafafa` es una combinación típica de "SaaS / documentación moderna".
+- El logo es literalmente un cuadrado de acento.
+- Las etiquetas y las cuadrículas de tarjetas parecen el catálogo de una biblioteca de componentes, no un cuaderno.
+- No hay un ancla fotográfica ni ilustrada: la atmósfera es solo relleno plano.
+- El modal con signo de interrogación de SweetAlert es un marco genérico de terceros en un shell por lo demás propio.
+
+**Dirección de arte sugerida:** "cuaderno de campo bajo una lámpara de escritorio": papel cálido o grano de plano técnico frío (no el cliché crema #F4F1EA + terracota), una tipografía de titulares con carácter de tinta (evitar Inter), monoespaciada para los números y antetítulos de marca, una textura a sangre completa o la fotografía de un escritorio o terminal real detrás de la introducción de la portada, y una composición de portada que sea **marca + una línea + una entrada destacada** sin un estadio de etiquetas en la primera pantalla. Conservar los bloques de código color pizarra; hoy son el elemento distintivo más fuerte.
+
+---
+
+## Índice de capturas
+
+| Archivo                                              | Estado                                   |
+| :--------------------------------------------------- | :--------------------------------------- |
+| `landing-desktop.png`                                | Portada, escritorio                      |
+| `landing-mobile.png`                                 | Portada, móvil                           |
+| `landing-tag-filter-desktop.png`                     | Filtro por etiqueta activo               |
+| `landing-series.png` / `landing-earlier-desktop.png` | Secciones recientes / anteriores         |
+| `landing-retry-desktop.png`                          | Fallo presentado como vacío              |
+| `articles-desktop.png`                               | Archivo                                  |
+| `articles-mobile.png`                                | Archivo en móvil                         |
+| `articles-search-desktop.png`                        | Búsqueda `nestjs`                        |
+| `articles-empty-search-desktop.png`                  | Sin coincidencias                        |
+| `articles-failure-as-empty-desktop.png`              | Caída → texto de vacío                   |
+| `articles-retry-desktop.png`                         | Interfaz diseñada de "Intentar de nuevo" |
+| `article-desktop.png` / `article-mobile.png`         | Lector                                   |
+| `article-code-desktop.png`                           | Bloque de código                         |
+| `post-*.png`                                         | Artículos de muestra / código / móvil    |
+| `article-not-found-desktop.png`                      | Slug inexistente                         |
+| `not-found-desktop.png` / `not-found-mobile.png`     | 404 comodín                              |
+| `admin-login-desktop.png` / `admin-login-mobile.png` | Estudio sin sesión                       |
+| `admin-auth-emulator-widget.png`                     | Selector de cuenta del emulador de Auth  |
+| `admin-denied-desktop.png`                           | No autor                                 |
+| `admin-list-desktop.png`                             | Lista de entradas                        |
+| `admin-editor.png` / `admin-editor-new-desktop.png`  | Editar / crear                           |
+| `admin-unsaved-changes.png`                          | Confirmar descartar                      |
+
+---
+
+## Comandos de verificación ejecutados
+
+| Comando                | Resultado                                                                  |
+| :--------------------- | :------------------------------------------------------------------------- |
+| `npm test`             | Pasa — 43 pruebas                                                          |
+| `npm run lint`         | Pasa                                                                       |
+| `npm run build`        | Pasa → `dist/DevChronicle`                                                 |
+| `npm run test:import`  | Falla — lista de slugs obsoleta (H6)                                       |
+| `npm run test:rules`   | No pudo iniciar un segundo emulador de Firestore (puerto en uso)           |
+| `npm audit --omit=dev` | 7 problemas en el árbol de producción (incluidos DOMPurify, router y grpc) |

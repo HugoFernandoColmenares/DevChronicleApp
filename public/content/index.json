@@ -1,35 +1,35 @@
 [
   {
     "slug": "welcome-to-devchronicle",
-    "title": "Welcome to DevChronicle",
+    "title": "Bienvenido a DevChronicle",
     "author": "Hugo Colmenares",
     "date": "2026-09-08",
     "tags": ["journal", "markdown"],
-    "excerpt": "Why this portal stores every entry as local markdown and treats the reading column as the product."
+    "excerpt": "Por qué este portal guarda cada entrada como un archivo Markdown y trata la columna de lectura como el producto."
   },
   {
     "slug": "angular-signals-in-practice",
-    "title": "Angular signals in practice",
+    "title": "Angular Signals en la práctica",
     "author": "Hugo Colmenares",
     "date": "2026-09-10",
     "tags": ["angular", "architecture"],
-    "excerpt": "How signal inputs, computed state, and deferred views keep a content site small and explicit."
+    "excerpt": "Cómo las entradas con signals, el estado derivado y las vistas diferidas mantienen un sitio de contenido pequeño y explícito."
   },
   {
     "slug": "civic-terminal-reading",
-    "title": "Civic Terminal, built for reading",
+    "title": "Civic Terminal, pensado para leer",
     "author": "Hugo Colmenares",
     "date": "2026-09-11",
     "tags": ["design", "typography"],
-    "excerpt": "A light canvas, a slate console, and a 70-character measure: the rules that keep long sessions calm."
+    "excerpt": "Un lienzo claro, una consola color pizarra y una medida de 70 caracteres: las reglas que mantienen tranquilas las sesiones largas de lectura."
   },
   {
     "slug": "markdown-as-source-of-truth",
-    "title": "Markdown as the source of truth",
+    "title": "Markdown como fuente de verdad",
     "author": "Hugo Colmenares",
     "date": "2026-09-12",
     "tags": ["markdown", "architecture"],
-    "excerpt": "Frontmatter, an index file, and a parser boundary so the UI never owns content formatting."
+    "excerpt": "Frontmatter, un importador y una frontera de parseo para que la interfaz nunca sea dueña del formato del contenido."
   },
   {
     "slug": "construyendo-apis-por-capas-dotnet",

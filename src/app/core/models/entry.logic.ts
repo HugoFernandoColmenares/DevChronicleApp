@@ -61,35 +61,38 @@ export function normalizeDraft(draft: EntryDraft): EntryDraft {
   const status: EntryStatus = draft.status === 'draft' ? 'draft' : 'published';
 
   if (!SLUG_PATTERN.test(slug)) {
-    throw new JournalError('invalid-slug', 'Use a lowercase slug with hyphens.');
+    throw new JournalError('invalid-slug', 'Usa un slug en minúsculas con guiones.');
   }
   if (!title || title.length >= 180) {
-    throw new JournalError('invalid', 'Title must be 1–179 characters.');
+    throw new JournalError('invalid', 'El título debe tener entre 1 y 179 caracteres.');
   }
   if (summary.length >= 600) {
-    throw new JournalError('invalid', 'Summary must be under 600 characters.');
+    throw new JournalError('invalid', 'El resumen debe tener menos de 600 caracteres.');
   }
   if (!category || category.length >= 80 || !series || series.length >= 80) {
-    throw new JournalError('invalid', 'Category and series must be 1–79 characters.');
-  }
-  if (!author || author.length >= 120) {
-    throw new JournalError('invalid', 'Author must be 1–119 characters.');
-  }
-  if (tags.length >= 16 || tags.some((tag) => !TAG_PATTERN.test(tag))) {
     throw new JournalError(
       'invalid',
-      'Use up to 15 tags made of lowercase letters, numbers, and hyphens.',
+      'La categoría y la serie deben tener entre 1 y 79 caracteres.',
     );
   }
+  if (!author || author.length >= 120) {
+    throw new JournalError('invalid', 'El autor debe tener entre 1 y 119 caracteres.');
+  }
+  if (tags.length >= 16 || tags.some((tag) => !TAG_PATTERN.test(tag))) {
+    throw new JournalError('invalid', 'Usa hasta 15 etiquetas con minúsculas, números y guiones.');
+  }
   if (!markdown.trim()) {
-    throw new JournalError('invalid', 'Write the markdown body before saving.');
+    throw new JournalError('invalid', 'Escribe el cuerpo en Markdown antes de guardar.');
   }
   if (markdown.length >= MARKDOWN_MAX_CHARS || utf8Bytes(markdown) > MARKDOWN_MAX_BYTES) {
-    throw new JournalError('invalid', 'This entry is too long for a single Firestore document.');
+    throw new JournalError(
+      'invalid',
+      'Esta entrada es demasiado larga para un solo documento de Firestore.',
+    );
   }
   if (status === 'published') {
     if (!(draft.publishedAt instanceof Date) || Number.isNaN(draft.publishedAt.getTime())) {
-      throw new JournalError('invalid', 'Choose a publication date.');
+      throw new JournalError('invalid', 'Elige una fecha de publicación.');
     }
   }
 

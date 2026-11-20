@@ -96,8 +96,8 @@ export class AdminEditorComponent {
 
   confirmDiscard(): Promise<boolean> {
     return this.notifications.confirm(
-      'Discard unsaved changes?',
-      'Leaving Studio now loses the edits in this entry.',
+      '¿Descartar los cambios sin guardar?',
+      'Si sales del Estudio ahora, pierdes las ediciones de esta entrada.',
     );
   }
 
@@ -114,8 +114,8 @@ export class AdminEditorComponent {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       void this.notifications.error(
-        'Check the entry',
-        'Title, slug, summary, and markdown are required.',
+        'Revisa la entrada',
+        'El título, el slug, el resumen y el Markdown son obligatorios.',
       );
       return;
     }
@@ -141,12 +141,12 @@ export class AdminEditorComponent {
         { create: creating },
       );
       this.markClean();
-      void this.notifications.toast(status === 'published' ? 'Published' : 'Draft saved');
+      void this.notifications.toast(status === 'published' ? 'Publicada' : 'Borrador guardado');
       if (creating) {
         await this.router.navigate(['/admin/edit', value.slug], { replaceUrl: true });
       }
     } catch (error) {
-      void this.notifications.error('Save failed', this.message(error));
+      void this.notifications.error('No se pudo guardar', this.message(error));
     } finally {
       this.saving.set(false);
     }
@@ -158,8 +158,8 @@ export class AdminEditorComponent {
       return;
     }
     const confirmed = await this.notifications.confirm(
-      'Delete this entry?',
-      'The note leaves the journal, including its markdown.',
+      '¿Eliminar esta entrada?',
+      'La nota sale del diario, incluido su Markdown.',
     );
     if (!confirmed) {
       return;
@@ -169,10 +169,10 @@ export class AdminEditorComponent {
     try {
       await this.journal.remove(slug);
       this.markClean();
-      void this.notifications.toast('Entry deleted');
+      void this.notifications.toast('Entrada eliminada');
       await this.router.navigateByUrl('/admin');
     } catch (error) {
-      void this.notifications.error('Delete failed', this.message(error));
+      void this.notifications.error('No se pudo eliminar', this.message(error));
     } finally {
       this.saving.set(false);
     }
@@ -221,7 +221,7 @@ export class AdminEditorComponent {
       this.title.set(entry.metadata.title);
       this.markClean();
     } catch (error) {
-      void this.notifications.error('Entry unavailable', this.message(error));
+      void this.notifications.error('Entrada no disponible', this.message(error));
       await this.router.navigateByUrl('/admin');
     } finally {
       this.loading.set(false);
@@ -233,6 +233,6 @@ export class AdminEditorComponent {
   }
 
   private message(error: unknown): string {
-    return error instanceof JournalError ? error.message : 'Firestore rejected the change.';
+    return error instanceof JournalError ? error.message : 'Firestore rechazó el cambio.';
   }
 }

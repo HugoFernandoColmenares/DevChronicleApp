@@ -1,34 +1,39 @@
 ---
-title: Welcome to DevChronicle
+title: Bienvenido a DevChronicle
 author: Hugo Colmenares
 date: 2026-09-08
 tags: [journal, markdown]
-excerpt: Why this portal stores every entry as local markdown and treats the reading column as the product.
+excerpt: Por qué este portal guarda cada entrada como un archivo Markdown y trata la columna de lectura como el producto.
 ---
 
-DevChronicle is a local, markdown-driven journal. The interface exists to retrieve notes quickly, keep code readable, and stay out of the way of the prose.
+DevChronicle es un diario basado en Markdown. La interfaz existe para encontrar las notas rápido, mantener el código legible y no estorbar a la prosa.
 
-## What belongs here
+## Qué cabe aquí
 
-Architecture decisions, Angular practice, and short essays that you would otherwise lose in a chat log or a scratch file. Each entry is a `.md` file in `public/content`, listed by `index.json`.
+Decisiones de arquitectura, práctica con Angular y ensayos cortos que de otro modo se perderían en un chat o en un archivo de borradores. Cada entrada nace como un archivo `.md` en `public/content`, y un script la importa a Firestore, que es de donde la app lee en producción.
 
-> Content is the product. Chrome is a retrieval tool.
+> El contenido es el producto. El marco es solo una herramienta para encontrarlo.
 
-## How an entry is published
+## Cómo se publica una entrada
 
-1. Add a markdown file with YAML frontmatter.
-2. Register the same metadata in `public/content/index.json`.
-3. Open `/post/<slug>` to read the compiled article.
+1. Escribe un archivo Markdown con frontmatter YAML.
+2. Impórtalo a Firestore con `npm run import:emulator` (o con `--project` para la nube), o créalo directamente desde el Estudio en `/admin`.
+3. Abre `/post/<slug>` para leer el artículo ya compilado.
 
 ```ts
 export interface ArticleMetadata {
   slug: string;
   title: string;
   author: string;
-  date: string;
+  summary: string;
   tags: string[];
-  excerpt: string;
+  category: string;
+  series: string;
+  publishedAt: string | null;
+  updatedAt: string;
+  status: 'draft' | 'published';
+  readingTimeMinutes: number;
 }
 ```
 
-The landing grid reads only the index. The viewer fetches one file. That split keeps the first paint light.
+La portada y el archivo leen solo los metadatos. El visor trae el cuerpo de una sola entrada. Esa separación mantiene liviana la primera carga.

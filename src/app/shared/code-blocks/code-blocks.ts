@@ -57,12 +57,12 @@ export class CodeBlocksDirective {
 
     const label = document.createElement('span');
     label.className = 'code-toolbar__lang';
-    label.textContent = language || 'CODE';
+    label.textContent = language || 'CÓDIGO';
 
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'code-toolbar__copy';
-    button.setAttribute('aria-label', 'Copy code');
+    button.setAttribute('aria-label', 'Copiar código');
     button.innerHTML =
       '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 16H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 2h9A1.5 1.5 0 0 1 15.5 3.5V5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
     button.addEventListener('click', () => void this.copy(source, button));
@@ -74,10 +74,13 @@ export class CodeBlocksDirective {
   private async copy(source: string, button: HTMLButtonElement): Promise<void> {
     try {
       await navigator.clipboard.writeText(source);
-      button.setAttribute('aria-label', 'Copied');
-      await this.notifications.toast('Copied to clipboard');
+      button.setAttribute('aria-label', 'Copiado');
+      await this.notifications.toast('Copiado al portapapeles');
     } catch {
-      await this.notifications.error('Copy failed', 'The browser blocked access to the clipboard.');
+      await this.notifications.error(
+        'No se pudo copiar',
+        'El navegador bloqueó el acceso al portapapeles.',
+      );
     }
   }
 }

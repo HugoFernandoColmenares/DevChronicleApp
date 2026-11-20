@@ -106,8 +106,8 @@ describe('AdminEditorComponent', () => {
 
     await expect(fixture.componentInstance.confirmDiscard()).resolves.toBe(true);
     expect(notifications.confirm).toHaveBeenCalledWith(
-      'Discard unsaved changes?',
-      'Leaving Studio now loses the edits in this entry.',
+      '¿Descartar los cambios sin guardar?',
+      'Si sales del Estudio ahora, pierdes las ediciones de esta entrada.',
     );
   });
 });

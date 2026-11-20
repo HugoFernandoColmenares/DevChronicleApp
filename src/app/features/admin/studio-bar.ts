@@ -12,7 +12,7 @@ export class StudioBarComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly heading = input('Studio');
+  readonly heading = input('Estudio');
   readonly showNew = input(false);
   readonly user = this.auth.user;
 

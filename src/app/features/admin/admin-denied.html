@@ -1,16 +1,16 @@
 <section class="studio">
   <div class="studio__narrow">
-    <p class="studio__kicker">Studio</p>
-    <h1>This Google account is not an author.</h1>
+    <p class="studio__kicker">Estudio</p>
+    <h1>Esta cuenta de Google no es de un autor.</h1>
     <p class="studio__lead">
       @if (user(); as account) {
-        Signed in as {{ account.email || account.uid }}. An author adds
-        <span class="studio__code">admins/{{ account.uid }}</span> from the Firebase console. The
-        app cannot grant that role.
+        Iniciaste sesión como {{ account.email || account.uid }}. Un autor agrega
+        <span class="studio__code">admins/{{ account.uid }}</span> desde la consola de Firebase. La
+        app no puede otorgar ese rol.
       } @else {
-        Sign in again with the Google account that owns the journal.
+        Inicia sesión de nuevo con la cuenta de Google que administra el diario.
       }
     </p>
-    <button type="button" class="btn" (click)="signOut()">Sign out</button>
+    <button type="button" class="btn" (click)="signOut()">Cerrar sesión</button>
   </div>
 </section>

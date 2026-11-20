@@ -56,13 +56,13 @@ export class NotificationService {
         title,
         text,
         showCancelButton: true,
-        confirmButtonText: 'Continue',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar',
       })
       .then((result) => result.isConfirmed);
   }
 
   private alert(icon: SweetAlertIcon, title: string, text?: string): Promise<SweetAlertResult> {
-    return dialog.fire({ icon, title, text, confirmButtonText: 'Close' });
+    return dialog.fire({ icon, title, text, confirmButtonText: 'Cerrar' });
   }
 }

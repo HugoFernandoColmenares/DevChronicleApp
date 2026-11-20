@@ -1,28 +1,28 @@
 ---
-title: Civic Terminal, built for reading
+title: Civic Terminal, pensado para leer
 author: Hugo Colmenares
 date: 2026-09-11
 tags: [design, typography]
-excerpt: A light canvas, a slate console, and a 70-character measure: the rules that keep long sessions calm.
+excerpt: Un lienzo claro, una consola color pizarra y una medida de 70 caracteres: las reglas que mantienen tranquilas las sesiones largas de lectura.
 ---
 
-Civic Terminal is a documentation-light canvas with IDE-dark code. The reading column never exceeds `70ch`. Navigation and footers use Console Slate so the article remains the brightest surface.
+Civic Terminal es un lienzo claro, al estilo de la documentación, con código en tema oscuro de IDE. La columna de lectura nunca supera `70ch`. La navegación y los pies de página usan Console Slate para que el artículo sea siempre la superficie más brillante.
 
-## Type roles
+## Roles tipográficos
 
-- **Inter** for titles, navigation, and UI.
-- **JetBrains Mono** for fences, inline code, and language labels.
+- **Inter** para títulos, navegación e interfaz.
+- **JetBrains Mono** para bloques de código, código en línea y etiquetas de lenguaje.
 
-Article bodies sit at `1.125rem` to reduce strain. Spacing follows an 8px scale: bit, byte, kilobyte, megabyte.
+El cuerpo del artículo usa `1.125rem` para cansar menos la vista. El espaciado sigue una escala de 8 px: bit, byte, kilobyte, megabyte.
 
-## Code as an object
+## El código como objeto
 
-Fences use Console Slate, a language label, and a copy control. Horizontal overflow scrolls inside the block so the page width never breaks.
+Los bloques de código usan Console Slate, una etiqueta de lenguaje y un control para copiar. El desbordamiento horizontal se desplaza dentro del bloque, así que el ancho de la página nunca se rompe.
 
 ```html
-<pre aria-label="Code snippet in HTML">
+<pre aria-label="Fragmento de código en HTML">
   <code class="language-html">&lt;article class="article-canvas"&gt;...&lt;/article&gt;</code>
 </pre>
 ```
 
-Links in prose grow a Tech Azure underline on hover. That is the only decoration the body needs.
+Los enlaces del texto estrenan un subrayado Tech Azure al pasar el cursor. Es la única decoración que el cuerpo necesita.

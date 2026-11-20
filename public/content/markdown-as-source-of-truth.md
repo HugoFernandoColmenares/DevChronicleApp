@@ -1,27 +1,28 @@
 ---
-title: Markdown as the source of truth
+title: Markdown como fuente de verdad
 author: Hugo Colmenares
 date: 2026-09-12
 tags: [markdown, architecture]
-excerpt: Frontmatter, an index file, and a parser boundary so the UI never owns content formatting.
+excerpt: Frontmatter, un importador y una frontera de parseo para que la interfaz nunca sea dueña del formato del contenido.
 ---
 
-The UI receives safe HTML. It does not parse YAML, compile markdown, or choose a highlighter theme. Those jobs live in core services.
+La interfaz recibe HTML seguro. No interpreta YAML, no compila Markdown ni elige el tema del resaltador. Ese trabajo vive en los servicios del núcleo.
 
-## The fetch path
+## El camino del contenido
 
-1. `ContentFetcherService` loads `/content/index.json` or `/content/<slug>.md`.
-2. `MarkdownParserService` splits frontmatter from the body and compiles with `marked`.
-3. `DOMPurify` removes scripts while keeping highlight classes.
-4. `SyntaxHighlightService` lazy-loads Highlight.js after the HTML is bound.
+1. `scripts/import-content.mjs` lee `public/content/<slug>.md`, separa el frontmatter del cuerpo y sube ambos a Firestore.
+2. `JournalService` escucha en Firestore los metadatos y el cuerpo de la entrada.
+3. `MarkdownParserService` compila el cuerpo con `marked`.
+4. `DOMPurify` elimina los scripts y conserva las clases del resaltador.
+5. `SyntaxHighlightService` carga Highlight.js de forma diferida cuando el HTML ya está en pantalla.
 
 ```ts
-const article = this.parser.parse(raw, slug);
-this.sanitizer.bypassSecurityTrustHtml(article.html);
+const html = this.parser.compile(body.markdown);
+this.sanitizer.bypassSecurityTrustHtml(html);
 ```
 
-Bypass the Angular sanitizer only after purification. Custom class names on `pre` and `code` must survive, or the highlighter cannot run.
+Salta el sanitizador de Angular solo después de purificar. Los nombres de clase personalizados en `pre` y `code` tienen que sobrevivir, o el resaltador no puede ejecutarse.
 
-## Slugs are data, not paths
+## Los slugs son datos, no rutas
 
-A slug may contain lowercase letters, numbers, and hyphens. Anything else is rejected before the HTTP call so a crafted URL cannot walk the `public` tree.
+Un slug puede contener letras minúsculas, números y guiones. Cualquier otra cosa se rechaza antes de consultar Firestore, para que una URL manipulada no pueda apuntar a un documento que no le corresponde.
