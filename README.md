@@ -88,8 +88,8 @@ In the Auth emulator sign-in widget, use `admin@devchronicle.test` after `npm ru
 
 Run the four commands above, then walk the surface with real emulator data:
 
-1. `/` renders the featured entry, the recent rail, the published entries from the importer, and the tag filters.
-2. `/articles` shows 6 entries per page (for example “Showing 1–6 of 11 articles” after a full `import:emulator`). Search for `nestjs` returns one entry, and changing a filter resets pagination.
+1. `/` renders the featured entry first, then the tag filters (collapsed to the top tags with **More tags**), the recent rail, and the remaining published entries from the importer (11 after a full `import:emulator`).
+2. `/articles` shows 6 entries per page (for example “Showing 1–6 of 11 articles” after a full `import:emulator`). Search for `nestjs` returns one entry, and changing a filter resets pagination. `/challenges` lists the practice drills; `/challenges/suma-numeros-pares` shows prompt, hint, and solution.
 3. `/post/construyendo-apis-por-capas-nestjs` renders the Markdown body, 19 `h2` headings, and code fences with the `TS`/`HTML` toolbar and copy control.
 4. `/ruta-inexistente` and `/post/no-existe` render the 404 view with `noindex` and links back to the archive and the journal.
 5. `/admin` accepts `admin@devchronicle.test`; the list shows every imported entry, and the editor previews Markdown before publishing.

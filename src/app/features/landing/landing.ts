@@ -12,6 +12,8 @@ import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader
 import { TagComponent } from '@shared/tag/tag';
 import { environment } from '@env';
 
+const TAG_PREVIEW = 8;
+
 @Component({
   selector: 'dev-landing',
   imports: [ArticleCardComponent, RouterLink, SkeletonLoaderComponent, TagComponent],
@@ -25,8 +27,11 @@ export class LandingComponent {
   private readonly attempt = signal(0);
 
   readonly selectedTag = signal<string | null>(null);
+  readonly tagsExpanded = signal(false);
   readonly loading = signal(true);
   readonly failed = signal(false);
+  readonly offline = this.journal.offline;
+  readonly tagPreview = TAG_PREVIEW;
 
   readonly articles = toSignal(
     toObservable(this.attempt).pipe(
@@ -65,6 +70,9 @@ export class LandingComponent {
   readonly featured = computed(() => this.filtered()[0] ?? null);
   readonly recent = computed(() => this.filtered().slice(1, 4));
   readonly rest = computed(() => this.filtered().slice(4));
+  readonly visibleTags = computed(() =>
+    this.tagsExpanded() ? this.tags() : this.tags().slice(0, TAG_PREVIEW),
+  );
 
   constructor() {
     this.seo.setPage({
@@ -85,6 +93,10 @@ export class LandingComponent {
 
   selectTag(tag: string | null): void {
     this.selectedTag.set(this.selectedTag() === tag ? null : tag);
+  }
+
+  toggleTags(): void {
+    this.tagsExpanded.update((value) => !value);
   }
 
   retry(): void {

@@ -31,6 +31,7 @@ export class ArticlesComponent {
   readonly page = signal(1);
   readonly loading = signal(true);
   readonly failed = signal(false);
+  readonly offline = this.journal.offline;
 
   readonly articles = toSignal(
     toObservable(this.attempt).pipe(

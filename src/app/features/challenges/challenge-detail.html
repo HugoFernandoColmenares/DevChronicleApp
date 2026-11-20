@@ -1,0 +1,64 @@
+<section class="page">
+  <div class="article-canvas">
+    <a class="back" routerLink="/challenges">All challenges</a>
+
+    @if (challenge(); as item) {
+      <header class="mast">
+        <div class="mast__meta">
+          <span class="difficulty">{{ labelFor(item.difficulty) }}</span>
+          <span>{{ item.language }}</span>
+        </div>
+        <h1>{{ item.title }}</h1>
+        <p class="lede">{{ item.summary }}</p>
+        <div class="mast__tags">
+          @for (tag of item.tags; track tag) {
+            <span class="chip">{{ tag }}</span>
+          }
+        </div>
+      </header>
+
+      <section class="panel">
+        <h2>Prompt</h2>
+        <div class="prose">{{ item.prompt }}</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Hint</h2>
+          <button type="button" class="btn btn--quiet" (click)="toggleHint()">
+            {{ showHint() ? 'Hide hint' : 'Show hint' }}
+          </button>
+        </div>
+        @if (showHint()) {
+          <pre class="fence"><code>{{ item.hint }}</code></pre>
+        } @else {
+          <p class="muted">A starter skeleton when you want a nudge—not the full answer.</p>
+        }
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>One possible solution</h2>
+          <button type="button" class="btn btn--quiet" (click)="toggleSolution()">
+            {{ showSolution() ? 'Hide solution' : 'Reveal solution' }}
+          </button>
+        </div>
+        @if (showSolution()) {
+          <pre class="fence"><code>{{ item.solution }}</code></pre>
+        } @else {
+          <p class="muted">Try it yourself first. There are many valid approaches.</p>
+        }
+      </section>
+    } @else {
+      <div class="error-state">
+        <p class="error-state__code" aria-hidden="true">404</p>
+        <h1>Challenge not found.</h1>
+        <p class="error-state__copy">That slug is not in the practice catalog.</p>
+        <div class="error-state__actions">
+          <a class="btn btn--primary" routerLink="/challenges">Browse challenges</a>
+          <a class="btn" routerLink="/">Back to the journal</a>
+        </div>
+      </div>
+    }
+  </div>
+</section>

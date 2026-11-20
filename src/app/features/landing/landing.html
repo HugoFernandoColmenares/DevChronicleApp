@@ -6,15 +6,21 @@
         DevChronicle collects architecture notes, Angular practice, and reading-room essays. Open an
         entry. Copy the examples. Leave with something you can use.
       </p>
-      <a class="intro__link" routerLink="/articles">
-        Browse every article, newest first
-        <span aria-hidden="true">→</span>
-      </a>
+      <div class="intro__links">
+        <a class="intro__link" routerLink="/articles">
+          Browse every article, newest first
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="intro__link" routerLink="/challenges">
+          Try a coding challenge
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
     </header>
 
     @if (loading()) {
       <dev-skeleton-loader />
-    } @else if (failed()) {
+    } @else if (failed() || offline()) {
       <div class="empty-state" role="alert">
         <p class="empty">The journal could not be loaded. Check your connection and try again.</p>
         <button type="button" class="btn" (click)="retry()">Try again</button>
@@ -22,6 +28,18 @@
     } @else if (articles().length === 0) {
       <p class="empty">No entries are published yet.</p>
     } @else {
+      @if (featured(); as lead) {
+        <section class="block">
+          <header class="block__head">
+            <h2 class="block__title">Featured entry</h2>
+            <span class="block__hint">The newest note in the journal</span>
+          </header>
+          <dev-article-card [article]="lead" [featured]="true" />
+        </section>
+      } @else if (selectedTag()) {
+        <p class="empty">No entries use this tag.</p>
+      }
+
       @if (tags().length > 0) {
         <div class="filters" role="group" aria-label="Filter by tag">
           <button
@@ -32,7 +50,7 @@
           >
             All
           </button>
-          @for (tag of tags(); track tag) {
+          @for (tag of visibleTags(); track tag) {
             <button
               type="button"
               class="filter"
@@ -42,19 +60,12 @@
               <dev-tag [label]="tag" [active]="selectedTag() === tag" />
             </button>
           }
+          @if (tags().length > tagPreview) {
+            <button type="button" class="filter filter--more" (click)="toggleTags()">
+              {{ tagsExpanded() ? 'Fewer tags' : 'More tags' }}
+            </button>
+          }
         </div>
-      }
-
-      @if (featured(); as lead) {
-        <section class="block">
-          <header class="block__head">
-            <h2 class="block__title">Featured entry</h2>
-            <span class="block__hint">The newest note in the journal</span>
-          </header>
-          <dev-article-card [article]="lead" [featured]="true" />
-        </section>
-      } @else {
-        <p class="empty">No entries use this tag.</p>
       }
 
       @if (recent().length > 0) {

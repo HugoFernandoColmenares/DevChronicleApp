@@ -16,16 +16,9 @@ test('imports the existing catalog by filename slug', () => {
 
   assert.deepEqual(
     entries.map((item) => item.entry.slug),
-    [
-      'angular-signals-in-practice',
-      'civic-terminal-reading',
-      'construyendo-apis-por-capas-dotnet',
-      'construyendo-apis-por-capas-nestjs',
-      'construyendo-apis-por-capas-spring',
-      'markdown-as-source-of-truth',
-      'welcome-to-devchronicle',
-    ],
+    names.map((name) => name.slice(0, -3)),
   );
+  assert.equal(entries.length >= 11, true);
 
   const welcome = entries.find((item) => item.entry.slug === 'welcome-to-devchronicle');
   assert.equal(welcome.entry.title, 'Welcome to DevChronicle');

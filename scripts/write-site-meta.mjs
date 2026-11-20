@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { readdirSync, writeFileSync } from 'node:fs';
 
 import { loadEnv } from './lib/load-env.mjs';
 
@@ -14,9 +14,24 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/**
 Disallow: /articulos
+Disallow: /desafios
 
 Sitemap: ${siteUrl}/sitemap.xml
 `;
+
+const contentDir = new URL('../public/content/', import.meta.url);
+const articleUrls = readdirSync(contentDir)
+  .filter((name) => name.endsWith('.md'))
+  .map((name) => name.slice(0, -3))
+  .sort()
+  .map(
+    (slug) => `  <url>
+    <loc>${siteUrl}/post/${slug}</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`,
+  )
+  .join('\n');
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -30,6 +45,12 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>${siteUrl}/challenges</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+${articleUrls}
 </urlset>
 `;
 

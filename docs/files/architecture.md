@@ -30,6 +30,7 @@ Local development uses the Auth (9099), Firestore (8080), and Emulator UI (4000)
 | `src/app/core/rxjs`                          | `retryTransient` for offline reads                                                 |
 | `src/app/features/landing`                   | Featured + recent + grid catalog with tag filters                                  |
 | `src/app/features/articles`                  | Paginated archive, search, tags                                                    |
+| `src/app/features/challenges`                | Static coding drills (prompt / hint / solution)                                    |
 | `src/app/features/article-viewer`            | Reader, 404/503 states                                                             |
 | `src/app/features/not-found`                 | Global wildcard 404                                                                |
 | `src/app/features/admin`                     | Login, denied, list, editor, studio chrome                                         |
@@ -47,6 +48,8 @@ The shell (`App`) always mounts the site header/footer and a `<main>` outlet. Ch
 | :-------------------------------- | :----------------------- | :-------------------------------------- |
 | `/`                               | `LandingComponent`       | Public catalog                          |
 | `/articles`                       | `ArticlesComponent`      | Archive; `/articulos` redirects here    |
+| `/challenges`                     | `ChallengesComponent`    | Practice catalog; `/desafios` redirects |
+| `/challenges/:slug`               | `ChallengeDetailComponent` | Prompt, hint, solution reveals        |
 | `/post/:slug`                     | `ArticleViewerComponent` | Reader; invalid slug → not-found UI     |
 | `/admin/login`                    | `AdminLoginComponent`    | Google popup                            |
 | `/admin/denied`                   | `AdminDeniedComponent`   | Signed in, missing `admins/{uid}`       |

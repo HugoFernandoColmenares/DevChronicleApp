@@ -153,4 +153,30 @@ describe('LandingComponent', () => {
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
     expect(view.textContent).toContain('Featured entry');
   });
+
+  it('shows Try again when the journal is marked offline even if the list is empty', async () => {
+    const offline = signal(true);
+    watchPublished.mockReturnValue(of([]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [LandingComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        {
+          provide: JournalService,
+          useValue: { offline, watchPublished },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.textContent).toContain('The journal could not be loaded.');
+    expect(view.textContent).not.toContain('No entries are published yet.');
+    expect(buttonWithText(view, '.empty-state .btn', 'Try again')).toBeTruthy();
+  });
 });
