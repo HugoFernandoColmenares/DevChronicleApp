@@ -26,19 +26,20 @@ Ship in a short iteration; low risk; high clarity.
 
 ## Phase 2 — Core fixes & security
 
-Correctness, abuse resistance, and author safety.
+Correctness, abuse resistance, and author safety. **Status: implemented in code (Nov 2026).** App Check
+enforcement and full E2E in CI still need secrets/emulators on the runner.
 
 | #   | Action                                                                                                                                                                                  | Addresses | Notes                                                                  |
 | :-- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------- | :--------------------------------------------------------------------- |
-| 2.1 | Make read failures reliable: map more Firestore/network codes to `offline`; fail the stream when the listen dies; never emit a successful `[]` after an error without clearing `failed` | C2        | Add an emulator E2E that stops Firestore and asserts Try again + medal |
-| 2.2 | Optimistic concurrency: compare `updatedAt` (transaction or precondition) before Studio save; surface conflict UI                                                                       | H4        |                                                                        |
-| 2.3 | Enable **App Check** (reCAPTCHA v3) on Auth/Firestore                                                                                                                                   | M7        | Free; config + keys                                                    |
-| 2.4 | Studio **export** (JSON or zip of Markdown) for all entries                                                                                                                             | M7        | Manual backup without Blaze                                            |
-| 2.5 | Playwright smoke against emulators: public browse → admin login → create → publish → search → delete                                                                                    | M6        | Run in CI with `emulators:exec`                                        |
-| 2.6 | axe (or equivalent) in unit/E2E CI; fix contrast on pills/muted text; manage focus on route change and SweetAlert                                                                       | M1        |                                                                        |
-| 2.7 | Document / script `test:rules` alongside a running stack (alternate ports or `emulators:exec` only)                                                                                     | M6        |                                                                        |
-| 2.8 | Prerender critical routes **or** Hosting/Cloud Function HTML shell for `/post/:slug` + true HTTP 404                                                                                    | H1, H3    | May leave Spark; decide consciously                                    |
-| 2.9 | Keep dependency cadence: Firebase/Node engine alignment (Node 22 vs packages asking 24)                                                                                                 | H5, L6    |                                                                        |
+| 2.1 | Make read failures reliable: map more Firestore/network codes to `offline`; fail the stream when the listen dies; never emit a successful `[]` after an error without clearing `failed` | C2        | Broader codes + cache/offline listen handling + browser online events  |
+| 2.2 | Optimistic concurrency: compare `updatedAt` (transaction or precondition) before Studio save; surface conflict UI                                                                       | H4        | `runTransaction` + reload confirm                                      |
+| 2.3 | Enable **App Check** (reCAPTCHA v3) on Auth/Firestore                                                                                                                                   | M7        | Scaffolded; activates when `FIREBASE_APPCHECK_SITE_KEY` is set         |
+| 2.4 | Studio **export** (JSON or zip of Markdown) for all entries                                                                                                                             | M7        | JSON backup download from Studio list                                  |
+| 2.5 | Playwright smoke against emulators: public browse → admin login → create → publish → search → delete                                                                                    | M6        | `npm run test:e2e`; emulator author button                             |
+| 2.6 | axe (or equivalent) in unit/E2E CI; fix contrast on pills/muted text; manage focus on route change and SweetAlert                                                                       | M1        | axe in Playwright; FocusService; muted/pill contrast                   |
+| 2.7 | Document / script `test:rules` alongside a running stack (alternate ports or `emulators:exec` only)                                                                                     | M6        | `firebase.rules-test.json` port 8180                                   |
+| 2.8 | Prerender critical routes **or** Hosting/Cloud Function HTML shell for `/post/:slug` + true HTTP 404                                                                                    | H1, H3    | **Deferred** on Spark; documented in `acabado-publico.md`              |
+| 2.9 | Keep dependency cadence: Firebase/Node engine alignment (Node 22 vs packages asking 24)                                                                                                 | H5, L6    | `engines.node: >=22 <25`                                               |
 
 **Exit criteria:** Forced Firestore outage shows retry + offline medal 100% of the time; conflict on dual-tab save; E2E + rules + import in CI; App Check on in staging.
 

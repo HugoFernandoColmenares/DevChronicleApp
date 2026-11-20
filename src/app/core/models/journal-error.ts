@@ -11,6 +11,17 @@ export class JournalError extends Error {
   }
 }
 
+const OFFLINE_CODES = new Set([
+  'unavailable',
+  'deadline-exceeded',
+  'cancelled',
+  'aborted',
+  'internal',
+  'resource-exhausted',
+  'data-loss',
+  'unknown',
+]);
+
 export function journalErrorFromUnknown(
   error: unknown,
   audience: 'public' | 'admin',
@@ -27,12 +38,12 @@ export function journalErrorFromUnknown(
       : new JournalError('denied', 'This account cannot change the journal.');
   }
 
-  if (
-    code === 'unavailable' ||
-    code === 'deadline-exceeded' ||
-    code === 'cancelled' ||
-    code === 'failed-precondition'
-  ) {
+  if (code === 'failed-precondition') {
+    // Missing indexes and similar server preconditions are transport-adjacent for readers.
+    return new JournalError('offline', 'Firestore is unavailable.');
+  }
+
+  if (OFFLINE_CODES.has(code) || isNetworkFailure(error)) {
     return new JournalError('offline', 'Firestore is unavailable.');
   }
 
@@ -47,4 +58,18 @@ function firebaseCode(error: unknown): string {
   }
 
   return 'unknown';
+}
+
+function isNetworkFailure(error: unknown): boolean {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return true;
+  }
+
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /failed to fetch|networkerror|network request failed|load failed|ecconnrefused|econnreset|etimedout/i.test(
+    error.message,
+  );
 }

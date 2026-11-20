@@ -19,7 +19,7 @@ Spanish operational notes for the same tokens live in [`diseno.md`](./diseno.md)
 | `--color-accent`                     | `#0ea5e9`                 | Links, CTAs, focus ring, tag washes        |
 | `--color-accent-ink`                 | `#0369a1`                 | Accent text on light surfaces              |
 | `--color-ink`                        | `#0f172a`                 | Body text                                  |
-| `--color-muted`                      | `#64748b`                 | Secondary copy, kickers                    |
+| `--color-muted`                      | `#475569`                 | Secondary copy, kickers (WCAG-friendlier)  |
 | `--color-divider`                    | `#e2e8f0`                 | Rules, card borders                        |
 | `--color-string` / `--color-keyword` | `#10b981` / `#8b5cf6`     | Syntax accents                             |
 | `--font-ui`                          | Inter (+ system fallback) | UI and prose                               |

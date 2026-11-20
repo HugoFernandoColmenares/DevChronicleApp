@@ -9,6 +9,17 @@
     }
   </div>
   <div class="studio__actions">
+    @if (showExport()) {
+      <button
+        type="button"
+        class="btn"
+        data-testid="export-backup"
+        [disabled]="exporting()"
+        (click)="exportRequested.emit()"
+      >
+        {{ exporting() ? 'Exporting…' : 'Export backup' }}
+      </button>
+    }
     @if (showNew()) {
       <a class="btn btn--primary" routerLink="/admin/new">New entry</a>
     } @else {

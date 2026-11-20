@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '@core/services/auth.service';
@@ -14,6 +14,9 @@ export class StudioBarComponent {
 
   readonly heading = input('Studio');
   readonly showNew = input(false);
+  readonly showExport = input(false);
+  readonly exporting = input(false);
+  readonly exportRequested = output<void>();
   readonly user = this.auth.user;
 
   async signOut(): Promise<void> {

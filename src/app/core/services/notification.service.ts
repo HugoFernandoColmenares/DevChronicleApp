@@ -56,13 +56,21 @@ export class NotificationService {
         title,
         text,
         showCancelButton: true,
+        focusCancel: true,
         confirmButtonText: 'Continue',
         cancelButtonText: 'Cancel',
+        returnFocus: true,
       })
       .then((result) => result.isConfirmed);
   }
 
   private alert(icon: SweetAlertIcon, title: string, text?: string): Promise<SweetAlertResult> {
-    return dialog.fire({ icon, title, text, confirmButtonText: 'Close' });
+    return dialog.fire({
+      icon,
+      title,
+      text,
+      confirmButtonText: 'Close',
+      returnFocus: true,
+    });
   }
 }

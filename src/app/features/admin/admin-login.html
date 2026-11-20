@@ -4,17 +4,30 @@
       <p class="studio__kicker">Studio</p>
       <h1>Sign in to edit the journal.</h1>
       <p class="studio__lead">
-        Google is the only sign-in. The account can write entries only when its user id exists in
-        <span class="studio__code">admins</span>.
+        Google is the only production sign-in. The account can write entries only when its user id
+        exists in the author allow-list.
       </p>
-      <button
-        type="button"
-        class="btn btn--primary"
-        [disabled]="busy()"
-        (click)="continueWithGoogle()"
-      >
-        Continue with Google
-      </button>
+      <div class="studio__actions">
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="busy()"
+          (click)="continueWithGoogle()"
+        >
+          Continue with Google
+        </button>
+        @if (emulatorAuth) {
+          <button
+            type="button"
+            class="btn"
+            data-testid="emulator-admin-signin"
+            [disabled]="busy()"
+            (click)="continueWithEmulatorAdmin()"
+          >
+            Emulator author
+          </button>
+        }
+      </div>
     } @else {
       <p class="empty">Checking the session.</p>
     }

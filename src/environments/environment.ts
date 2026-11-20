@@ -9,6 +9,8 @@ export const environment = {
     'DevChronicle is a markdown-driven journal for software notes, architecture, and Angular practice.',
   socialImage: '/social/devchronicle-cover.png',
   useEmulators: false,
+  /** reCAPTCHA v3 site key; leave empty to skip App Check until configured. */
+  appCheckSiteKey: '',
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,
   firestoreEmulatorHost: '127.0.0.1',

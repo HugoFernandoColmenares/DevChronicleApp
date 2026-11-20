@@ -7,6 +7,7 @@ export const environment = {
     'DevChronicle is a markdown-driven journal for software notes, architecture, and Angular practice.',
   socialImage: '/social/devchronicle-cover.png',
   useEmulators: true,
+  appCheckSiteKey: '',
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,
   firestoreEmulatorHost: '127.0.0.1',

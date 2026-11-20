@@ -27,8 +27,16 @@ El proyecto `devchronicle-hugo` todavía no existe. En el plan Spark:
 | `FIREBASE_STORAGE_BUCKET`      | Viene en la configuración web. La app no usa Storage |
 | `FIREBASE_MESSAGING_SENDER_ID` | Configuración web                                    |
 | `FIREBASE_APP_ID`              | Configuración web                                    |
+| `FIREBASE_APPCHECK_SITE_KEY`   | Opcional. reCAPTCHA v3 para App Check                |
 
 La clave web viaja en el bundle. No es una credencial de administrador. La cuenta de servicio no debe commitearse.
+
+## App Check (opcional, Spark)
+
+1. En Firebase Console → App Check, registrar la app web con **reCAPTCHA v3**.
+2. Guardar el site key en `.env` / secreto `FIREBASE_APPCHECK_SITE_KEY`.
+3. Activar enforcement para Firestore (y Auth si se desea) solo cuando el sitio de producción ya envía tokens.
+4. Con emuladores o sin clave, `initAppCheck` es un no-op: el cliente arranca igual.
 
 ## Workflow
 

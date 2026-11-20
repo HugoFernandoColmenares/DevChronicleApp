@@ -117,10 +117,13 @@ Writes an optimized bundle to `dist/DevChronicle`.
 npm test
 npm run test:import
 npm run test:rules
+npm run test:e2e
 npm run lint
 ```
 
-`test` runs the Vitest suite through the Angular unit-test builder. `test:import` checks the Markdown parser used by the importer. `test:rules` starts the Firestore emulator and runs `@firebase/rules-unit-testing`. `lint` runs Prettier.
+`test` runs the Vitest suite through the Angular unit-test builder. `test:import` checks the Markdown parser used by the importer. `test:rules` starts a dedicated Firestore emulator on port 8180 (`firebase.rules-test.json`) so it does not collide with `npm run emulators`. `test:e2e` runs Playwright smoke (public + Studio via **Emulator author**); start emulators, import, and `seed:admin` first. `lint` runs Prettier.
+
+Node **22** is the supported engine (`engines` in `package.json`). Optional App Check uses `FIREBASE_APPCHECK_SITE_KEY` (see `docs/files/hosting.md`).
 
 ```bash
 npm run import:emulator
@@ -134,7 +137,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | Path                     | Responsibility                                                                   |
 | :----------------------- | :------------------------------------------------------------------------------- |
 | `src/app/core`           | Models, Firestore reads and writes, Google auth, Markdown parsing, notifications |
-| `src/app/features`       | Landing catalog, paginated archive, article viewer, studio                       |
+| `src/app/features`       | Landing, archive, challenges, article viewer, studio                             |
 | `src/app/shared`         | Cards, tags, copy control, skeleton, offline status, site header and footer      |
 | `public/content`         | Markdown files imported into Firestore                                           |
 | `firestore.rules`        | Public read of published entries, admin writes, console-only `admins`            |

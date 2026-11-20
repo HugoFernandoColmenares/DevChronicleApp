@@ -25,7 +25,7 @@ Local development uses the Auth (9099), Firestore (8080), and Emulator UI (4000)
 | :------------------------------------------- | :--------------------------------------------------------------------------------- |
 | `src/app/core/firebase`                      | App, Auth, and Firestore factories; emulator connects                              |
 | `src/app/core/models`                        | `ArticleMetadata`, entry normalization, `JournalError`                             |
-| `src/app/core/services`                      | Auth, journal CRUD/watch, Markdown+DOMPurify, SEO, syntax highlight, notifications |
+| `src/app/core/services`                      | Auth, journal CRUD/watch/export, Markdown+DOMPurify, SEO, focus, notifications     |
 | `src/app/core/guards`                        | `adminGuard`, `unsavedChangesGuard`                                                |
 | `src/app/core/rxjs`                          | `retryTransient` for offline reads                                                 |
 | `src/app/features/landing`                   | Featured + recent + grid catalog with tag filters                                  |

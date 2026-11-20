@@ -17,6 +17,7 @@ export class AdminLoginComponent {
 
   readonly ready = signal(false);
   readonly busy = signal(false);
+  readonly emulatorAuth = this.auth.emulatorAuth;
 
   constructor() {
     effect(() => {
@@ -47,21 +48,38 @@ export class AdminLoginComponent {
       const allowed = await this.auth.refreshAdmin(result.user);
       await this.router.navigateByUrl(allowed ? '/admin' : '/admin/denied');
     } catch (error) {
-      if (error instanceof FirebaseError && error.code === 'auth/popup-closed-by-user') {
-        void this.notifications.info('Sign-in cancelled', 'The Google window was closed.');
-      } else if (error instanceof FirebaseError && error.code === 'auth/popup-blocked') {
-        void this.notifications.error(
-          'Popup blocked',
-          'Allow popups for this site, then try Google sign-in again.',
-        );
-      } else {
-        void this.notifications.error(
-          'Sign-in failed',
-          'Google sign-in did not finish. Check the Auth emulator or the authorized domain.',
-        );
-      }
+      this.reportSignInFailure(error);
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  async continueWithEmulatorAdmin(): Promise<void> {
+    this.busy.set(true);
+    try {
+      const result = await this.auth.signInEmulatorAdmin();
+      const allowed = await this.auth.refreshAdmin(result.user);
+      await this.router.navigateByUrl(allowed ? '/admin' : '/admin/denied');
+    } catch (error) {
+      this.reportSignInFailure(error);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  private reportSignInFailure(error: unknown): void {
+    if (error instanceof FirebaseError && error.code === 'auth/popup-closed-by-user') {
+      void this.notifications.info('Sign-in cancelled', 'The Google window was closed.');
+    } else if (error instanceof FirebaseError && error.code === 'auth/popup-blocked') {
+      void this.notifications.error(
+        'Popup blocked',
+        'Allow popups for this site, then try Google sign-in again.',
+      );
+    } else {
+      void this.notifications.error(
+        'Sign-in failed',
+        'Sign-in did not finish. Check the Auth emulator, seed:admin, or the authorized domain.',
+      );
     }
   }
 }

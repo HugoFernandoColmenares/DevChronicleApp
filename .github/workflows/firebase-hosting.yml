@@ -46,6 +46,15 @@ jobs:
       - name: Firestore rules tests
         run: npm run test:rules
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke against emulators
+        run: >
+          npx firebase emulators:exec
+          --project demo-devchronicle
+          "npm run import:emulator && npm run seed:admin && npm run test:e2e"
+
       - name: Check Firebase secrets
         id: gate
         env:

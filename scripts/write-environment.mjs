@@ -34,6 +34,7 @@ const lines = [
   `  defaultDescription: ${JSON.stringify(defaultDescription)},`,
   "  socialImage: '/social/devchronicle-cover.png',",
   `  useEmulators: ${useEmulators},`,
+  `  appCheckSiteKey: ${JSON.stringify(process.env.FIREBASE_APPCHECK_SITE_KEY || '')},`,
   "  authEmulatorHost: '127.0.0.1',",
   '  authEmulatorPort: 9099,',
   "  firestoreEmulatorHost: '127.0.0.1',",

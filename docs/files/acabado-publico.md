@@ -67,6 +67,13 @@ lectura, no para un enlace roto.
 `index.html`: la respuesta es 200 con la vista 404. Para un 404 real haría falta SSR, prerender o una
 función. La vista con `noindex` evita que Google indexe la URL como contenido válido.
 
+### Decisión Phase 2 (Spark)
+
+Se **aplaza** prerender/SSR y HTML por slug vía Cloud Functions. Motivos: el plan Spark no incluye
+Functions, el sitemap ya lista slugs desde `public/content` en el build, y Google renderiza el SPA.
+La deuda consciente queda: previews OG por artículo y HTTP 404 reales requieren salir de Spark o
+aceptar un prerender estático en un paso de CI futuro (Phase 4 / post-MVP).
+
 ## robots.txt y sitemap.xml
 
 - `public/robots.txt` permite el catálogo, bloquea `/admin`, `/admin/**` y el alias `/articulos`, y

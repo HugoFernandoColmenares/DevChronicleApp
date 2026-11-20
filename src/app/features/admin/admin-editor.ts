@@ -37,6 +37,7 @@ export class AdminEditorComponent {
   private readonly formBuilder = inject(FormBuilder);
   private slugTouched = false;
   private baseline = '';
+  private expectedUpdatedAt: string | null = null;
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -125,7 +126,7 @@ export class AdminEditorComponent {
     this.saving.set(true);
     try {
       const creating = !this.editingSlug();
-      await this.journal.save(
+      const updatedAt = await this.journal.save(
         {
           slug: value.slug,
           title: value.title,
@@ -138,14 +139,28 @@ export class AdminEditorComponent {
           publishedAt,
           markdown: value.markdown,
         },
-        { create: creating },
+        {
+          create: creating,
+          expectedUpdatedAt: creating ? null : this.expectedUpdatedAt,
+        },
       );
+      this.expectedUpdatedAt = updatedAt;
       this.markClean();
       void this.notifications.toast(status === 'published' ? 'Published' : 'Draft saved');
       if (creating) {
         await this.router.navigate(['/admin/edit', value.slug], { replaceUrl: true });
       }
     } catch (error) {
+      if (error instanceof JournalError && error.code === 'conflict' && this.editingSlug()) {
+        const reload = await this.notifications.confirm(
+          'Entry changed elsewhere',
+          'Another tab saved a newer revision. Reload that version? Your current edits will be discarded.',
+        );
+        if (reload) {
+          await this.open(this.editingSlug());
+        }
+        return;
+      }
       void this.notifications.error('Save failed', this.message(error));
     } finally {
       this.saving.set(false);
@@ -182,6 +197,7 @@ export class AdminEditorComponent {
     this.slugTouched = false;
     if (!slug) {
       this.editingSlug.set(null);
+      this.expectedUpdatedAt = null;
       this.form.controls.slug.enable();
       this.form.reset({
         title: '',
@@ -205,6 +221,7 @@ export class AdminEditorComponent {
     try {
       const entry = await this.journal.loadEntry(slug);
       this.editingSlug.set(slug);
+      this.expectedUpdatedAt = entry.metadata.updatedAt;
       this.form.controls.slug.disable();
       this.form.reset({
         title: entry.metadata.title,
