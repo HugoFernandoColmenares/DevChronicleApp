@@ -13,7 +13,7 @@ status: published
 
 Hoy vamos a ver, paso a paso, cómo comparar comunidades microbianas de muestras de acero corroído y de sedimento marino usando **pandas** y **scikit-bio**. Los datos son de un estudio público de unos 10 años sobre la corrosión de cadenas de amarre de acero instaladas a unos 2 km de profundidad. No son míos: los publicaron Rajala, Cheng, Rice y Lauro en *Microbiome* (2022), y están en los repositorios de EMBL-EBI. Así que acompáñenme.
 
-**Sobre el código.** Para este tutorial no hay repositorio todavía: el código completo está en el artículo, archivo por archivo, y lo dejo marcado como **pendiente de repo**. Lo armé y lo corrí el 20 de noviembre de 2026 en un proyecto `uv` local. Todas las salidas que muestro son las que me dio esa corrida; si ustedes lo corren otro día, MGnify podría haber reprocesado el estudio y los números podrían moverse un poco. Lo que no corrí lo marco como **Evolución**.
+**Sobre el código.** El código completo está en el artículo, archivo por archivo, y también en un repositorio público: [EpiBio](https://github.com/HugoFernandoColmenares/EpiBio) (licencia MIT). Es el mismo proyecto, con el paquete de Python llamado `epibio`, y así lo nombro a lo largo del tutorial. Lo armé y lo corrí el 20 de noviembre de 2026 en un proyecto `uv` local. Todas las salidas que muestro son las que me dio esa corrida; si ustedes lo corren otro día, MGnify podría haber reprocesado el estudio y los números podrían moverse un poco. Lo que no corrí lo marco como **Evolución**.
 
 <a id="contenido"></a>
 
@@ -103,6 +103,15 @@ Python 3.14.10
 
 Si no tienen Python 3.14, no pasa nada: `uv` lo descarga solo cuando el proyecto lo pide. También necesitan conexión a internet para la primera descarga de datos (son unos pocos cientos de KB).
 
+Si prefieren clonar en vez de teclear todo, el repo [EpiBio](https://github.com/HugoFernandoColmenares/EpiBio) se instala así:
+
+```bash
+git clone https://github.com/HugoFernandoColmenares/EpiBio.git
+cd EpiBio
+uv sync
+uv run epibio
+```
+
 <a id="arquitectura"></a>
 
 ## 4. Stack y arquitectura
@@ -137,23 +146,23 @@ Básicamente son cuatro módulos pequeños y un reporte que los llama en orden. 
 
 ## 5. Instalación con uv
 
-Creo el proyecto como paquete (`--package`) para que tenga la carpeta `src/` y se pueda importar como `bioanalisis` desde cualquier lado:
+Creo el proyecto como paquete (`--package`) para que tenga la carpeta `src/` y se pueda importar como `epibio` desde cualquier lado:
 
 ```bash
-mkdir biotech-01 && cd biotech-01
-uv init --name bioanalisis --package --python 3.14 .
+mkdir EpiBio && cd EpiBio
+uv init --name epibio --package --python 3.14 .
 uv add pandas scikit-bio plotly httpx
 uv add --dev pytest
 mkdir -p data/raw tests docs
 ```
 
-¿Por qué cada flag? `--package` me da la estructura `src/bioanalisis/` y un *build backend* (el que empaqueta el proyecto), `--python 3.14` fija la versión en `.python-version`, y `--dev` deja pytest fuera de las dependencias de producción. `uv` crea solo el entorno virtual en `.venv/` y el archivo `uv.lock` con las versiones exactas.
+¿Por qué cada flag? `--package` me da la estructura `src/epibio/` y un *build backend* (el que empaqueta el proyecto), `--python 3.14` fija la versión en `.python-version`, y `--dev` deja pytest fuera de las dependencias de producción. `uv` crea solo el entorno virtual en `.venv/` y el archivo `uv.lock` con las versiones exactas.
 
 El `pyproject.toml` que quedó (solo cambié la descripción a mano en mi copia; aquí lo dejo tal cual lo generó `uv`):
 
 ```toml
 [project]
-name = "bioanalisis"
+name = "epibio"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -166,7 +175,7 @@ dependencies = [
 ]
 
 [project.scripts]
-bioanalisis = "bioanalisis:main"
+epibio = "epibio:main"
 
 [build-system]
 requires = ["uv_build>=0.13.8,<0.14.0"]
@@ -178,25 +187,29 @@ dev = [
 ]
 ```
 
+En el repo, el `pyproject.toml` lleva además descripción, licencia MIT, autor, palabras clave y la sección `[tool.pytest.ini_options]` (`testpaths` y `pythonpath`). Las dependencias son las mismas.
+
 Y agrego al `.gitignore` la carpeta de datos crudos, porque se regenera con un comando y no tiene sentido versionarla:
 
 ```text
-# Datos descargados (se regeneran con python -m bioanalisis.descarga)
+# Datos descargados (se regeneran con python -m epibio.descarga)
 data/raw/
 ```
+
+En el repo uso `data/raw/*` junto con `!data/raw/.gitkeep`: se ignora el contenido, pero la carpeta existe al clonar.
 
 <a id="carpetas"></a>
 
 ## 6. Carpetas y principios
 
 ```text
-biotech-01/
+EpiBio/
 ├── pyproject.toml
 ├── uv.lock
 ├── data/raw/                 # TSV descargados + DESCARGAS.txt (no se versiona)
 ├── docs/                     # gráficas HTML y salidas guardadas
-├── src/bioanalisis/
-│   ├── __init__.py           # punto de entrada del comando `bioanalisis`
+├── src/epibio/
+│   ├── __init__.py           # punto de entrada del comando `epibio`
 │   ├── descarga.py           # MGnify + ENA, sin claves
 │   ├── taxonomia.py          # linaje → columnas, agrupar, normalizar
 │   ├── diversidad.py         # scikit-bio: alfa, beta, PCoA, PERMANOVA
@@ -217,7 +230,7 @@ Muy bien, ya tenemos el proyecto armado. Ahora vamos al código, archivo por arc
 
 ## 7. Paso 1: descargar sin clave
 
-Este módulo baja la tabla de MGnify y los metadatos de la ENA, y anota la fecha de cada descarga. Lo guardo en `src/bioanalisis/descarga.py`:
+Este módulo baja la tabla de MGnify y los metadatos de la ENA, y anota la fecha de cada descarga. Lo guardo en `src/epibio/descarga.py`:
 
 ```python
 """Descarga la tabla de MGnify y los metadatos de la ENA (sin claves)."""
@@ -240,7 +253,7 @@ RAW = Path("data/raw")
 
 def _get(url: str, params: dict | None = None) -> str:
     # Un solo cliente con timeout y User-Agent propio: es lo mínimo amable con EMBL-EBI.
-    with httpx.Client(timeout=60, headers={"User-Agent": "bioanalisis-tutorial/0.1"}) as client:
+    with httpx.Client(timeout=60, headers={"User-Agent": "epibio/0.1"}) as client:
         r = client.get(url, params=params, follow_redirects=True)
         r.raise_for_status()
         return r.text
@@ -295,7 +308,7 @@ Lo importante de este archivo:
 Lo corro:
 
 ```bash
-uv run python -m bioanalisis.descarga
+uv run python -m epibio.descarga
 ```
 
 Salida:
@@ -326,7 +339,7 @@ sk__Archaea;k__;p__Candidatus_Diapherotrites	0	0	37	...
 
 Fíjense en la primera columna. Cada fila es un **linaje**: una cadena tipo `sk__Bacteria;k__;p__Proteobacteria;...;g__Desulfovibrio`, donde cada prefijo es un rango (superreino, reino, filo, clase, orden, familia, género, especie). Y aquí viene la trampa: no todas las filas llegan al mismo nivel. Hay filas que se quedan en `sk__Archaea` y otras que bajan hasta especie. ¿Qué pasa si agrupo por género sin cuidado? Que mezclo peras con manzanas.
 
-Por eso escribo una función que convierte el linaje en un diccionario con todos los rangos, y deja `None` donde no hay dato. Va en `src/bioanalisis/taxonomia.py`:
+Por eso escribo una función que convierte el linaje en un diccionario con todos los rangos, y deja `None` donde no hay dato. Va en `src/epibio/taxonomia.py`:
 
 ```python
 """Limpieza de la tabla de abundancias: linaje en columnas y agrupación por rango."""
@@ -375,7 +388,7 @@ Como esta función es la base de todo, le escribo pruebas en `tests/test_taxonom
 ```python
 import pandas as pd
 
-from bioanalisis.taxonomia import abundancia_relativa, agrupar_por, partir_linaje
+from epibio.taxonomia import abundancia_relativa, agrupar_por, partir_linaje
 
 
 def test_linaje_completo():
@@ -414,6 +427,8 @@ uv run pytest -q
 3 passed in 0.21s
 ```
 
+El repo suma pruebas para `diversidad.py` y `reporte.py` (`tests/test_diversidad.py`, `tests/test_reporte.py`), así que allí `uv run pytest -q` da 8 pruebas en verde.
+
 Bien, ya tenemos la tabla limpia. Ahora vamos a la parte estadística.
 
 <a id="diversidad"></a>
@@ -429,7 +444,7 @@ Aquí entra **scikit-bio**, una librería de Python para bioinformática. Antes 
 
 Y una más: la **rarefacción**. Las muestras tienen cantidades de lecturas muy distintas (ya lo vamos a ver: de unas 5.700 a más de 73.000). Una muestra con más lecturas tiende a mostrar más grupos solo por haber «mirado más». Para que la comparación sea justa, submuestreo todas a la misma profundidad: la de la muestra más pequeña.
 
-Este es `src/bioanalisis/diversidad.py`:
+Este es `src/epibio/diversidad.py`:
 
 ```python
 """Diversidad alfa, beta (Bray-Curtis), PCoA y PERMANOVA con scikit-bio."""
@@ -495,7 +510,7 @@ Lo que vale la pena mirar:
 
 ## 10. Paso 4: gráficas con plotly
 
-Quiero dos gráficas: barras apiladas con los géneros más abundantes por muestra, y la dispersión del PCoA coloreada por grupo. Uso plotly porque guarda HTML interactivo que se abre en cualquier navegador sin servidor. Va en `src/bioanalisis/graficas.py`:
+Quiero dos gráficas: barras apiladas con los géneros más abundantes por muestra, y la dispersión del PCoA coloreada por grupo. Uso plotly porque guarda HTML interactivo que se abre en cualquier navegador sin servidor. Va en `src/epibio/graficas.py`:
 
 ```python
 """Gráficas en HTML con plotly (se abren en cualquier navegador, sin servidor)."""
@@ -509,7 +524,7 @@ def barras_apiladas(relativa: pd.DataFrame, meta: pd.DataFrame, top: int = 10, d
     # Me quedo con los géneros más abundantes en promedio; el resto va a "Otros".
     orden = relativa.mean(axis=1).sort_values(ascending=False)
     principales = [g for g in orden.index if g != "Sin asignar"][:top]
-    recorte = relativa.loc[principales]
+    recorte = relativa.loc[principales].copy()
     recorte.loc["Otros"] = 1 - recorte.sum(axis=0)
     largo = recorte.reset_index(names="genero").melt(id_vars="genero", var_name="run", value_name="proporcion")
     largo = largo.merge(meta[["run_accession", "sample_alias"]], left_on="run", right_on="run_accession")
@@ -540,13 +555,13 @@ Dos detalles: `melt` pasa la tabla de formato ancho (una columna por muestra) a 
 
 ## 11. Paso 5: el reporte de punta a punta
 
-Ahora junto todo en `src/bioanalisis/reporte.py`. Este archivo también decide los grupos a partir del alias:
+Ahora junto todo en `src/epibio/reporte.py`. Este archivo también decide los grupos a partir del alias:
 
 ```python
 """Corre todo el análisis de punta a punta e imprime un resumen en consola."""
 import pandas as pd
 
-from bioanalisis import descarga, diversidad, graficas, taxonomia
+from epibio import descarga, diversidad, graficas, taxonomia
 
 SULFATORREDUCTORES = ("Desulfovibrio", "Desulfobulbus", "Desulfobacter", "Desulfuromonas", "Desulfosarcina")
 
@@ -576,7 +591,7 @@ def main() -> None:
 
     generos = taxonomia.agrupar_por(tabla, "genero")
     relativa = taxonomia.abundancia_relativa(generos)
-    top = relativa.drop(index="Sin asignar").mean(axis=1).sort_values(ascending=False).head(8)
+    top = relativa.drop(index="Sin asignar", errors="ignore").mean(axis=1).sort_values(ascending=False).head(8)
     print("\nGéneros más abundantes (promedio de abundancia relativa):")
     print(top.round(4).to_string())
 
@@ -608,14 +623,14 @@ if __name__ == "__main__":
     main()
 ```
 
-Y el `__init__.py`, para que el comando `bioanalisis` que declaró `uv` en `[project.scripts]` funcione:
+Y el `__init__.py`, para que el comando `epibio` que declaró `uv` en `[project.scripts]` funcione:
 
 ```python
 """Análisis de comunidades microbianas del estudio MGYS00006080 (MGnify)."""
 
 
 def main() -> None:
-    from bioanalisis.reporte import main as reporte
+    from epibio.reporte import main as reporte
 
     reporte()
 ```
@@ -629,7 +644,7 @@ Una nota honesta sobre `SULFATORREDUCTORES`: es una lista mía, corta, de géner
 Lo corro:
 
 ```bash
-uv run python -m bioanalisis.reporte
+uv run python -m epibio.reporte
 ```
 
 Esta es la salida completa de mi corrida (20 nov 2026):
@@ -755,7 +770,7 @@ La idea es que el código no esté amarrado a este estudio. Para analizar otro, 
 2. Consultar `GET /studies/<ID>/downloads` y copiar el nombre del archivo `..._taxonomy_abundances_SSU_v5.0.tsv` (o el de la versión de pipeline que tenga).
 3. Cambiar `ESTUDIO`, `PROYECTO` y `TABLA` en `descarga.py`.
 4. Reescribir `clasificar` en `reporte.py` según cómo nombre las muestras ese estudio. Esa es la única parte que depende de leer los metadatos con calma.
-5. Borrar `data/raw/` y correr `uv run python -m bioanalisis.reporte`.
+5. Borrar `data/raw/` y correr `uv run python -m epibio.reporte`.
 
 **Evolución:** lo limpio sería pasar `ESTUDIO`, `PROYECTO` y `TABLA` por argumentos de línea de comandos y la regla de grupos por un archivo de configuración. Hoy están como constantes, a propósito, para que el código se lea de corrido.
 
@@ -785,10 +800,8 @@ La idea es que el código no esté amarrado a este estudio. Para analizar otro, 
 
 ## 17. Siguientes pasos (Evolución)
 
-Nada de esto está construido todavía; es el plan de la serie:
+El repo público ya existe: [EpiBio](https://github.com/HugoFernandoColmenares/EpiBio), con `uv.lock`, las gráficas en `docs/`, un README con la atribución a MGnify, la ENA y el artículo original, y pruebas para `diversidad.py` con una tabla sintética pequeña. Lo siguiente no está construido todavía; es el plan de la serie:
 
-- **Repo público** con este código, `uv.lock`, las gráficas en `docs/` y un README con la atribución a MGnify, la ENA y el artículo original.
-- **Pruebas para `diversidad.py`** con una tabla sintética pequeña cuyo resultado se pueda calcular a mano.
 - **Alternativas a la rarefacción**: comparar con un enfoque composicional (por ejemplo, transformaciones logarítmicas centradas) y ver si el PCoA cambia.
 - **Exportar a BIOM** con `biom-format` para abrir los datos en otras herramientas.
 - **Siguiente entrega de la serie:** descargar secuencias de GenBank con Biopython respetando los límites de NCBI (3 solicitudes por segundo sin clave), con caché y reintentos.
@@ -814,7 +827,7 @@ Nada de esto está construido todavía; es el plan de la serie:
 
 **Enlaces**
 
-- Código: en este artículo (**pendiente de repo**).
+- Código: [EpiBio en GitHub](https://github.com/HugoFernandoColmenares/EpiBio) (MIT) y en este artículo.
 - Estudio en MGnify: [MGYS00006080](https://www.ebi.ac.uk/metagenomics/studies/MGYS00006080) · API: [https://www.ebi.ac.uk/metagenomics/api/v1/studies/MGYS00006080](https://www.ebi.ac.uk/metagenomics/api/v1/studies/MGYS00006080)
 - Proyecto en la ENA: [PRJNA693108](https://www.ebi.ac.uk/ena/browser/view/PRJNA693108)
 - Artículo original: Rajala P, Cheng DQ, Rice SA, Lauro FM. *Microbiome* 10, 4 (2022). [doi:10.1186/s40168-021-01196-6](https://doi.org/10.1186/s40168-021-01196-6)
