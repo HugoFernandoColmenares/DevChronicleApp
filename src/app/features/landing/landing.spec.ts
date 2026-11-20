@@ -81,8 +81,9 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(fixture.nativeElement.textContent).toContain('Entrada destacada');
-    expect(fixture.nativeElement.textContent).toContain('Publicadas recientemente');
+    expect(fixture.nativeElement.textContent).toContain('DevChronicle');
+    expect(fixture.nativeElement.textContent).toContain('Field notes for working software.');
+    expect(fixture.nativeElement.textContent).toContain('Recently published');
     expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
   });
@@ -144,13 +145,39 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     const view = fixture.nativeElement as HTMLElement;
-    expect(view.textContent).toContain('No se pudo cargar el diario.');
+    expect(view.textContent).toContain('The journal could not be loaded.');
     expect(view.textContent).not.toContain('Older note');
 
-    buttonWithText(view, '.empty-state .btn', 'Intentar de nuevo').click();
+    buttonWithText(view, '.empty-state .btn', 'Try again').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(view.textContent).toContain('Entrada destacada');
+    expect(view.textContent).toContain('DevChronicle');
+  });
+
+  it('shows Try again when the journal is marked offline even if the list is empty', async () => {
+    const offline = signal(true);
+    watchPublished.mockReturnValue(of([]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [LandingComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        {
+          provide: JournalService,
+          useValue: { offline, watchPublished },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.textContent).toContain('The journal could not be loaded.');
+    expect(view.textContent).not.toContain('No entries are published yet.');
+    expect(buttonWithText(view, '.empty-state .btn', 'Try again')).toBeTruthy();
   });
 });

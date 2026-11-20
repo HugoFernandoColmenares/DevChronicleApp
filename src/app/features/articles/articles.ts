@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
+import { normalizeTag, normalizeTags } from '@core/models/tag-normalize';
 import { READ_RETRY, retryTransient } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
 import { SeoService } from '@core/services/seo.service';
@@ -31,6 +32,7 @@ export class ArticlesComponent {
   readonly page = signal(1);
   readonly loading = signal(true);
   readonly failed = signal(false);
+  readonly offline = this.journal.offline;
 
   readonly articles = toSignal(
     toObservable(this.attempt).pipe(
@@ -57,13 +59,11 @@ export class ArticlesComponent {
   );
 
   readonly tags = computed(() => {
-    const unique = new Set<string>();
+    const all: string[] = [];
     for (const article of this.articles()) {
-      for (const tag of article.tags) {
-        unique.add(tag);
-      }
+      all.push(...article.tags);
     }
-    return [...unique].sort((a, b) => a.localeCompare(b));
+    return normalizeTags(all);
   });
 
   readonly filtered = computed(() => {
@@ -71,7 +71,7 @@ export class ArticlesComponent {
     const tag = this.selectedTag();
 
     return this.sortByDate(this.articles())
-      .filter((article) => !tag || article.tags.includes(tag))
+      .filter((article) => !tag || article.tags.some((item) => normalizeTag(item) === tag))
       .filter((article) => !term || this.searchText(article).includes(term));
   });
 

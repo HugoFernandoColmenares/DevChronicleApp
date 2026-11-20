@@ -1,20 +1,16 @@
 <section class="page">
-  <div class="container-fluid">
-    <header class="intro">
-      <h1>Notas de campo para software que funciona.</h1>
-      <p>
-        DevChronicle reúne notas de arquitectura, práctica con Angular y ensayos de sala de lectura.
-        Abre una entrada. Copia los ejemplos. Llévate algo que puedas usar.
-      </p>
-      <a class="intro__link" routerLink="/articles">
-        Explora todos los artículos, del más reciente al más antiguo
-        <span aria-hidden="true">→</span>
-      </a>
+  <div class="hero-wrap">
+    <header class="hero container-fluid">
+      <h1 class="hero__brand">{{ siteName }}</h1>
+      <p class="hero__line">Notas de campo para software que funciona.</p>
+      <a class="btn btn--primary hero__cta" routerLink="/articles">Browse the archive</a>
     </header>
+  </div>
 
+  <div class="container-fluid">
     @if (loading()) {
       <dev-skeleton-loader />
-    } @else if (failed()) {
+    } @else if (failed() || offline()) {
       <div class="empty-state" role="alert">
         <p class="empty">No se pudo cargar el diario. Revisa tu conexión e inténtalo de nuevo.</p>
         <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
@@ -22,8 +18,21 @@
     } @else if (articles().length === 0) {
       <p class="empty">Aún no hay entradas publicadas.</p>
     } @else {
+      @if (featured(); as lead) {
+        <section class="featured-plane" aria-label="Entrada destacada">
+          <dev-article-card [article]="lead" [featured]="true" />
+        </section>
+      } @else if (selectedTag()) {
+        <p class="empty">Ninguna entrada usa esta etiqueta.</p>
+      }
+
       @if (tags().length > 0) {
-        <div class="filters" role="group" aria-label="Filtrar por etiqueta">
+        <div
+          class="filters"
+          [class.filters--open]="tagsExpanded()"
+          role="group"
+          aria-label="Filtrar por etiqueta"
+        >
           <button
             type="button"
             class="filter"
@@ -32,7 +41,7 @@
           >
             Todas
           </button>
-          @for (tag of tags(); track tag) {
+          @for (tag of visibleTags(); track tag) {
             <button
               type="button"
               class="filter"
@@ -42,19 +51,12 @@
               <dev-tag [label]="tag" [active]="selectedTag() === tag" />
             </button>
           }
+          @if (tags().length > tagPreview) {
+            <button type="button" class="filter filter--more" (click)="toggleTags()">
+              {{ tagsExpanded() ? 'Fewer tags' : 'More tags' }}
+            </button>
+          }
         </div>
-      }
-
-      @if (featured(); as lead) {
-        <section class="block">
-          <header class="block__head">
-            <h2 class="block__title">Entrada destacada</h2>
-            <span class="block__hint">La nota más reciente del diario</span>
-          </header>
-          <dev-article-card [article]="lead" [featured]="true" />
-        </section>
-      } @else {
-        <p class="empty">Ninguna entrada usa esta etiqueta.</p>
       }
 
       @if (recent().length > 0) {

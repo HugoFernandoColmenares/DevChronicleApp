@@ -1,41 +1,63 @@
-# Hosting y despliegue
+# Hosting and deploy
 
-Firebase Hosting sirve el build de Angular como SPA. `firebase.json` publica `dist/DevChronicle/browser` y reescribe todas las rutas a `index.html`, para que `/post/:slug` y `/admin` sobrevivan a un refresco.
+Firebase Hosting serves the Angular build as an SPA. `firebase.json` publishes `dist/DevChronicle/browser` and rewrites all routes to `index.html` so `/post/:slug` and `/admin` survive a refresh.
 
-`npm run build` ejecuta `scripts/write-environment.mjs`. Ese script lee `.env` (sin pisar variables que ya vengan del entorno) y escribe `src/environments/environment.production.ts`, que está en `.gitignore`. Si faltan `FIREBASE_*`, el archivo queda con marcadores y el build igual termina. Esos marcadores no sirven para un sitio real.
+`npm run build` runs `scripts/write-environment.mjs`. That script reads `.env` (without overriding variables already in the environment) and writes `src/environments/environment.production.ts` (gitignored). Missing `FIREBASE_*` values leave placeholders so the build still finishes; those placeholders are not valid for a real site.
 
-## Qué hay que crear en Firebase
+## Firebase project setup (Spark)
 
-El proyecto `devchronicle-hugo` todavía no existe. En el plan Spark:
+1. Create project `devchronicle-hugo`.
+2. Create native Firestore. Storage is not required.
+3. Enable Authentication → Google.
+4. Register a web app and copy the config into secrets / `.env` (see `.env.example`).
+5. Note the author account uid and create `admins/{uid}` in Firestore.
+6. Add Hosting domains to Google authorized domains.
+7. Create a service-account JSON for GitHub (Firebase Admin). Store the full JSON (or base64) in `FIREBASE_SERVICE_ACCOUNT`.
 
-1. Crear el proyecto con ese id.
-2. Crear Firestore en modo nativo. No hace falta Storage.
-3. Activar Authentication → Google.
-4. Registrar una app web y copiar la configuración a los secretos y a `.env` (ver `.env.example`).
-5. En Authentication, anotar el uid de la cuenta autora y crear `admins/{uid}` en Firestore.
-6. Agregar los dominios de Hosting a los dominios autorizados de Google.
-7. Crear una cuenta de servicio para GitHub. El camino práctico en Spark es la clave JSON del Admin SDK (Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada). Hace falta permiso para Hosting, reglas e índices. El rol `Firebase Admin` los cubre. Guardar el JSON completo en el secreto `FIREBASE_SERVICE_ACCOUNT` (también acepta ese JSON en base64).
+## GitHub secrets
 
-## Secretos de GitHub
-
-| Secreto                        | Uso                                                  |
+| Secret                         | Use                                                  |
 | :----------------------------- | :--------------------------------------------------- |
-| `FIREBASE_SERVICE_ACCOUNT`     | JSON de la cuenta de servicio                        |
-| `FIREBASE_API_KEY`             | Configuración web                                    |
-| `FIREBASE_AUTH_DOMAIN`         | Configuración web                                    |
-| `FIREBASE_PROJECT_ID`          | Debe ser `devchronicle-hugo`                         |
-| `FIREBASE_STORAGE_BUCKET`      | Viene en la configuración web. La app no usa Storage |
-| `FIREBASE_MESSAGING_SENDER_ID` | Configuración web                                    |
-| `FIREBASE_APP_ID`              | Configuración web                                    |
+| `FIREBASE_SERVICE_ACCOUNT`     | Service-account JSON                                 |
+| `FIREBASE_API_KEY`             | Web config                                           |
+| `FIREBASE_AUTH_DOMAIN`         | Web config                                           |
+| `FIREBASE_PROJECT_ID`          | Must be `devchronicle-hugo`                          |
+| `FIREBASE_STORAGE_BUCKET`      | From web config; the app does not use Storage        |
+| `FIREBASE_MESSAGING_SENDER_ID` | Web config                                           |
+| `FIREBASE_APP_ID`              | Web config                                           |
+| `FIREBASE_APPCHECK_SITE_KEY`   | Optional reCAPTCHA v3 for App Check                  |
+| `SENTRY_DSN`                   | Optional unhandled-error envelopes                   |
 
-La clave web viaja en el bundle. No es una credencial de administrador. La cuenta de servicio no debe commitearse.
+The web key ships in the client bundle. It is not an admin credential. Never commit the service account.
 
-## Workflow
+## App Check (optional, Spark)
 
-`.github/workflows/firebase-hosting.yml` corre en cada push a `main` y se puede lanzar a mano. Instala dependencias, corre lint, pruebas unitarias, pruebas del importador y pruebas de reglas, y después construye. Si falta cualquier secreto, el job escribe el motivo y termina en verde sin desplegar. Si están todos, despliega Hosting, las reglas y los índices a `devchronicle-hugo`.
+1. Firebase Console → App Check → register the web app with **reCAPTCHA v3**.
+2. Store the site key in `.env` / `FIREBASE_APPCHECK_SITE_KEY`.
+3. Enable enforcement for Firestore (and Auth if desired) only after production sends tokens.
+4. With emulators or without a key, `initAppCheck` is a no-op.
 
-La primera carga de notas en la nube es manual:
+## Workflows
+
+| Workflow | Trigger | Behavior |
+| :------- | :------ | :------- |
+| `firebase-hosting.yml` | push to `main` / manual | Lint, tests, emulator E2E, build; deploy Hosting+rules+indexes; **import `public/content` into Firestore** when secrets exist |
+| `firebase-hosting-preview.yml` | pull request | Build + `hosting:channel:deploy pr-<n>` (7 days) when secrets exist |
+| `uptime.yml` | every 6 hours | HTTP 200 on `/`, `/articles`, `/challenges` |
+| `scheduled-export.yml` | Sundays 06:00 UTC / manual | Firestore JSON export → artifact (30 days) |
+
+If Firebase secrets are missing, deploy/import/export steps explain why and keep the job green.
+
+Manual first seed (also automated after deploy when secrets are present):
 
 ```bash
 node scripts/import-content.mjs --project devchronicle-hugo
 ```
+
+Scheduled / local backup (in addition to Studio **Export backup**):
+
+```bash
+npm run export:cloud
+```
+
+See [`ops-phase4.md`](./ops-phase4.md) for Phase 4 ops detail.

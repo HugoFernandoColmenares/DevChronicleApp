@@ -136,20 +136,20 @@ describe('ArticlesComponent', () => {
       'Civic Terminal, built for reading',
       'Markdown as the source of truth',
     ]);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–6 de 8 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–6 of 8 articles');
 
-    buttonWithText(fixture.nativeElement, '.pager__step', 'Siguiente').click();
+    buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Older note', 'Welcome to DevChronicle']);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 7–8 de 8 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 7–8 of 8 articles');
   });
 
   it('filters dynamically by text and returns to the first page', async () => {
     const fixture = TestBed.createComponent(ArticlesComponent);
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.pager__step', 'Siguiente').click();
+    buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
     await fixture.whenStable();
 
     search(fixture.nativeElement, 'modulo');
@@ -164,7 +164,7 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice']);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–1 de 1 artículo');
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–1 of 1 article');
   });
 
   it('folds accents and case when searching tags and summaries', async () => {
@@ -193,31 +193,31 @@ describe('ArticlesComponent', () => {
     const fixture = TestBed.createComponent(ArticlesComponent);
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.pager__step', 'Siguiente').click();
+    buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.filter', 'arquitectura').click();
+    buttonWithText(fixture.nativeElement, '.filter', 'architecture').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual([
       'Construyendo APIs por capas: NestJS',
       'Construyendo APIs por capas: Spring Boot',
       'Construyendo APIs por capas: .NET 10',
+      'Angular signals in practice',
+      'Markdown as the source of truth',
     ]);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–3 de 3 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–5 of 5 articles');
 
     search(fixture.nativeElement, 'nothing matches this');
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.textContent).toContain(
-      'Ningún artículo coincide con estos filtros.',
-    );
+    expect(fixture.nativeElement.textContent).toContain('No articles match these filters.');
 
-    buttonWithText(fixture.nativeElement, '.empty-state .btn', 'Limpiar filtros').click();
+    buttonWithText(fixture.nativeElement, '.empty-state .btn', 'Clear filters').click();
     await fixture.whenStable();
 
     expect(titles(fixture).length).toBe(6);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–6 de 8 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–6 of 8 articles');
   });
 
   it('deduplicates tags shared by several entries', async () => {
@@ -225,10 +225,13 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
-    const architecture = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const architecture = filters.filter((node) => node.textContent?.trim() === 'architecture');
+    const spanishDuplicate = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
 
     expect(architecture).toHaveLength(1);
-    expect(filters).toHaveLength(12);
+    expect(spanishDuplicate).toHaveLength(0);
+    // All + 10 normalized tags (architecture/arquitectura collapsed).
+    expect(filters).toHaveLength(11);
   });
 
   it('falls back to updatedAt when an entry has no publish date', async () => {
@@ -274,12 +277,12 @@ describe('ArticlesComponent', () => {
       (node as HTMLElement).textContent?.trim(),
     );
     expect(pageButtons).toEqual(['6', '7', '8', '9', '10']);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 43–48 de 61 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 43–48 of 61 articles');
 
     fixture.componentInstance.goTo(99);
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 61–61 de 61 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Showing 61–61 of 61 articles');
   });
 
   it('offers a manual retry after a Firestore failure without a local fallback', async () => {
@@ -290,10 +293,10 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     const view = fixture.nativeElement as HTMLElement;
-    expect(view.textContent).toContain('No se pudo cargar el diario.');
+    expect(view.textContent).toContain('The journal could not be loaded.');
     expect(view.textContent).not.toContain('Older note');
 
-    buttonWithText(view, '.empty-state .btn', 'Intentar de nuevo').click();
+    buttonWithText(view, '.empty-state .btn', 'Try again').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual([
@@ -304,6 +307,6 @@ describe('ArticlesComponent', () => {
       'Civic Terminal, built for reading',
       'Markdown as the source of truth',
     ]);
-    expect(view.textContent).toContain('Mostrando 1–6 de 8 artículos');
+    expect(view.textContent).toContain('Showing 1–6 of 8 articles');
   });
 });

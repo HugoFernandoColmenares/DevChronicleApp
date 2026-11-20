@@ -1,12 +1,49 @@
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Source Serif 4';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
   font-display: swap;
-  src: url('/fonts/inter-latin.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url('/fonts/source-serif-4-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/source-serif-4-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/source-serif-4-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/source-sans-3-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/source-sans-3-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/source-sans-3-latin-700-normal.woff2') format('woff2');
 }
 
 @font-face {
@@ -21,16 +58,19 @@
 }
 
 :root {
-  --color-canvas: #fafafa;
-  --color-slate: #1e293b;
-  --color-accent: #0ea5e9;
-  --color-accent-ink: #0369a1;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-  --color-divider: #e2e8f0;
-  --color-string: #10b981;
-  --color-keyword: #8b5cf6;
-  --font-ui: 'Inter', system-ui, sans-serif;
+  /* Cool ruled-paper notebook + deep ink slate (not Inter/sky kit). */
+  --color-canvas: #ecefe6;
+  --color-slate: #162032;
+  --color-accent: #0f766e;
+  --color-accent-ink: #115e59;
+  --color-ink: #14201a;
+  --color-muted: #3f5349;
+  --color-divider: #cfd8d0;
+  --color-surface: #f7f8f3;
+  --color-string: #34d399;
+  --color-keyword: #f0abfc;
+  --font-display: 'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', serif;
+  --font-ui: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
@@ -46,7 +86,13 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
+  background-image: repeating-linear-gradient(
+    transparent 0,
+    transparent 1.6rem,
+    color-mix(in srgb, var(--color-ink) 4.5%, transparent) 1.6rem,
+    color-mix(in srgb, var(--color-ink) 4.5%, transparent) calc(1.6rem + 1px)
+  );
   color: var(--color-ink);
   font-family: var(--font-ui);
   line-height: 1.5;
@@ -54,8 +100,15 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 28%, #ffffff);
+  background: color-mix(in srgb, var(--color-accent) 32%, #ffffff);
   color: var(--color-ink);
+}
+
+h1,
+h2,
+h3,
+.preview__title {
+  font-family: var(--font-display);
 }
 
 :focus-visible {
@@ -165,7 +218,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .markdown-body code {
   padding: 0.1rem 0.35rem;
   border-radius: 0.25rem;
-  background: #e2e8f0;
+  background: color-mix(in srgb, var(--color-divider) 70%, #ffffff);
   font-family: var(--font-mono);
   font-size: 0.875em;
 }
@@ -175,9 +228,9 @@ pre:has(code)::-webkit-scrollbar-thumb {
   overflow-x: auto;
   margin: 1.75rem 0;
   padding: 2.75rem 1.1rem 1.1rem;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   background: var(--color-slate);
-  color: #e2e8f0;
+  color: #e2e8e4;
 }
 
 .markdown-body pre code {
@@ -195,6 +248,25 @@ pre:has(code)::-webkit-scrollbar-thumb {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(-0.2rem);
+  transition:
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.markdown-body pre:hover .code-toolbar,
+.markdown-body pre:focus-within .code-toolbar {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-toolbar {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .code-toolbar__lang {
@@ -238,8 +310,9 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .markdown-body blockquote {
   margin: 1.5rem 0;
   padding: 0.85rem 1rem;
-  border-left: 4px solid var(--color-accent);
-  background: #f1f5f9;
+  border: 1px solid var(--color-divider);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--color-surface) 80%, var(--color-accent));
   color: var(--color-muted);
 }
 
@@ -285,29 +358,40 @@ pre:has(code)::-webkit-scrollbar-thumb {
 }
 
 .dc-swal {
-  border: 1px solid var(--color-divider);
-  border-radius: 0.375rem !important;
+  border: 1px solid var(--color-divider) !important;
+  border-radius: 0.5rem !important;
+  background: var(--color-surface) !important;
   font-family: var(--font-ui);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  box-shadow: 0 10px 28px rgba(20, 32, 26, 0.14);
+}
+
+.dc-swal .swal2-icon {
+  display: none !important;
 }
 
 .dc-swal__title {
-  color: var(--color-ink);
-  font-size: 1.15rem !important;
-  font-weight: 650;
+  margin-top: 0.25rem !important;
+  color: var(--color-ink) !important;
+  font-family: var(--font-display) !important;
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
 }
 
 .dc-swal--toast .dc-swal__title {
-  color: #f8fafc;
+  color: #f7faf6 !important;
+  font-family: var(--font-ui) !important;
+  font-size: 0.95rem !important;
 }
 
 .dc-swal__text {
-  color: var(--color-muted);
+  color: var(--color-muted) !important;
   font-size: 0.95rem;
 }
 
 .dc-swal__actions {
   gap: 0.5rem;
+  margin-top: 0.5rem !important;
 }
 
 .dc-swal__confirm,
@@ -324,12 +408,12 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .dc-swal__confirm {
   border: 0;
   background: var(--color-accent);
-  color: #082f49;
+  color: #ecfdf5;
 }
 
 .dc-swal__cancel {
   border: 1px solid var(--color-divider);
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-ink);
 }
 
@@ -338,7 +422,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
 }
 
 .dc-swal--toast {
-  border-color: #334155;
+  border-color: #2a3a45 !important;
+  background: var(--color-slate) !important;
 }
 
 @media (max-width: 40rem) {
@@ -424,8 +509,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
   align-items: center;
   padding: 1rem 1.25rem;
   border: 1px solid var(--color-divider);
-  border-radius: 0.375rem;
-  background: #ffffff;
+  border-radius: 0.5rem;
+  background: var(--color-surface);
   color: inherit;
   text-decoration: none;
 }
@@ -472,7 +557,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
 }
@@ -493,8 +578,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .preview {
   padding: 1.25rem 0 2rem;
   border: 1px solid var(--color-divider);
-  border-radius: 0.375rem;
-  background: #ffffff;
+  border-radius: 0.5rem;
+  background: var(--color-surface);
 }
 
 .preview h2 {
@@ -509,7 +594,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
   padding: 0.4rem 0.9rem;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
   font-size: 0.9rem;
@@ -521,7 +606,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .btn--primary {
   border-color: transparent;
   background: var(--color-accent);
-  color: #082f49;
+  color: #ecfdf5;
 }
 
 .btn--quiet {
@@ -549,8 +634,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
 
 .pill--on {
   border-color: transparent;
-  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
-  color: var(--color-accent-ink);
+  background: color-mix(in srgb, var(--color-accent) 22%, #ffffff);
+  color: #134e4a;
 }
 
 @media (min-width: 40rem) {

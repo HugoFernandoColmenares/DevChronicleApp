@@ -11,69 +11,74 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://devchronicle-hugo.web.app/challenges</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://devchronicle-hugo.web.app/post/angular-signals-in-practice</loc>
     <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/civic-terminal-reading</loc>
     <lastmod>2026-09-11</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/comparar-comunidades-microbianas-acero-corroido-sedimento-pandas-scikit-bio</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/construyendo-apis-por-capas-dotnet</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/construyendo-apis-por-capas-nestjs</loc>
     <lastmod>2026-11-04</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/construyendo-apis-por-capas-spring</loc>
     <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/leer-archivos-mdp-medibang-navegador-typescript-fflate-web-worker-angular-22</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/maquetar-libros-angular-fastapi-typst-bookpublisher</loc>
     <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/markdown-as-source-of-truth</loc>
     <lastmod>2026-09-12</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/servidor-mcp-propio-react-zustand-json-rpc-http-stdio-sse</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://devchronicle-hugo.web.app/post/welcome-to-devchronicle</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

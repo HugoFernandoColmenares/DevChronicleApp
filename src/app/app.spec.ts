@@ -18,11 +18,12 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the site name and the studio link', async () => {
+  it('should render the site name, challenges nav, and author sign-in', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand__name')?.textContent).toContain('DevChronicle');
-    expect(compiled.textContent).toContain('Estudio');
+    expect(compiled.textContent).toContain('Challenges');
+    expect(compiled.textContent).toContain('Author sign-in');
   });
 });

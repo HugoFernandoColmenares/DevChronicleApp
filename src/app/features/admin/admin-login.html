@@ -4,17 +4,30 @@
       <p class="studio__kicker">Estudio</p>
       <h1>Inicia sesión para editar el diario.</h1>
       <p class="studio__lead">
-        Google es el único método de acceso. La cuenta solo puede escribir entradas cuando su id de
-        usuario existe en <span class="studio__code">admins</span>.
+        Google is the only production sign-in. The account can write entries only when its user id
+        exists in the author allow-list.
       </p>
-      <button
-        type="button"
-        class="btn btn--primary"
-        [disabled]="busy()"
-        (click)="continueWithGoogle()"
-      >
-        Continuar con Google
-      </button>
+      <div class="studio__actions">
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="busy()"
+          (click)="continueWithGoogle()"
+        >
+          Continuar con Google
+        </button>
+        @if (emulatorAuth) {
+          <button
+            type="button"
+            class="btn"
+            data-testid="emulator-admin-signin"
+            [disabled]="busy()"
+            (click)="continueWithEmulatorAdmin()"
+          >
+            Emulator author
+          </button>
+        }
+      </div>
     } @else {
       <p class="empty">Verificando la sesión.</p>
     }

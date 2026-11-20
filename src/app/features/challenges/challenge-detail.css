@@ -1,0 +1,156 @@
+.page {
+  padding-block: 3rem 5rem;
+}
+
+.back {
+  display: inline-flex;
+  margin-bottom: 2rem;
+  color: var(--color-accent-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back:hover,
+.back:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.mast {
+  margin-bottom: 2.5rem;
+}
+
+.mast__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.difficulty {
+  color: var(--color-accent-ink);
+  font-weight: 700;
+}
+
+.mast h1 {
+  margin: 0;
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  font-weight: 680;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.lede {
+  margin: 1rem 0 0;
+  color: var(--color-muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.mast__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1.15rem;
+}
+
+.chip {
+  display: inline-flex;
+  padding: 0.15rem 0.55rem;
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-accent-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.panel {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-divider);
+}
+
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.85rem;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panel__head h2 {
+  margin: 0;
+}
+
+.prose {
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.fence {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--color-slate);
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.fence code {
+  font: inherit;
+  white-space: pre;
+}
+
+.error-state {
+  padding-block: 3rem;
+}
+
+.error-state__code {
+  margin: 0 0 0.5rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.error-state h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.error-state__copy {
+  margin: 0.75rem 0 0;
+  color: var(--color-muted);
+}
+
+.error-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

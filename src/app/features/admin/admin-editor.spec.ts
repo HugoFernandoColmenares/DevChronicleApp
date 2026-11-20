@@ -14,7 +14,7 @@ describe('AdminEditorComponent', () => {
   const journal = {
     offline: signal(false),
     loadEntry: vi.fn(),
-    save: vi.fn().mockResolvedValue(undefined),
+    save: vi.fn().mockResolvedValue('2026-11-20T12:00:00.000Z'),
     remove: vi.fn(),
   };
   let notifications: NotificationService;
@@ -67,7 +67,7 @@ describe('AdminEditorComponent', () => {
         tags: ['angular', 'journal'],
         markdown: '## From the editor\n\nPreview this paragraph.',
       }),
-      { create: true },
+      { create: true, expectedUpdatedAt: null },
     );
   });
 

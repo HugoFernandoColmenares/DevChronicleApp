@@ -17,6 +17,13 @@
   margin: 0;
 }
 
+.foot__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
 .foot a {
   color: #e2e8f0;
   text-decoration: none;
