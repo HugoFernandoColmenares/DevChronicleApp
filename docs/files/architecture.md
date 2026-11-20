@@ -32,10 +32,11 @@ El desarrollo local usa Auth (9099), Firestore (8080) y la interfaz de emuladore
 | `src/app/features/articles`                  | Archivo paginado, búsqueda y etiquetas                                                    |
 | `src/app/features/article-viewer`            | Lector y estados 404/503                                                                  |
 | `src/app/features/not-found`                 | 404 global de la ruta comodín                                                             |
+| `src/app/features/challenges`                | Desafíos de programación estáticos (`/challenges`)                                        |
 | `src/app/features/admin`                     | Acceso, denegado, lista, editor y marco del Estudio                                       |
-| `src/app/shared`                             | Cabecera, pie, tarjetas, etiquetas, esqueleto, botón de copiar, medalla sin conexión      |
+| `src/app/shared`                             | Cabecera, pie, tarjetas, etiquetas, esqueleto, botón de copiar, sello y nota sin conexión |
 | `public/content`                             | Corpus de Markdown para importar                                                          |
-| `scripts/`                                   | Generador de entorno, metadatos del sitio, importador y semilla del admin de emulador     |
+| `scripts/`                                   | Entorno, metadatos del sitio, copia sin conexión, importador, exportación, capturas       |
 | `firestore.rules` / `firestore.indexes.json` | Seguridad e índice compuesto del catálogo                                                 |
 | `docs/files`                                 | Diseño, arquitectura, auditoría y notas operativas                                        |
 
@@ -79,6 +80,7 @@ Los guardados usan un lote de escritura (metadatos + cuerpo). Las eliminaciones 
 2. Lector: escucha la entrada y `body/current`, luego `MarkdownParserService.compile` (`marked` → `DOMPurify.sanitize`) → `[innerHTML]` mediante `DomSanitizer.bypassSecurityTrustHtml`.
 3. El resaltado de sintaxis se carga de forma diferida (fragmento de `highlight.js`) y se agregan botones de copiar a los bloques de código.
 4. Las lecturas públicas envuelven el flujo con `retryTransient` (2 intentos, 400 ms y luego 800 ms) para los errores clasificados como `offline`. Una lista vacía o un documento ausente servidos solo desde la caché local de Firestore también se clasifican como `offline`, para que una caída no se confunda con un diario vacío ni con un 404.
+5. Si la lectura falla, `OfflineSnapshotService` descarga `/offline/journal.json` (generado en el build desde `public/content`) y la vista muestra esas entradas bajo la nota «Estás leyendo sin conexión», con la fecha de la copia y «Intentar de nuevo». Un «no encontrado» nunca se rellena con la copia. Si la copia tampoco llega, se ve el estado de error.
 
 ## SEO y hosting
 
@@ -96,11 +98,11 @@ Los guardados usan un lote de escritura (metadatos + cuerpo). Las eliminaciones 
 | `npm run lint`                                         | Verificación con Prettier                                                                          |
 | `npm run emulators` / `import:emulator` / `seed:admin` | Pila local                                                                                         |
 
-CI: `.github/workflows/firebase-hosting.yml` compila en `main` y despliega Hosting cuando están los secretos.
+CI: `.github/workflows/firebase-hosting.yml` corre lint, pruebas (unitarias, importador, reglas y E2E con emuladores) y build en `main`, y despliega Hosting, reglas e índices cuando están los secretos. Ver `hosting.md`.
 
 ## Restricciones (por diseño)
 
-- Solo Spark: sin Cloud Functions, sin copias de seguridad administradas, sin App Check por ahora.
+- Solo Spark: sin Cloud Functions ni copias de seguridad administradas (hay exportación manual y semanal). App Check está preparado y se activa con `FIREBASE_APPCHECK_SITE_KEY`.
 - Una sola puerta binaria de admin; sin roles de varios autores.
-- Sin respaldo local con Markdown o `index.json` si Firestore no responde.
+- La copia sin conexión es de solo lectura y refleja `public/content` en el momento del build; puede quedar atrás de lo publicado desde el Estudio, y por eso siempre se señala.
 - Los 404 blandos siguen siendo HTTP 200 con la reescritura de la SPA en Hosting.

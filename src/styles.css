@@ -640,7 +640,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 }
 
 .studio__kicker,
-.preview h2 {
+.preview > h2 {
   margin: 0;
   color: var(--color-accent-ink);
   font-family: var(--font-hand);
@@ -775,7 +775,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
   background: var(--color-surface);
 }
 
-.preview h2 {
+.preview > h2 {
   margin: 0 1.5rem 0.5rem;
 }
 

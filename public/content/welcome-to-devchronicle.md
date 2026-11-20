@@ -2,7 +2,7 @@
 title: Bienvenido a DevChronicle
 author: Hugo Colmenares
 date: 2026-09-08
-tags: [journal, markdown]
+tags: [diario, markdown]
 excerpt: Por qué este portal guarda cada entrada como un archivo Markdown y trata la columna de lectura como el producto.
 ---
 

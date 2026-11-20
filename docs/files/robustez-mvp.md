@@ -31,11 +31,11 @@ Antes de añadir nada, conviene no repetir lo que ya existe:
   enlace roto.
 - Confirmación antes de borrar y aviso de conexión (“Diario sin conexión”).
 - SEO por ruta, `robots.txt`, `sitemap.xml`, 404 con `noindex` y cabeceras de seguridad en Hosting.
-- Pruebas unitarias de catálogo, archivo, lector, Studio, guard de admin y SEO.
+- Pruebas unitarias de catálogo, archivo, lector, Estudio, guard de admin y SEO.
 
 ## Prioridad 1: ahora, coste bajo
 
-1. **Guard de cambios sin guardar en Studio.** Un `CanDeactivate` más `beforeunload` evita perder un
+1. **Guard de cambios sin guardar en el Estudio.** Un `CanDeactivate` más `beforeunload` evita perder un
    markdown largo al navegar o recargar. Es el fallo más caro para el único autor del sitio.
 2. **Reintento con backoff en lecturas.** Un fallo transitorio de Firestore (`unavailable`,
    `deadline-exceeded`) no debería dejar la portada vacía. Reintentar la lectura con un botón
@@ -50,7 +50,7 @@ Antes de añadir nada, conviene no repetir lo que ya existe:
    gratuito y detecta regresiones.
 6. **Presupuestos de rendimiento.** Configurar `budgets` en `angular.json` para que el bundle del
    lector no crezca sin avisar. El resaltado ya es diferido; conviene que siga siéndolo.
-7. **Exportación manual desde Studio.** Descargar un JSON o un ZIP de Markdown de todas las entradas.
+7. **Exportación manual desde el Estudio.** Descargar un JSON o un ZIP de Markdown de todas las entradas.
    Firestore managed backups exige Blaze; una exportación manual cubre el riesgo real del MVP sin
    coste y encaja con el importador que ya existe.
 

@@ -1,9 +1,12 @@
 import { normalizeTag, normalizeTags } from './tag-normalize';
 
 describe('tag-normalize', () => {
-  it('collapses bilingual architecture tags', () => {
-    expect(normalizeTag('arquitectura')).toBe('architecture');
-    expect(normalizeTag('Architecture')).toBe('architecture');
+  it('une las etiquetas bilingües en su forma en español', () => {
+    expect(normalizeTag('arquitectura')).toBe('arquitectura');
+    expect(normalizeTag('Architecture')).toBe('arquitectura');
+    expect(normalizeTag('design')).toBe('diseno');
+    expect(normalizeTag('journal')).toBe('diario');
+    expect(normalizeTag('typography')).toBe('tipografia');
   });
 
   it('leaves distinct technical tags alone', () => {
@@ -14,7 +17,7 @@ describe('tag-normalize', () => {
   it('deduplicates a mixed list', () => {
     expect(normalizeTags(['arquitectura', 'architecture', 'Angular', 'nestjs'])).toEqual([
       'angular',
-      'architecture',
+      'arquitectura',
       'nestjs',
     ]);
   });

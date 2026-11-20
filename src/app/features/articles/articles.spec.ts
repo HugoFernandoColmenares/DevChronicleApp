@@ -201,7 +201,7 @@ describe('ArticlesComponent', () => {
     buttonWithText(fixture.nativeElement, '.pager__step', 'Siguiente').click();
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.filter', 'architecture').click();
+    buttonWithText(fixture.nativeElement, '.filter', 'arquitectura').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual([
@@ -232,12 +232,12 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
-    const architecture = filters.filter((node) => node.textContent?.trim() === 'architecture');
-    const spanishDuplicate = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const unified = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const english = filters.filter((node) => node.textContent?.trim() === 'architecture');
 
-    expect(architecture).toHaveLength(1);
-    expect(spanishDuplicate).toHaveLength(0);
-    // All + 10 normalized tags (architecture/arquitectura collapsed).
+    expect(unified).toHaveLength(1);
+    expect(english).toHaveLength(0);
+    // All + 10 normalized tags (architecture/arquitectura unidas).
     expect(filters).toHaveLength(11);
   });
 

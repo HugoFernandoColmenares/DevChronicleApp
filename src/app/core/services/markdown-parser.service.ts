@@ -41,7 +41,7 @@ export class MarkdownParserService {
 
   private toMetadata(frontmatter: string, slug: string, markdown: string): ArticleMetadata {
     const fields = this.parseFields(frontmatter);
-    const category = fields['category'] || 'journal';
+    const category = fields['category'] || 'diario';
     const date = fields['date'] ?? '';
     const publishedAt = /^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T12:00:00.000Z` : null;
 

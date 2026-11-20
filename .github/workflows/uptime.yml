@@ -20,7 +20,7 @@ jobs:
           set -euo pipefail
           base="${SITE_URL:-https://devchronicle-hugo.web.app}"
           base="${base%/}"
-          for path in "/" "/articles" "/challenges"; do
+          for path in "/" "/articles" "/challenges" "/offline/journal.json"; do
             code=$(curl -sS -o /tmp/body -w "%{http_code}" --max-time 30 "$base$path")
             echo "$base$path → HTTP $code"
             if [ "$code" != "200" ]; then

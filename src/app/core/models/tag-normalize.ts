@@ -1,6 +1,12 @@
-/** Collapse known bilingual duplicates so filters and chips share one label. */
+/**
+ * Une los duplicados bilingües conocidos en su forma en español, para que los filtros y
+ * las etiquetas compartan un solo nombre aunque quede contenido antiguo en inglés.
+ */
 const TAG_ALIASES: Record<string, string> = {
-  arquitectura: 'architecture',
+  architecture: 'arquitectura',
+  design: 'diseno',
+  journal: 'diario',
+  typography: 'tipografia',
 };
 
 export function normalizeTag(tag: string): string {

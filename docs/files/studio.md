@@ -1,14 +1,14 @@
-# Studio
+# Estudio
 
-`/admin` is the authoring surface. It shares Civic Terminal tokens: ruled-paper canvas, slate chrome, and teal accent.
+`/admin` es el área de autoría. Usa la misma libreta que la parte pública: escritorio, hoja con renglones y tinta azul petróleo. La pestaña «Estudio» solo aparece en la navegación cuando la sesión pertenece a una cuenta autora (`admins/{uid}`); el resto de visitantes solo ve «Acceso del autor» en el pie.
 
-- The list shows drafts and published notes with status, category, reading time, and updated date.
-- **Export backup** downloads a JSON pack of every entry (also available via `npm run export:cloud` / scheduled CI).
-- **New entry** opens the editor. The slug is derived from the title until edited by hand. After the first save the slug is fixed because it is the document id.
-- The preview panel compiles Markdown in the browser with the same syntax highlighting as the public reader.
-- **Save draft** writes `status: draft` and `publishedAt: null`.
-- **Publish** writes `status: published` and the chosen date at 12:00 UTC.
-- **Delete** removes the card and `body/current`. Firestore does not cascade-delete subcollections, so the app deletes both documents.
-- Optimistic concurrency compares `updatedAt` on save; a conflict offers a reload.
+- El listado muestra borradores y notas publicadas, con estado (borrador o publicada), categoría, tiempo de lectura y fecha de actualización.
+- «Exportar copia de seguridad» descarga un JSON con todas las entradas (también disponible con `npm run export:cloud` y con el workflow programado).
+- «Nueva entrada» abre el editor. El slug sale del título hasta que se edita a mano. Al guardar por primera vez queda fijo porque es el id del documento.
+- La vista previa compila el Markdown en el navegador con el mismo resaltado que el lector público.
+- «Guardar borrador» escribe `status: draft` y `publishedAt: null`.
+- «Publicar» escribe `status: published` y la fecha elegida, a las 12:00 UTC.
+- «Eliminar» borra la ficha y `body/current`. Firestore no borra subcolecciones en cascada, así que la app borra los dos documentos.
+- **Concurrencia optimista:** el guardado corre en una transacción que compara `updatedAt` con la revisión cargada. Si otra pestaña guardó antes, aparece «La entrada cambió en otra pestaña» y se ofrece cargar la versión nueva.
 
-The public `/post/:slug` route only shows published notes. Drafts are reviewed in the editor preview.
+La ruta pública `/post/:slug` solo muestra notas publicadas. Los borradores se revisan en la vista previa del editor.
