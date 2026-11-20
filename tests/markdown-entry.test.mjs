@@ -21,8 +21,8 @@ test('imports the existing catalog by filename slug', () => {
   assert.equal(entries.length >= 11, true);
 
   const welcome = entries.find((item) => item.entry.slug === 'welcome-to-devchronicle');
-  assert.equal(welcome.entry.title, 'Welcome to DevChronicle');
-  assert.equal(welcome.entry.summary.startsWith('Why this portal'), true);
+  assert.equal(welcome.entry.title, 'Bienvenida a DevChronicle');
+  assert.equal(welcome.entry.summary.startsWith('Por qué este portal'), true);
   assert.deepEqual(welcome.entry.tags, ['journal', 'markdown']);
   assert.equal(welcome.entry.status, 'published');
   assert.equal(welcome.entry.publishedAt, '2026-09-08T12:00:00.000Z');

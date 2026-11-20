@@ -104,6 +104,12 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         run: npx firebase deploy --only hosting,firestore:rules,firestore:indexes --project devchronicle-hugo --non-interactive
 
+      - name: Import Markdown corpus into Firestore
+        if: steps.gate.outputs.deploy == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: node scripts/import-content.mjs --project devchronicle-hugo
+
       - name: Skip deploy
         if: steps.gate.outputs.deploy != 'true'
         run: echo "Deploy skipped because FIREBASE_SERVICE_ACCOUNT or FIREBASE_* web config secrets are missing. The job stays green."

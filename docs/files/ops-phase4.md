@@ -19,7 +19,7 @@ Nice-to-haves shipped alongside the Spark MVP. Deferred items stay deferred on p
 | :------------------------------------ | :------------------------------------------------------------------------ |
 | Multi-author `editor` / `admin` roles | Single-author MVP; `admins/{uid}` stays binary until collaborators appear |
 | Privacy-respecting analytics          | No product decision that needs telemetry yet                              |
-| Full SSR / Functions HTML shell       | Remains Spark-bound; see `acabado-publico.md` Phase 2 decision            |
+| Full SSR / Functions HTML shell       | Remains Spark-bound; see `public-finish.md` Phase 2 decision              |
 
 ## Secrets / vars
 

@@ -38,7 +38,7 @@ enforcement and full E2E in CI still need secrets/emulators on the runner.
 | 2.5 | Playwright smoke against emulators: public browse → admin login → create → publish → search → delete                                                                                    | M6        | `npm run test:e2e`; emulator author button                             |
 | 2.6 | axe (or equivalent) in unit/E2E CI; fix contrast on pills/muted text; manage focus on route change and SweetAlert                                                                       | M1        | axe in Playwright; FocusService; muted/pill contrast                   |
 | 2.7 | Document / script `test:rules` alongside a running stack (alternate ports or `emulators:exec` only)                                                                                     | M6        | `firebase.rules-test.json` port 8180                                   |
-| 2.8 | Prerender critical routes **or** Hosting/Cloud Function HTML shell for `/post/:slug` + true HTTP 404                                                                                    | H1, H3    | **Deferred** on Spark; documented in `acabado-publico.md`              |
+| 2.8 | Prerender critical routes **or** Hosting/Cloud Function HTML shell for `/post/:slug` + true HTTP 404                                                                                    | H1, H3    | **Deferred** on Spark; documented in `public-finish.md`                |
 | 2.9 | Keep dependency cadence: Firebase/Node engine alignment (Node 22 vs packages asking 24)                                                                                                 | H5, L6    | `engines.node: >=22 <25`                                               |
 
 **Exit criteria:** Forced Firestore outage shows retry + offline medal 100% of the time; conflict on dual-tab save; E2E + rules + import in CI; App Check on in staging.
@@ -48,7 +48,7 @@ enforcement and full E2E in CI still need secrets/emulators on the runner.
 ## Phase 3 — Design refresh
 
 Make Civic Terminal feel authored, not generated. Preserve slate code fences and reading measure.
-**Status: implemented in code (Nov 2026).** Re-capture `docs/screenshots` when convenient.
+**Status: implemented in code (Nov 2026).** Screenshots refreshed with `npm run screenshots`.
 
 | #   | Action                                                                                                            | Addresses     | Notes                                                   |
 | :-- | :---------------------------------------------------------------------------------------------------------------- | :------------ | :------------------------------------------------------ |
@@ -60,7 +60,7 @@ Make Civic Terminal feel authored, not generated. Preserve slate code fences and
 | 3.6 | 2–3 intentional motions (e.g. featured ink fade, fence toolbar appear, filter expand)—not decoration spam         | Design taste  | Hero ink, featured rise, fence toolbar, filter height   |
 | 3.7 | Bilingual strategy: UI locale toggle **or** normalize tags/series naming                                          | M3            | `tag-normalize` aliases (e.g. arquitectura)             |
 | 3.8 | Restyle confirm modals to match Civic Terminal (or replace SweetAlert with in-app dialog)                         | L2            | Glyph-free Swal, serif title, teal actions              |
-| 3.9 | Refresh `docs/screenshots` after the visual pass                                                                  | —             | Marked stale in design.md until re-shot                 |
+| 3.9 | Refresh `docs/screenshots` after the visual pass                                                                  | —             | Re-shot via `npm run screenshots`                       |
 
 **Exit criteria:** Brand test—landing without nav still reads as DevChronicle; Lighthouse a11y ≥ 90 on `/` and `/post/:slug`; design.md updated to the new tokens.
 

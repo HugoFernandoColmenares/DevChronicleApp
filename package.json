@@ -16,6 +16,7 @@
     "seed:admin": "node scripts/seed-emulator-admin.mjs --emulator --project demo-devchronicle",
     "export:emulator": "node scripts/export-firestore.mjs --emulator --project demo-devchronicle",
     "export:cloud": "node scripts/export-firestore.mjs --project devchronicle-hugo",
+    "screenshots": "node scripts/capture-screenshots.mjs",
     "lint": "prettier --check ."
   },
   "private": true,

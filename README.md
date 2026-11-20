@@ -16,7 +16,7 @@ Operational notes in Spanish live in `docs/files`. Related repositories: [DevChr
 | [`docs/files/improvement-plan.md`](docs/files/improvement-plan.md) | Phased backlog (quick wins → security → design → nice-to-haves) |
 | [`docs/screenshots/`](docs/screenshots/)                           | Desktop and mobile captures of public and Studio states         |
 
-Spanish operational notes (`autenticacion.md`, `modelo-de-datos.md`, `robustez-mvp.md`, and others) remain alongside the English audit set in `docs/files`.
+Operational docs in `docs/files` are English (`authentication.md`, `data-model.md`, `robustness-mvp.md`, and others). Older Spanish filenames redirect to those pages.
 
 ## Surfaces
 
@@ -44,7 +44,7 @@ Unknown URLs render a 404 view instead of redirecting home.
 
 ![Not found page](docs/screenshots/not-found-desktop.png)
 
-Every route sets its title, description, canonical link, Open Graph tags, and JSON-LD, while `/admin` stays `noindex`. `robots.txt` and `sitemap.xml` are generated from `NG_APP_SITE_URL` at build time, and `public/social/devchronicle-cover.png` is the site-level share card. Social crawlers do not run the client, so per-article previews would need prerendering; see [`docs/files/acabado-publico.md`](docs/files/acabado-publico.md).
+Every route sets its title, description, canonical link, Open Graph tags, and JSON-LD, while `/admin` stays `noindex`. `robots.txt` and `sitemap.xml` are generated from `NG_APP_SITE_URL` at build time, and `public/social/devchronicle-cover.png` is the site-level share card. Social crawlers do not run the client, so per-article previews would need prerendering; see [`docs/files/public-finish.md`](docs/files/public-finish.md).
 
 ## Resilience
 
@@ -52,7 +52,7 @@ The public views retry transient Firestore failures twice with backoff (400 ms a
 
 ![Archive showing the inline retry state](docs/screenshots/articles-retry-desktop.png)
 
-Studio tracks the last loaded or saved form state. Navigating away with pending edits asks for confirmation, and reloading or closing the tab triggers the browser's `beforeunload` warning. Saving, publishing, or deleting marks the editor clean, so the next navigation is not interrupted. See [`docs/files/robustez-mvp.md`](docs/files/robustez-mvp.md) for the remaining backlog.
+Studio tracks the last loaded or saved form state. Navigating away with pending edits asks for confirmation, and reloading or closing the tab triggers the browser's `beforeunload` warning. Saving, publishing, or deleting marks the editor clean, so the next navigation is not interrupted. See [`docs/files/robustness-mvp.md`](docs/files/robustness-mvp.md) for the remaining backlog.
 
 ![Studio asking before discarding unsaved changes](docs/screenshots/admin-unsaved-changes.png)
 
@@ -97,7 +97,7 @@ Run the four commands above, then walk the surface with real emulator data:
 7. Stop the Firestore emulator, reload `/articles`, and confirm the inline **Try again** state. Start Firestore again and use the button; the catalog recovers without a reload.
 8. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
 
-The images under `docs/screenshots` come from this local flow, captured at 1440 px wide (390 px for the mobile landing).
+The images under `docs/screenshots` come from this local flow (`npm run screenshots` with emulators + `ng serve`), captured at 1440×900 desktop and iPhone-width mobile.
 
 ## Scripts
 
@@ -150,7 +150,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | `firestore.rules`        | Public read of published entries, admin writes, console-only `admins`            |
 | `firestore.indexes.json` | `status` + `publishedAt` for the public catalog                                  |
 | `firebase.json`          | Hosting SPA rewrite and emulator ports                                           |
-| `docs/files`             | English architecture/design/audit/plan plus Spanish operational notes            |
+| `docs/files`             | English architecture, design, audit, ops; Spanish filenames stub to English      |
 
 Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. The wildcard route renders the 404 view, and `/404` is an explicit alias.
 
@@ -160,7 +160,7 @@ User-facing alerts go through `NotificationService` (`src/app/core/services/noti
 
 ## Reading entries
 
-The catalog listens to `entries` where `status == published`, ordered by `publishedAt`. Opening an entry reads that document and `entries/{slug}/body/current`, then compiles the Markdown in the browser. The body document holds the Markdown without frontmatter so the list stays small and each document stays under the 1 MiB Firestore limit. See `docs/files/modelo-de-datos.md`.
+The catalog listens to `entries` where `status == published`, ordered by `publishedAt`. Opening an entry reads that document and `entries/{slug}/body/current`, then compiles the Markdown in the browser. The body document holds the Markdown without frontmatter so the list stays small and each document stays under the 1 MiB Firestore limit. See `docs/files/data-model.md`.
 
 If Firestore cannot be reached, the header shows “Journal offline” and the page reports that the journal could not be loaded. There is no local file fallback.
 

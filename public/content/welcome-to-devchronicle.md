@@ -1,24 +1,24 @@
 ---
-title: Welcome to DevChronicle
+title: Bienvenida a DevChronicle
 author: Hugo Colmenares
 date: 2026-09-08
 tags: [journal, markdown]
-excerpt: Why this portal stores every entry as local markdown and treats the reading column as the product.
+excerpt: Por qué este portal guarda cada entrada como Markdown local y trata la columna de lectura como el producto.
 ---
 
-DevChronicle is a markdown-driven journal. The interface exists to retrieve notes quickly, keep code readable, and stay out of the way of the prose.
+DevChronicle es un diario impulsado por Markdown. La interfaz existe para recuperar notas con rapidez, mantener el código legible y no interponerse en la prosa.
 
-## What belongs here
+## Qué cabe aquí
 
-Architecture decisions, Angular practice, and short essays that you would otherwise lose in a chat log or a scratch file. Each entry starts as a `.md` file in `public/content`. The importer upserts that corpus into Cloud Firestore; the live catalog reads published documents, not a static `index.json`.
+Decisiones de arquitectura, práctica con Angular y ensayos cortos que de otro modo se perderían en un chat o en un archivo suelto. Cada entrada empieza como un `.md` en `public/content`. El importador vuelca ese corpus a Cloud Firestore; el catálogo en vivo lee documentos publicados, no un `index.json` estático.
 
-> Content is the product. Chrome is a retrieval tool.
+> El contenido es el producto. El cromo es una herramienta de recuperación.
 
-## How an entry is published
+## Cómo se publica una entrada
 
-1. Add a markdown file with YAML frontmatter under `public/content`.
-2. Run the importer (`npm run import:emulator` locally, or `node scripts/import-content.mjs --project <id>` for the cloud project).
-3. Open `/post/<slug>` to read the compiled article from Firestore.
+1. Añade un Markdown con frontmatter YAML bajo `public/content`.
+2. Ejecuta el importador (`npm run import:emulator` en local, o `node scripts/import-content.mjs --project <id>` en la nube).
+3. Abre `/post/<slug>` para leer el artículo compilado desde Firestore.
 
 ```ts
 export interface ArticleMetadata {
@@ -31,4 +31,4 @@ export interface ArticleMetadata {
 }
 ```
 
-Studio can also create and publish entries directly. Markdown in `public/content` remains the durable import source for seeding and recovery.
+Studio también puede crear y publicar entradas directamente. El Markdown en `public/content` sigue siendo la fuente durable para sembrar y recuperar el diario.

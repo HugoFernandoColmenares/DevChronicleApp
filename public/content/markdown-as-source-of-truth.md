@@ -1,31 +1,31 @@
 ---
-title: Markdown as the source of truth
+title: Markdown como fuente de verdad
 author: Hugo Colmenares
 date: 2026-09-12
 tags: [markdown, architecture]
-excerpt: Frontmatter, Firestore documents, and a parser boundary so the UI never owns content formatting.
+excerpt: Frontmatter, documentos en Firestore y un límite de parser para que la UI no posea el formato del contenido.
 ---
 
-The UI receives safe HTML. It does not parse YAML for the live catalog, choose a highlighter theme, or invent publishing state. Those jobs live in core services and in the importer that turns `public/content/*.md` into Firestore entries.
+La UI recibe HTML seguro. No parsea YAML para el catálogo en vivo, no elige el tema del resaltador ni inventa el estado de publicación. Esos trabajos viven en servicios de núcleo y en el importador que convierte `public/content/*.md` en entradas de Firestore.
 
-## The read path
+## La ruta de lectura
 
-1. `JournalService` listens to published `entries` (and `entries/{slug}/body/current` for the reader).
-2. `MarkdownParserService` compiles the stored Markdown body with `marked`.
-3. `DOMPurify` removes scripts while keeping highlight classes.
-4. `SyntaxHighlightService` lazy-loads a **subset** of Highlight.js languages after the HTML is bound.
+1. `JournalService` escucha las `entries` publicadas (y `entries/{slug}/body/current` en el lector).
+2. `MarkdownParserService` compila el cuerpo Markdown almacenado con `marked`.
+3. `DOMPurify` elimina scripts y conserva las clases de resaltado.
+4. `SyntaxHighlightService` carga bajo demanda un **subconjunto** de lenguajes de Highlight.js después de enlazar el HTML.
 
 ```ts
 const article = this.parser.compile(markdown);
 this.sanitizer.bypassSecurityTrustHtml(article);
 ```
 
-Bypass the Angular sanitizer only after purification. Custom class names on `pre` and `code` must survive, or the highlighter cannot run.
+Solo omite el sanitizador de Angular después de la purificación. Los nombres de clase en `pre` y `code` deben sobrevivir; si no, el resaltador no puede ejecutarse.
 
-## Import vs runtime
+## Importación frente a runtime
 
-`public/content` is the authoring/import corpus. Runtime discovery no longer depends on `/content/index.json`. New cloud-only Studio posts exist in Firestore until you export or mirror them back into Markdown.
+`public/content` es el corpus de autoría e importación. El descubrimiento en runtime ya no depende de `/content/index.json`. Las notas creadas solo en Studio viven en Firestore hasta que las exportes o las reflejes de nuevo en Markdown.
 
-## Slugs are data, not paths
+## Los slugs son datos, no rutas
 
-A slug may contain lowercase letters, numbers, and hyphens. Anything else is rejected before a document fetch so a crafted URL cannot walk the client tree.
+Un slug admite letras minúsculas, números y guiones. Cualquier otra cosa se rechaza antes de pedir el documento, para que una URL fabricada no recorra el árbol del cliente.

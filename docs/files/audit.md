@@ -48,7 +48,7 @@ Roles: **anonymous reader** and **single admin author** (`admins/{uid}`). There 
 
 ### H1 — Soft HTTP 200 for unknown URLs and missing posts
 
-- **Evidence:** Hosting SPA rewrite serves `index.html` for all paths; client shows NotFound / “not published” UI with `noindex`, but status remains 200. Documented in Spanish ops notes and README.
+- **Evidence:** Hosting SPA rewrite serves `index.html` for all paths; client shows NotFound / “not published” UI with `noindex`, but status remains 200. Documented in `public-finish.md` and README.
 - **Impact:** Crawlers and uptime monitors mis-classify missing URLs; link equity and monitoring suffer.
 - **Screenshots:** [`not-found-desktop.png`](../screenshots/not-found-desktop.png), [`article-not-found-desktop.png`](../screenshots/article-not-found-desktop.png), [`not-found-mobile.png`](../screenshots/not-found-mobile.png).
 
@@ -59,7 +59,7 @@ Roles: **anonymous reader** and **single admin author** (`admins/{uid}`). There 
 
 ### H3 — Per-article Open Graph previews impossible without prerender
 
-- **Evidence:** Live meta on `/post/welcome-to-devchronicle` is correct **after** JS (`BlogPosting` JSON-LD, canonical, description). Social crawlers see only `index.html` site-wide card (`acabado-publico.md`).
+- **Evidence:** Live meta on `/post/welcome-to-devchronicle` is correct **after** JS (`BlogPosting` JSON-LD, canonical, description). Social crawlers see only `index.html` site-wide card (`public-finish.md`).
 - **Impact:** Shares of individual essays look generic.
 
 ### H4 — No optimistic concurrency on Studio saves

@@ -1,14 +1,14 @@
 ---
-title: Angular signals in practice
+title: Signals de Angular en la práctica
 author: Hugo Colmenares
 date: 2026-09-10
 tags: [angular, architecture]
-excerpt: How signal inputs, computed state, and deferred views keep a content site small and explicit.
+excerpt: Cómo los signal inputs, el estado computed y las vistas diferidas mantienen un sitio de contenido pequeño y explícito.
 ---
 
-Angular 22 treats signals as the default input surface. DevChronicle uses them for article cards, tag filters, and compiled HTML so change detection stays local.
+Angular 22 trata los signals como la superficie de entrada por defecto. DevChronicle los usa en las tarjetas de artículo, los filtros por etiqueta y el HTML compilado para que la detección de cambios siga siendo local.
 
-## Inputs without decorators
+## Inputs sin decoradores
 
 ```ts
 @Component({
@@ -21,11 +21,11 @@ export class ArticleCardComponent {
 }
 ```
 
-The card does not fetch. It receives metadata and renders. Fetching stays in `ContentFetcherService`.
+La tarjeta no hace fetch. Recibe metadatos y renderiza. La obtención de datos permanece en `JournalService`.
 
-## Defer the heavy work
+## Diferir el trabajo pesado
 
-Syntax highlighting is lazy-loaded when an article body exists. The viewer placeholder is a skeleton, not an empty page.
+El resaltado de sintaxis se carga de forma diferida cuando existe el cuerpo del artículo. El marcador de posición del lector es un esqueleto, no una página vacía.
 
 ```html
 @defer (when compiledHtml()) {
@@ -35,4 +35,4 @@ Syntax highlighting is lazy-loaded when an article body exists. The viewer place
 }
 ```
 
-Keep the highlighter behind that gate. The landing page never pays for it.
+Mantén el resaltador detrás de esa puerta. La portada nunca paga ese coste.

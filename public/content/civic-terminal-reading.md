@@ -1,23 +1,24 @@
 ---
-title: Civic Terminal, built for reading
+title: Civic Terminal, pensado para leer
 author: Hugo Colmenares
 date: 2026-09-11
 tags: [design, typography]
-excerpt: A light canvas, a slate console, and a 70-character measure: the rules that keep long sessions calm.
+excerpt: Un lienzo de papel, una pizarra slate y una medida de 70 caracteres: las reglas que mantienen calmadas las sesiones largas.
 ---
 
-Civic Terminal is a documentation-light canvas with IDE-dark code. The reading column never exceeds `70ch`. Navigation and footers use Console Slate so the article remains the brightest surface.
+Civic Terminal es un lienzo de lectura con código en tono pizarra. La columna de lectura no supera `70ch`. La navegación y el pie usan slate para que el artículo siga siendo la superficie más clara.
 
-## Type roles
+## Roles tipográficos
 
-- **Inter** for titles, navigation, and UI.
-- **JetBrains Mono** for fences, inline code, and language labels.
+- **Source Serif 4** para la marca y los titulares.
+- **Source Sans 3** para la interfaz y la prosa.
+- **JetBrains Mono** para cercas de código, código en línea y etiquetas de lenguaje.
 
-Article bodies sit at `1.125rem` to reduce strain. Spacing follows an 8px scale: bit, byte, kilobyte, megabyte.
+Los cuerpos van a `1.125rem` para reducir fatiga. El espaciado sigue una escala de 8px: bit, byte, kilobyte, megabyte.
 
-## Code as an object
+## El código como objeto
 
-Fences use Console Slate, a language label, and a copy control. Horizontal overflow scrolls inside the block so the page width never breaks.
+Las cercas usan fondo slate, una etiqueta de lenguaje y un control de copia. El desbordamiento horizontal se desplaza dentro del bloque para que el ancho de página no se rompa.
 
 ```html
 <pre aria-label="Code snippet in HTML">
@@ -25,4 +26,4 @@ Fences use Console Slate, a language label, and a copy control. Horizontal overf
 </pre>
 ```
 
-Links in prose grow a Tech Azure underline on hover. That is the only decoration the body needs.
+Los enlaces en la prosa ganan un subrayado en el acento teal al pasar el cursor. Esa es la única decoración que el cuerpo necesita.

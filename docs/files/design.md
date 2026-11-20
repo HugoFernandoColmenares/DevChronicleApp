@@ -2,7 +2,7 @@
 
 DevChronicle’s public surface is nicknamed **Civic Terminal**: a field notebook for working software notes. The product promise is retrieval and readability—chrome should disappear behind prose and code.
 
-Spanish operational notes for the same tokens live in [`diseno.md`](./diseno.md). This file is the English source of truth for the UI system as implemented in `src/styles.css` and feature styles (**Phase 3 refresh, Nov 2026**).
+This file is the English source of truth for the UI system as implemented in `src/styles.css` and feature styles (**Phase 3 refresh, Nov 2026**). Older Spanish path [`diseno.md`](./diseno.md) redirects here.
 
 ## Brand and voice
 
@@ -57,7 +57,7 @@ Three authored moments (respect `prefers-reduced-motion`):
 
 ## Screenshots
 
-Captures under `docs/screenshots/` predate the Phase 3 refresh and should be re-shot after deploy (`ng serve` + emulators, 1440×900 / 390×844). Treat existing PNGs as historical until replaced.
+Captures under `docs/screenshots/` are refreshed with `npm run screenshots` against `ng serve` + emulators (1440×900 desktop, 390×844 mobile).
 
 ## Art direction
 
