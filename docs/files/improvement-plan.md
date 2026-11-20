@@ -2,6 +2,8 @@
 
 Plan por fases derivado de [`audit.md`](./audit.md). Cada fila indica su estado: ✅ hecho, 🟡 preparado pero pendiente de configuración, ⏳ abierto, ⏸ diferido a propósito. Se prefieren las restricciones del plan Spark (Auth + Firestore + Hosting), salvo que una fase opte explícitamente por Blaze o por un servicio nuevo.
 
+> La lista accionable de lo que queda (pasos, comandos y verificación) está en [`PENDIENTES.md`](./PENDIENTES.md).
+
 > **Estado al 20 nov 2026 (noche):** las fases 1 a 4 están aplicadas salvo 1.2 (avisos de dependencias de Firebase), 2.3 (App Check espera la clave) y lo diferido a conciencia (2.8, 4.6, 4.7, 4.9). Además se añadió la copia sin conexión estática (`/offline/journal.json`), siempre señalada como tal.
 
 ---
