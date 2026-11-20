@@ -69,10 +69,15 @@ export class JournalService {
         (entry) => {
           stopBody();
           if (!entry.exists() || entry.data()['status'] !== 'published') {
-            if (entry.metadata.fromCache && this.isBrowserOffline()) {
+            // Sin red y sin caché, Firestore responde "no existe" desde la caché local:
+            // es una caída, no un artículo faltante.
+            if (
+              isMissingFromCache(entry) ||
+              (entry.metadata.fromCache && this.isBrowserOffline())
+            ) {
               this.fail(
                 subscriber,
-                new JournalError('offline', 'Firestore is unavailable.'),
+                new JournalError('offline', 'Firestore no está disponible.'),
                 'public',
               );
               return;
@@ -88,7 +93,7 @@ export class JournalService {
               if (body.metadata.fromCache && this.isBrowserOffline()) {
                 this.fail(
                   subscriber,
-                  new JournalError('offline', 'Firestore is unavailable.'),
+                  new JournalError('offline', 'Firestore no está disponible.'),
                   'public',
                 );
                 return;
@@ -153,7 +158,7 @@ export class JournalService {
           if (expected && currentUpdatedAt && currentUpdatedAt !== expected) {
             throw new JournalError(
               'conflict',
-              'This entry changed in another tab. Reload it before saving again.',
+              'Esta entrada cambió en otra pestaña. Vuelve a cargarla antes de guardar.',
             );
           }
         } else if (options?.expectedUpdatedAt) {
@@ -236,12 +241,22 @@ export class JournalService {
         { includeMetadataChanges: true },
         (snapshot) => {
           if (snapshot.metadata.fromCache) {
+            // Una lista vacía servida solo desde la caché significa que el servidor no respondió:
+            // se trata como caída para no mostrar un diario vacío (C2 de la auditoría).
+            if (!sawServer && isEmptyFromCache(snapshot)) {
+              this.fail(
+                subscriber,
+                new JournalError('offline', 'Firestore no está disponible.'),
+                audience,
+              );
+              return;
+            }
             if (this.isBrowserOffline()) {
               this.offline.set(true);
               if (!sawServer) {
                 this.fail(
                   subscriber,
-                  new JournalError('offline', 'Firestore is unavailable.'),
+                  new JournalError('offline', 'Firestore no está disponible.'),
                   audience,
                 );
               }
@@ -286,6 +301,22 @@ export class JournalService {
     }
     return journalError;
   }
+}
+
+/** Lista vacía que Firestore sirvió desde la caché local: no hubo respuesta del servidor. */
+export function isEmptyFromCache(snapshot: {
+  empty: boolean;
+  metadata: { fromCache: boolean };
+}): boolean {
+  return snapshot.empty && snapshot.metadata.fromCache;
+}
+
+/** Documento "inexistente" que solo se comprobó en la caché local: no es un 404 real. */
+export function isMissingFromCache(entry: {
+  exists(): boolean;
+  metadata: { fromCache: boolean };
+}): boolean {
+  return !entry.exists() && entry.metadata.fromCache;
 }
 
 function metadataFromSnapshot(id: string, data: DocumentData): ArticleMetadata {

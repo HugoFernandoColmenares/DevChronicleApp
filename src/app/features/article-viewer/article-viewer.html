@@ -1,8 +1,11 @@
 <section class="reader">
   <div class="article-canvas">
-    <a class="back" routerLink="/">Todas las entradas</a>
+    <a class="back" routerLink="/articles">← Todas las entradas</a>
 
     @if (article(); as entry) {
+      @if (showOfflineNotice()) {
+        <dev-offline-notice [generatedAt]="copyGeneratedAt()" (retry)="retry()" />
+      }
       <header class="mast">
         <div class="mast__meta">
           @let when = entry.metadata.publishedAt ?? entry.metadata.updatedAt;

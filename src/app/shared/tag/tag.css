@@ -5,24 +5,27 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.55rem;
-  border-radius: 0.3rem;
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  padding: 0.12rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--color-accent) 9%, var(--color-paper));
   color: var(--color-accent-ink);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   line-height: 1.4;
   text-transform: lowercase;
 }
 
-.tag--active {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 1px;
+.tag::before {
+  content: '#';
+  margin-right: 0.1rem;
+  opacity: 0.6;
 }
 
-:host-context(.card--featured) .tag {
-  background: color-mix(in srgb, var(--color-accent) 28%, transparent);
-  color: #d1fae5;
+.tag--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }

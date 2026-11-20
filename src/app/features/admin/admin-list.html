@@ -17,7 +17,7 @@
         @for (entry of entries(); track entry.slug) {
           <a class="studio__row" [routerLink]="['/admin/edit', entry.slug]">
             <span class="pill" [class.pill--on]="entry.status === 'published'">{{
-              entry.status
+              entry.status === 'published' ? 'publicada' : 'borrador'
             }}</span>
             <span class="studio__row-title">{{ entry.title }}</span>
             <span class="studio__row-meta">

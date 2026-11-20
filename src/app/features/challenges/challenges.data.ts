@@ -7,7 +7,7 @@ export const CHALLENGES: Challenge[] = [
     summary:
       'Escribe una función que sume todos los números pares desde 2 hasta un entero positivo dado.',
     difficulty: 'warmup',
-    tags: ['javascript', 'loops', 'basics'],
+    tags: ['javascript', 'bucles', 'fundamentos'],
     language: 'javascript',
     prompt: `Escribe una función llamada \`sumaNumerosPares\` que tome un número entero positivo como argumento y devuelva la suma de todos los números pares desde 2 hasta ese número.
 
@@ -42,7 +42,7 @@ Si el valor no es un número válido o es menor que 2, la función debe devolver
     summary:
       'Cuenta cuántas vocales (a, e, i, o, u) aparecen en una cadena, sin distinguir mayúsculas.',
     difficulty: 'warmup',
-    tags: ['javascript', 'strings', 'basics'],
+    tags: ['javascript', 'cadenas', 'fundamentos'],
     language: 'javascript',
     prompt: `Escribe una función llamada \`contarVocales\` que reciba una cadena y devuelva cuántas vocales contiene (\`a\`, \`e\`, \`i\`, \`o\`, \`u\`), sin importar mayúsculas o minúsculas.
 
@@ -79,7 +79,7 @@ Caracteres con tilde no cuentan como vocal en este reto. Si el argumento no es u
     title: 'Invertir palabras',
     summary: 'Invierte el orden de las palabras de una frase sin alterar las letras de cada una.',
     difficulty: 'practice',
-    tags: ['javascript', 'strings', 'arrays'],
+    tags: ['javascript', 'cadenas', 'arreglos'],
     language: 'javascript',
     prompt: `Escribe una función llamada \`invertirPalabras\` que reciba una frase y devuelva las mismas palabras en orden inverso.
 

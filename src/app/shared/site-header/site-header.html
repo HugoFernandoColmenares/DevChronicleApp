@@ -1,8 +1,8 @@
 <header class="bar">
-  <div class="container-fluid bar__inner">
+  <div class="bar__inner">
     <a class="brand" routerLink="/" aria-label="DevChronicle, inicio">
       <span class="brand__mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32" width="28" height="28" focusable="false">
+        <svg viewBox="0 0 32 32" width="32" height="32" focusable="false">
           <rect x="1" y="1" width="30" height="30" rx="3" class="brand__mark-plate" />
           <path
             class="brand__mark-rule"
@@ -14,11 +14,14 @@
           <text x="22" y="24" class="brand__mark-dc" text-anchor="middle">DC</text>
         </svg>
       </span>
-      <span class="brand__name">{{ siteName }}</span>
+      <span>
+        <span class="brand__name">{{ siteName }}</span>
+        <span class="brand__note">libreta de apuntes de software</span>
+      </span>
     </a>
 
     <nav class="nav" aria-label="Principal">
-      <dev-service-status />
+      <span class="nav__status"><dev-service-status /></span>
       <a
         routerLink="/"
         routerLinkActive="nav__link--active"
@@ -27,9 +30,11 @@
         Diario
       </a>
       <a routerLink="/articles" routerLinkActive="nav__link--active">Artículos</a>
-      <a routerLink="/challenges" routerLinkActive="nav__link--active">Challenges</a>
+      <a routerLink="/challenges" routerLinkActive="nav__link--active">Desafíos</a>
       @if (isAdmin()) {
-        <a routerLink="/admin" routerLinkActive="nav__link--active">Estudio</a>
+        <a class="nav__link--studio" routerLink="/admin" routerLinkActive="nav__link--active"
+          >Estudio</a
+        >
       }
     </nav>
   </div>

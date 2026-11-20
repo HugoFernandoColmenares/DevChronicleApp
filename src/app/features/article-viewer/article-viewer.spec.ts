@@ -9,6 +9,7 @@ import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
 import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
+import { OfflineSnapshotService } from '@core/services/offline-snapshot.service';
 
 import { ArticleViewerComponent } from './article-viewer';
 
@@ -30,17 +31,20 @@ function entry(partial: Partial<ArticleMetadata>): ArticleMetadata {
 }
 
 describe('ArticleViewerComponent', () => {
+  // Por defecto no hay copia sin conexión: las pruebas de caída ven el estado de error.
+  let snapshot: { list: ReturnType<typeof vi.fn>; entry: ReturnType<typeof vi.fn> };
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   let watchEntry: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    snapshot = { list: vi.fn(async () => null), entry: vi.fn(async () => null) };
     params = new BehaviorSubject(convertToParamMap({ slug: 'pending' }));
     watchEntry = vi.fn((slug: string) => {
       if (slug === 'missing-entry') {
         return throwError(() => new JournalError('not-found', 'Article not found'));
       }
       if (slug === 'offline-entry') {
-        return throwError(() => new JournalError('offline', 'Firestore is unavailable.'));
+        return throwError(() => new JournalError('offline', 'Firestore no está disponible.'));
       }
       return of({
         metadata: entry({ slug }),
@@ -54,6 +58,7 @@ describe('ArticleViewerComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        { provide: OfflineSnapshotService, useValue: snapshot },
         { provide: ActivatedRoute, useValue: { paramMap: params.asObservable() } },
         { provide: JournalService, useValue: { offline: signal(false), watchEntry } },
       ],
@@ -119,5 +124,31 @@ describe('ArticleViewerComponent', () => {
     expect(view.querySelector('h1')?.textContent).toContain('Angular signals in practice');
     expect(view.querySelector('.markdown-body h2')?.textContent).toContain('Recovered');
     expect(TestBed.inject(Title).getTitle()).toBe('Angular signals in practice · DevChronicle');
+  });
+
+  it('reads the offline copy of an entry when Firestore is unreachable', async () => {
+    snapshot.entry.mockResolvedValueOnce({
+      generatedAt: '2026-11-20T17:00:00.000Z',
+      body: {
+        metadata: entry({ slug: 'offline-entry', title: 'Copia local' }),
+        markdown: '## Desde la copia\n\nTexto guardado.',
+      },
+    });
+    const fixture = await open('offline-entry');
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(snapshot.entry).toHaveBeenCalledWith('offline-entry');
+    expect(view.querySelector('h1')?.textContent).toContain('Copia local');
+    expect(view.querySelector('.markdown-body h2')?.textContent).toContain('Desde la copia');
+    expect(view.querySelector('.sticky-note')?.textContent).toContain('Puede estar desactualizada');
+  });
+
+  it('never fills a missing entry with the offline copy', async () => {
+    const fixture = await open('missing-entry');
+    await fixture.whenStable();
+
+    expect(snapshot.entry).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Esta entrada no está publicada.');
   });
 });

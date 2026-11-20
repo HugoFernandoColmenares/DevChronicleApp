@@ -1,5 +1,6 @@
-.reader {
-  padding-block: 3rem 5rem;
+.mast {
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-ink);
 }
 
 .back {
@@ -20,13 +21,15 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   color: var(--color-muted);
-  font-size: 0.9375rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
 .mast h1 {
   margin: 0.85rem 0 0;
   font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 680;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.1;
 }
@@ -51,18 +54,18 @@
 
 .error-state__code {
   margin: 0;
-  color: color-mix(in srgb, var(--color-accent) 26%, var(--color-canvas));
-  font-family: var(--font-mono);
+  color: color-mix(in srgb, var(--color-margin) 70%, var(--color-paper));
+  font-family: var(--font-hand);
   font-size: clamp(3.5rem, 12vw, 6rem);
   font-weight: 700;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   line-height: 0.9;
 }
 
 .error-state h1 {
   margin: 0.5rem 0 0;
   font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 680;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.1;
 }

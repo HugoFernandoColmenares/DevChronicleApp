@@ -1,7 +1,3 @@
-.page {
-  padding-block: 3.5rem 5rem;
-}
-
 .intro {
   display: flex;
   flex-wrap: wrap;
@@ -10,7 +6,7 @@
   gap: 1.5rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 2px solid var(--color-ink);
 }
 
 .intro__copy {
@@ -18,19 +14,18 @@
 }
 
 .kicker {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.35rem;
   color: var(--color-accent-ink);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-hand);
+  font-size: 1.55rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .intro h1 {
   margin: 0;
   font-size: clamp(2.25rem, 5vw, 3.5rem);
-  font-weight: 680;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1;
 }
@@ -72,7 +67,7 @@
   padding: 0.65rem 0.8rem;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
 }
@@ -104,19 +99,21 @@
   cursor: pointer;
 }
 
-.filter:first-child {
-  padding: 0.2rem 0.7rem;
-  border-radius: 0.375rem;
+.filter--all {
+  padding: 0.15rem 0.7rem;
+  border: 1px dashed var(--color-divider);
+  border-radius: 0.3rem;
   color: var(--color-muted);
   font: inherit;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
-.filter--on:first-child,
-.filter:first-child:hover,
-.filter:first-child:focus-visible {
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+.filter--all.filter--on,
+.filter--all:hover,
+.filter--all:focus-visible {
+  border-style: solid;
+  border-color: var(--color-accent);
   color: var(--color-accent-ink);
 }
 
@@ -157,7 +154,7 @@
   padding: 0.45rem 0.9rem;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-ink);
   font: inherit;
   font-size: 0.9rem;
@@ -187,14 +184,10 @@
 .pager__page--on:focus-visible {
   border-color: transparent;
   background: var(--color-accent);
-  color: #082f49;
+  color: var(--color-on-accent);
 }
 
 @media (max-width: 40rem) {
-  .page {
-    padding-block: 2.25rem 3.5rem;
-  }
-
   .sort {
     margin-left: 0;
   }

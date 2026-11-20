@@ -50,7 +50,7 @@ export class ChallengeDetailComponent {
             name: item.title,
             description: item.summary,
             url: `${environment.siteUrl}/challenges/${item.slug}`,
-            learningResourceType: 'Challenge',
+            learningResourceType: 'Desafío',
             inLanguage: 'es',
             isPartOf: {
               '@type': 'WebSite',
@@ -63,8 +63,8 @@ export class ChallengeDetailComponent {
       }
 
       this.seo.setPage({
-        title: 'Challenge not found',
-        description: 'That challenge is not in the catalog.',
+        title: 'Desafío no encontrado',
+        description: 'Ese desafío no está en el catálogo.',
         path: '/challenges',
         noindex: true,
       });
@@ -82,11 +82,11 @@ export class ChallengeDetailComponent {
   labelFor(difficulty: string): string {
     switch (difficulty) {
       case 'warmup':
-        return 'Warm-up';
+        return 'Calentamiento';
       case 'practice':
-        return 'Practice';
+        return 'Práctica';
       case 'stretch':
-        return 'Stretch';
+        return 'Reto';
       default:
         return difficulty;
     }

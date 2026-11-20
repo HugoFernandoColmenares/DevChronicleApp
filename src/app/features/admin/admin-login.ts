@@ -78,7 +78,7 @@ export class AdminLoginComponent {
     } else {
       void this.notifications.error(
         'Falló el inicio de sesión',
-        'Sign-in did not finish. Check the Auth emulator, seed:admin, or the authorized domain.',
+        'El inicio de sesión no terminó. Revisa el emulador de Auth, seed:admin o el dominio autorizado.',
       );
     }
   }

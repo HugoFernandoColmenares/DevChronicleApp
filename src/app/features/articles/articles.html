@@ -14,7 +14,7 @@
 
     @if (loading()) {
       <dev-skeleton-loader />
-    } @else if (failed() || offline()) {
+    } @else if (outage() && articles().length === 0) {
       <div class="empty-state" role="alert">
         <p class="empty">No se pudo cargar el diario. Revisa tu conexión e inténtalo de nuevo.</p>
         <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
@@ -22,6 +22,10 @@
     } @else if (articles().length === 0) {
       <p class="empty">Aún no hay entradas publicadas.</p>
     } @else {
+      @if (outage()) {
+        <dev-offline-notice [generatedAt]="copyGeneratedAt()" (retry)="retry()" />
+      }
+
       <div class="toolbar">
         <label class="search">
           <span class="search__label">Buscar artículos</span>
@@ -45,8 +49,9 @@
         <div class="filters" role="group" aria-label="Filtrar por etiqueta">
           <button
             type="button"
-            class="filter"
+            class="filter filter--all"
             [class.filter--on]="selectedTag() === null"
+            [attr.aria-pressed]="selectedTag() === null"
             (click)="selectTag(null)"
           >
             Todas
@@ -56,6 +61,7 @@
               type="button"
               class="filter"
               [class.filter--on]="selectedTag() === tag"
+              [attr.aria-pressed]="selectedTag() === tag"
               (click)="selectTag(tag)"
             >
               <dev-tag [label]="tag" [active]="selectedTag() === tag" />

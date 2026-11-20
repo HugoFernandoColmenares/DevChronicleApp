@@ -153,8 +153,8 @@ export class AdminEditorComponent {
     } catch (error) {
       if (error instanceof JournalError && error.code === 'conflict' && this.editingSlug()) {
         const reload = await this.notifications.confirm(
-          'Entry changed elsewhere',
-          'Another tab saved a newer revision. Reload that version? Your current edits will be discarded.',
+          'La entrada cambió en otra pestaña',
+          'Otra pestaña guardó una versión más reciente. ¿Quieres cargarla? Se descartarán tus ediciones actuales.',
         );
         if (reload) {
           await this.open(this.editingSlug());

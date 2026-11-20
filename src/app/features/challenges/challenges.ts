@@ -19,17 +19,17 @@ export class ChallengesComponent {
 
   constructor() {
     this.seo.setPage({
-      title: 'Challenges',
+      title: 'Desafíos',
       description:
-        'Short coding drills with a prompt, a starter hint, and one possible solution. Practice without leaving DevChronicle.',
+        'Ejercicios cortos de programación con enunciado, pista y una posible solución. Practica sin salir de DevChronicle.',
       path: '/challenges',
       jsonLd: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: 'Challenges',
+        name: 'Desafíos',
         url: `${environment.siteUrl}/challenges`,
         description:
-          'Short coding drills with a prompt, a starter hint, and one possible solution.',
+          'Ejercicios cortos de programación con enunciado, pista y una posible solución.',
         isPartOf: {
           '@type': 'WebSite',
           name: environment.siteName,
@@ -42,11 +42,11 @@ export class ChallengesComponent {
   labelFor(difficulty: string): string {
     switch (difficulty) {
       case 'warmup':
-        return 'Warm-up';
+        return 'Calentamiento';
       case 'practice':
-        return 'Practice';
+        return 'Práctica';
       case 'stretch':
-        return 'Stretch';
+        return 'Reto';
       default:
         return difficulty;
     }

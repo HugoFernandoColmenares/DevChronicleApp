@@ -29,7 +29,10 @@ async function captureDesktop(browser) {
 
   await go('/');
   await page.getByRole('heading', { name: 'DevChronicle' }).waitFor({ timeout: 60_000 });
-  await page.getByRole('link', { name: /Bienvenida|Welcome/i }).first().waitFor({ timeout: 60_000 });
+  await page
+    .getByRole('link', { name: /Bienvenida|Welcome/i })
+    .first()
+    .waitFor({ timeout: 60_000 });
   await shot(page, 'landing-desktop.png');
 
   await page.getByRole('heading', { name: /Recently published/i }).scrollIntoViewIfNeeded();
@@ -101,7 +104,10 @@ async function captureDesktop(browser) {
   await shot(page, 'article-not-found-desktop.png');
 
   await go('/admin/login');
-  await page.getByRole('heading', { name: /Studio|Sign in|Author/i }).first().waitFor();
+  await page
+    .getByRole('heading', { name: /Studio|Sign in|Author/i })
+    .first()
+    .waitFor();
   await shot(page, 'admin-login-desktop.png');
 
   await go('/admin/denied');
@@ -142,9 +148,9 @@ async function captureDesktop(browser) {
     await page.getByLabel('Title').waitFor();
     await page.getByLabel('Title').fill('Screenshot draft');
     await page.getByLabel('Summary').fill('Capture for docs.');
-    await page.locator('textarea[formcontrolname="markdown"]').fill(
-      '## Capture\n\nTemporary note for docs screenshots.',
-    );
+    await page
+      .locator('textarea[formcontrolname="markdown"]')
+      .fill('## Capture\n\nTemporary note for docs screenshots.');
     await shot(page, 'admin-editor.png');
     await shot(page, 'admin-editor-new-desktop.png');
 
@@ -165,7 +171,10 @@ async function captureDesktop(browser) {
   await context.setOffline(false);
   await go('/');
   await page.getByRole('heading', { name: 'DevChronicle' }).waitFor();
-  await page.getByRole('link', { name: /Bienvenida|Welcome/i }).first().waitFor({ timeout: 60_000 });
+  await page
+    .getByRole('link', { name: /Bienvenida|Welcome/i })
+    .first()
+    .waitFor({ timeout: 60_000 });
   await context.setOffline(true);
   await page.getByRole('button', { name: /Try again/i }).waitFor({ timeout: 10_000 });
   await shot(page, 'landing-retry-desktop.png');
@@ -187,7 +196,10 @@ async function captureMobile(browser) {
 
   await go('/');
   await page.getByRole('heading', { name: 'DevChronicle' }).waitFor({ timeout: 60_000 });
-  await page.getByRole('link', { name: /Bienvenida|Welcome/i }).first().waitFor({ timeout: 60_000 });
+  await page
+    .getByRole('link', { name: /Bienvenida|Welcome/i })
+    .first()
+    .waitFor({ timeout: 60_000 });
   await shot(page, 'landing-mobile.png');
 
   await go('/articles');

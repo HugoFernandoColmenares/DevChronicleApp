@@ -28,7 +28,7 @@ describe('ChallengesComponent', () => {
     await fixture.whenStable();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Coding challenges.');
+    expect(text).toContain('Desafíos de programación.');
     for (const challenge of CHALLENGES) {
       expect(text).toContain(challenge.title);
     }
@@ -58,14 +58,14 @@ describe('ChallengeDetailComponent', () => {
     expect(view.textContent).not.toContain('actual += 2');
 
     const hintButton = [...view.querySelectorAll('button')].find((node) =>
-      node.textContent?.includes('Show hint'),
+      node.textContent?.includes('Ver pista'),
     ) as HTMLButtonElement;
     hintButton.click();
     await fixture.whenStable();
     expect(view.textContent).toContain('while (actual <= numero)');
 
     const solutionButton = [...view.querySelectorAll('button')].find((node) =>
-      node.textContent?.includes('Reveal solution'),
+      node.textContent?.includes('Ver solución'),
     ) as HTMLButtonElement;
     solutionButton.click();
     await fixture.whenStable();
@@ -88,6 +88,6 @@ describe('ChallengeDetailComponent', () => {
     const fixture = TestBed.createComponent(ChallengeDetailComponent);
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.textContent).toContain('Challenge not found.');
+    expect(fixture.nativeElement.textContent).toContain('Desafío no encontrado.');
   });
 });

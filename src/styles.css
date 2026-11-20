@@ -47,6 +47,22 @@
 }
 
 @font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/caveat-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/caveat-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
@@ -58,20 +74,63 @@
 }
 
 :root {
-  /* Cool ruled-paper notebook + deep ink slate (not Inter/sky kit). */
-  --color-canvas: #ecefe6;
-  --color-slate: #162032;
+  color-scheme: light;
+  /* Libreta de apuntes: escritorio, hoja rayada, tinta azul petróleo y notas adhesivas. */
+  --color-desk: #e6e9e2;
+  --color-canvas: var(--color-desk);
+  --color-paper: #fcfcf8;
+  --color-surface: #ffffff;
+  --color-rule: #dfe8f1;
+  --color-margin: #e9a7a7;
+  --color-hole: var(--color-desk);
+  --color-tab: #d9dfd4;
+  --color-tab-ink: #3b4a40;
+  --color-slate: #172131;
   --color-accent: #0f766e;
-  --color-accent-ink: #115e59;
-  --color-ink: #14201a;
-  --color-muted: #3f5349;
-  --color-divider: #cfd8d0;
-  --color-surface: #f7f8f3;
+  --color-accent-ink: #0d5f58;
+  --color-on-accent: #ffffff;
+  --color-ink: #1c2631;
+  --color-muted: #4a5767;
+  --color-divider: #d3dbd3;
+  --color-marker: #fff1a6;
+  --color-sticky: #fdf0b5;
+  --color-sticky-edge: #e6d27a;
+  --color-sticky-ink: #4a3a05;
   --color-string: #34d399;
   --color-keyword: #f0abfc;
+  --shadow-sheet: 0 1px 2px rgba(28, 38, 49, 0.08), 0 12px 32px -18px rgba(28, 38, 49, 0.35);
   --font-display: 'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', serif;
+  --font-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
   --font-ui: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  --rule-gap: 2rem;
+  --margin-x: 3.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    /* Libreta nocturna: hoja grafito con renglones tenues. */
+    --color-desk: #0d131a;
+    --color-paper: #151d27;
+    --color-surface: #1b2532;
+    --color-rule: rgba(148, 163, 184, 0.11);
+    --color-margin: rgba(248, 113, 113, 0.38);
+    --color-tab: #1f2a37;
+    --color-tab-ink: #b9c6d3;
+    --color-slate: #0b1119;
+    --color-accent: #2dd4bf;
+    --color-accent-ink: #5eead4;
+    --color-on-accent: #04201d;
+    --color-ink: #e5ecf3;
+    --color-muted: #a9b6c4;
+    --color-divider: #2c3a49;
+    --color-marker: rgba(253, 224, 71, 0.28);
+    --color-sticky: #3a3417;
+    --color-sticky-edge: #6b5d1c;
+    --color-sticky-ink: #fde68a;
+    --shadow-sheet: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px -20px rgba(0, 0, 0, 0.8);
+  }
 }
 
 *,
@@ -86,21 +145,154 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--color-canvas);
-  background-image: repeating-linear-gradient(
-    transparent 0,
-    transparent 1.6rem,
-    color-mix(in srgb, var(--color-ink) 4.5%, transparent) 1.6rem,
-    color-mix(in srgb, var(--color-ink) 4.5%, transparent) calc(1.6rem + 1px)
-  );
+  background-color: var(--color-desk);
   color: var(--color-ink);
   font-family: var(--font-ui);
   line-height: 1.5;
   text-rendering: optimizeLegibility;
 }
 
+/* La hoja: papel con renglones, línea de margen y perforaciones de la libreta. */
+.notebook {
+  width: 100%;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+}
+
+.sheet {
+  position: relative;
+  min-height: 60vh;
+  padding: 2.75rem 2.5rem 3.5rem calc(var(--margin-x) + 1.75rem);
+  border-radius: 0 0 0.5rem 0.5rem;
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(
+      90deg,
+      transparent calc(var(--margin-x) - 1px),
+      var(--color-margin) calc(var(--margin-x) - 1px),
+      var(--color-margin) var(--margin-x),
+      transparent var(--margin-x)
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent calc(var(--rule-gap) - 1px),
+      var(--color-rule) calc(var(--rule-gap) - 1px),
+      var(--color-rule) var(--rule-gap)
+    );
+  background-position:
+    0 0,
+    0 1.25rem;
+  box-shadow: var(--shadow-sheet);
+}
+
+.sheet::before {
+  content: '';
+  position: absolute;
+  top: 1.75rem;
+  bottom: 1.75rem;
+  left: 0.9rem;
+  width: 1rem;
+  background-image: radial-gradient(
+    circle,
+    var(--color-hole) 0.36rem,
+    color-mix(in srgb, var(--color-ink) 18%, transparent) 0.4rem,
+    transparent 0.45rem
+  );
+  background-size: 1rem 5.5rem;
+  background-repeat: repeat-y;
+  pointer-events: none;
+}
+
+.sheet .container-fluid {
+  max-width: none;
+  padding: 0;
+}
+
+/* Etiqueta manuscrita: solo para acentos cortos (antetítulos, notas al margen). */
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.marker {
+  padding: 0 0.15em;
+  background: linear-gradient(
+    180deg,
+    transparent 0.55em,
+    var(--color-marker) 0.55em,
+    var(--color-marker) 1.15em,
+    transparent 1.15em
+  );
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Nota adhesiva: avisos importantes (copia sin conexión, conflictos). */
+.sticky-note {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  max-width: 40rem;
+  margin: 0 0 2rem;
+  padding: 1.1rem 1.25rem 1.2rem;
+  border: 1px solid var(--color-sticky-edge);
+  border-radius: 0.2rem;
+  background: var(--color-sticky);
+  color: var(--color-sticky-ink);
+  box-shadow: 0 8px 18px -12px rgba(74, 58, 5, 0.55);
+  transform: rotate(-0.4deg);
+}
+
+.sticky-note__title {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.sticky-note p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.sticky-note .btn {
+  border-color: color-mix(in srgb, var(--color-sticky-ink) 35%, transparent);
+  background: transparent;
+  color: var(--color-sticky-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-note {
+    transform: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  :root {
+    --margin-x: 1.4rem;
+  }
+
+  .notebook {
+    padding: 0 0.5rem 2rem;
+  }
+
+  .sheet {
+    padding: 2rem 1.1rem 2.75rem calc(var(--margin-x) + 1rem);
+  }
+
+  .sheet::before {
+    display: none;
+  }
+}
+
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 32%, #ffffff);
+  background: color-mix(in srgb, var(--color-accent) 32%, transparent);
   color: var(--color-ink);
 }
 
@@ -131,7 +323,7 @@ h3,
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  gap: 2rem;
+  gap: 0 2rem;
 }
 
 .gap-bit {
@@ -160,7 +352,7 @@ h3,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-divider);
   border-radius: 4px;
 }
 
@@ -218,7 +410,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .markdown-body code {
   padding: 0.1rem 0.35rem;
   border-radius: 0.25rem;
-  background: color-mix(in srgb, var(--color-divider) 70%, #ffffff);
+  background: color-mix(in srgb, var(--color-divider) 55%, transparent);
   font-family: var(--font-mono);
   font-size: 0.875em;
 }
@@ -312,7 +504,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
   padding: 0.85rem 1rem;
   border: 1px solid var(--color-divider);
   border-radius: 0.375rem;
-  background: color-mix(in srgb, var(--color-surface) 80%, var(--color-accent));
+  border-left: 3px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-accent));
   color: var(--color-muted);
 }
 
@@ -408,7 +601,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .dc-swal__confirm {
   border: 0;
   background: var(--color-accent);
-  color: #ecfdf5;
+  color: var(--color-on-accent);
 }
 
 .dc-swal__cancel {
@@ -429,19 +622,19 @@ pre:has(code)::-webkit-scrollbar-thumb {
 @media (max-width: 40rem) {
   .page,
   .reader {
-    padding-block: 2.25rem 3.5rem;
+    padding-block: 0;
   }
 }
 
 .studio {
-  padding-block: 3rem 5rem;
+  padding-block: 0;
 }
 
 .studio h1,
 .preview__title {
   margin: 0.35rem 0 0;
   font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 680;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.05;
 }
@@ -449,11 +642,11 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .studio__kicker,
 .preview h2 {
   margin: 0;
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--color-accent-ink);
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .studio__lead,
@@ -606,7 +799,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 .btn--primary {
   border-color: transparent;
   background: var(--color-accent);
-  color: #ecfdf5;
+  color: var(--color-on-accent);
 }
 
 .btn--quiet {
@@ -634,8 +827,8 @@ pre:has(code)::-webkit-scrollbar-thumb {
 
 .pill--on {
   border-color: transparent;
-  background: color-mix(in srgb, var(--color-accent) 22%, #ffffff);
-  color: #134e4a;
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-accent-ink);
 }
 
 @media (min-width: 40rem) {
@@ -653,7 +846,7 @@ pre:has(code)::-webkit-scrollbar-thumb {
 
 @media (max-width: 40rem) {
   .studio {
-    padding-block: 2.25rem 3.5rem;
+    padding-block: 0;
   }
 
   .studio__row {

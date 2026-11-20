@@ -33,7 +33,7 @@ export class AdminListComponent {
         error: () => {
           this.loading.set(false);
           void this.notifications.error(
-            'No se pudo cargar el estudio',
+            'No se pudo cargar el Estudio',
             'Firestore no devolvió las entradas. Confirma que esta cuenta esté en admins.',
           );
         },
@@ -59,11 +59,13 @@ export class AdminListComponent {
       anchor.download = `devchronicle-export-${stamp}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      void this.notifications.toast(`Exported ${pack.length} entries`);
+      void this.notifications.toast(
+        `${pack.length} ${pack.length === 1 ? 'entrada exportada' : 'entradas exportadas'}`,
+      );
     } catch {
       void this.notifications.error(
-        'Export failed',
-        'Firestore did not return a complete backup. Try again while online.',
+        'No se pudo exportar',
+        'Firestore no devolvió una copia completa. Vuelve a intentarlo con conexión.',
       );
     } finally {
       this.exporting.set(false);

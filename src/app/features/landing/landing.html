@@ -1,32 +1,31 @@
 <section class="page">
-  <div class="hero-wrap">
-    <header class="hero container-fluid">
-      <h1 class="hero__brand">{{ siteName }}</h1>
-      <p class="hero__line">Notas de campo para software que funciona.</p>
-      <a class="btn btn--primary hero__cta" routerLink="/articles">Browse the archive</a>
-    </header>
-  </div>
+  <header class="hero">
+    <p class="hero__kicker">Cuaderno de trabajo de Hugo Colmenares</p>
+    <h1 class="hero__brand">{{ siteName }}</h1>
+    <p class="hero__line">Notas de campo para <span class="marker">software que funciona</span>.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" routerLink="/articles">Explorar el archivo</a>
+      <a class="btn" routerLink="/challenges">Practicar con desafíos</a>
+    </div>
+  </header>
 
-  <div class="container-fluid">
-    @if (loading()) {
-      <dev-skeleton-loader />
-    } @else if (failed() || offline()) {
-      <div class="empty-state" role="alert">
-        <p class="empty">No se pudo cargar el diario. Revisa tu conexión e inténtalo de nuevo.</p>
-        <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
-      </div>
-    } @else if (articles().length === 0) {
-      <p class="empty">Aún no hay entradas publicadas.</p>
-    } @else {
-      @if (featured(); as lead) {
-        <section class="featured-plane" aria-label="Entrada destacada">
-          <dev-article-card [article]="lead" [featured]="true" />
-        </section>
-      } @else if (selectedTag()) {
-        <p class="empty">Ninguna entrada usa esta etiqueta.</p>
-      }
+  @if (loading()) {
+    <dev-skeleton-loader />
+  } @else if (outage() && articles().length === 0) {
+    <div class="empty-state" role="alert">
+      <p class="empty">No se pudo cargar el diario. Revisa tu conexión e inténtalo de nuevo.</p>
+      <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
+    </div>
+  } @else if (articles().length === 0) {
+    <p class="empty">Aún no hay entradas publicadas.</p>
+  } @else {
+    @if (outage()) {
+      <dev-offline-notice [generatedAt]="copyGeneratedAt()" (retry)="retry()" />
+    }
 
-      @if (tags().length > 0) {
+    @if (tags().length > 0) {
+      <section class="topics" aria-labelledby="topics-title">
+        <h2 class="topics__title" id="topics-title">Temas del cuaderno</h2>
         <div
           class="filters"
           [class.filters--open]="tagsExpanded()"
@@ -35,8 +34,9 @@
         >
           <button
             type="button"
-            class="filter"
+            class="filter filter--all"
             [class.filter--on]="selectedTag() === null"
+            [attr.aria-pressed]="selectedTag() === null"
             (click)="selectTag(null)"
           >
             Todas
@@ -46,45 +46,60 @@
               type="button"
               class="filter"
               [class.filter--on]="selectedTag() === tag"
+              [attr.aria-pressed]="selectedTag() === tag"
               (click)="selectTag(tag)"
             >
               <dev-tag [label]="tag" [active]="selectedTag() === tag" />
             </button>
           }
           @if (tags().length > tagPreview) {
-            <button type="button" class="filter filter--more" (click)="toggleTags()">
-              {{ tagsExpanded() ? 'Fewer tags' : 'More tags' }}
+            <button
+              type="button"
+              class="filter filter--more"
+              [attr.aria-expanded]="tagsExpanded()"
+              (click)="toggleTags()"
+            >
+              {{ tagsExpanded() ? 'Menos etiquetas' : 'Más etiquetas (' + tags().length + ')' }}
             </button>
           }
         </div>
-      }
-
-      @if (recent().length > 0) {
-        <section class="block">
-          <header class="block__head">
-            <h2 class="block__title">Publicadas recientemente</h2>
-            <a class="block__link" routerLink="/articles">Ver todos los artículos</a>
-          </header>
-          <div class="recent-grid">
-            @for (article of recent(); track article.slug) {
-              <dev-article-card [article]="article" [compact]="true" />
-            }
-          </div>
-        </section>
-      }
-
-      @if (rest().length > 0) {
-        <section class="block">
-          <header class="block__head">
-            <h2 class="block__title">Entradas anteriores</h2>
-          </header>
-          <div class="blog-grid">
-            @for (article of rest(); track article.slug) {
-              <dev-article-card [article]="article" />
-            }
-          </div>
-        </section>
-      }
+      </section>
     }
-  </div>
+
+    @if (featured(); as lead) {
+      <section class="featured" aria-label="Entrada destacada">
+        <p class="featured__label">Lo más reciente</p>
+        <dev-article-card [article]="lead" [featured]="true" />
+      </section>
+    } @else if (selectedTag()) {
+      <p class="empty">Ninguna entrada usa esta etiqueta.</p>
+    }
+
+    @if (recent().length > 0) {
+      <section class="block">
+        <header class="block__head">
+          <h2 class="block__title">Publicadas recientemente</h2>
+          <a class="block__link" routerLink="/articles">Ver todos los artículos</a>
+        </header>
+        <div class="recent-grid">
+          @for (article of recent(); track article.slug) {
+            <dev-article-card [article]="article" [compact]="true" />
+          }
+        </div>
+      </section>
+    }
+
+    @if (rest().length > 0) {
+      <section class="block">
+        <header class="block__head">
+          <h2 class="block__title">Entradas anteriores</h2>
+        </header>
+        <div class="blog-grid">
+          @for (article of rest(); track article.slug) {
+            <dev-article-card [article]="article" />
+          }
+        </div>
+      </section>
+    }
+  }
 </section>

@@ -1,14 +1,16 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, from, map, switchMap, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
 import { normalizeTag, normalizeTags } from '@core/models/tag-normalize';
 import { READ_RETRY, retryTransient } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
+import { OfflineSnapshotService } from '@core/services/offline-snapshot.service';
 import { SeoService } from '@core/services/seo.service';
 import { ArticleCardComponent } from '@shared/article-card/article-card';
+import { OfflineNoticeComponent } from '@shared/offline-notice/offline-notice';
 import { SkeletonLoaderComponent } from '@shared/skeleton-loader/skeleton-loader';
 import { TagComponent } from '@shared/tag/tag';
 import { environment } from '@env';
@@ -17,13 +19,20 @@ const PAGE_SIZE = 6;
 
 @Component({
   selector: 'dev-articles',
-  imports: [ArticleCardComponent, RouterLink, SkeletonLoaderComponent, TagComponent],
+  imports: [
+    ArticleCardComponent,
+    OfflineNoticeComponent,
+    RouterLink,
+    SkeletonLoaderComponent,
+    TagComponent,
+  ],
   templateUrl: './articles.html',
   styleUrl: './articles.css',
 })
 export class ArticlesComponent {
   private readonly journal = inject(JournalService);
   private readonly seo = inject(SeoService);
+  private readonly snapshot = inject(OfflineSnapshotService);
   private readonly retryOptions = inject(READ_RETRY);
   private readonly attempt = signal(0);
 
@@ -33,12 +42,15 @@ export class ArticlesComponent {
   readonly loading = signal(true);
   readonly failed = signal(false);
   readonly offline = this.journal.offline;
+  /** Fecha de la copia estática en uso; null cuando los datos vienen de Firestore o de su caché. */
+  readonly copyGeneratedAt = signal<string | null>(null);
 
   readonly articles = toSignal(
     toObservable(this.attempt).pipe(
       tap(() => {
         this.loading.set(true);
         this.failed.set(false);
+        this.copyGeneratedAt.set(null);
       }),
       switchMap(() =>
         this.journal.watchPublished().pipe(
@@ -46,17 +58,27 @@ export class ArticlesComponent {
           tap(() => {
             this.loading.set(false);
             this.failed.set(false);
+            this.copyGeneratedAt.set(null);
           }),
-          catchError(() => {
-            this.loading.set(false);
-            this.failed.set(true);
-            return of([] as ArticleMetadata[]);
-          }),
+          catchError(() =>
+            // Firestore no respondió: se intenta la copia sin conexión, siempre señalada como tal.
+            from(this.snapshot.list()).pipe(
+              map((copy) => {
+                this.loading.set(false);
+                this.failed.set(true);
+                this.copyGeneratedAt.set(copy?.generatedAt ?? null);
+                return copy?.entries ?? ([] as ArticleMetadata[]);
+              }),
+            ),
+          ),
         ),
       ),
     ),
     { initialValue: [] as ArticleMetadata[] },
   );
+
+  /** Hay una caída: la lectura falló o el navegador perdió la conexión. */
+  readonly outage = computed(() => this.failed() || this.offline());
 
   readonly tags = computed(() => {
     const all: string[] = [];

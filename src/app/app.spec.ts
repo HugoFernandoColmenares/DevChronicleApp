@@ -23,7 +23,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.brand__name')?.textContent).toContain('DevChronicle');
-    expect(compiled.textContent).toContain('Challenges');
-    expect(compiled.textContent).toContain('Author sign-in');
+    expect(compiled.textContent).toContain('Desafíos');
+    expect(compiled.textContent).toContain('Acceso del autor');
   });
 });

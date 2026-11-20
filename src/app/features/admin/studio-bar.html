@@ -17,7 +17,7 @@
         [disabled]="exporting()"
         (click)="exportRequested.emit()"
       >
-        {{ exporting() ? 'Exporting…' : 'Export backup' }}
+        {{ exporting() ? 'Exportando…' : 'Exportar copia de seguridad' }}
       </button>
     }
     @if (showNew()) {
