@@ -1,21 +1,21 @@
 <header class="bar">
   <div class="container-fluid bar__inner">
-    <a class="brand" routerLink="/" aria-label="DevChronicle home">
+    <a class="brand" routerLink="/" aria-label="DevChronicle, inicio">
       <span class="brand__mark" aria-hidden="true"></span>
       <span class="brand__name">{{ siteName }}</span>
     </a>
 
-    <nav class="nav" aria-label="Primary">
+    <nav class="nav" aria-label="Principal">
       <dev-service-status />
       <a
         routerLink="/"
         routerLinkActive="nav__link--active"
         [routerLinkActiveOptions]="{ exact: true }"
       >
-        Journal
+        Diario
       </a>
-      <a routerLink="/articles" routerLinkActive="nav__link--active">Articles</a>
-      <a routerLink="/admin" routerLinkActive="nav__link--active">Studio</a>
+      <a routerLink="/articles" routerLinkActive="nav__link--active">Artículos</a>
+      <a routerLink="/admin" routerLinkActive="nav__link--active">Estudio</a>
     </nav>
   </div>
 </header>

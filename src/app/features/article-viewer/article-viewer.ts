@@ -77,15 +77,15 @@ export class ArticleViewerComponent {
       const error = this.errorKind();
       if (error === 'not-found') {
         this.seo.setPage({
-          title: 'Article not found',
-          description: 'This entry is missing or the link is invalid.',
+          title: 'Artículo no encontrado',
+          description: 'Esta entrada no existe o el enlace no es válido.',
           path: '/404',
           noindex: true,
         });
       } else if (error === 'unavailable') {
         this.seo.setPage({
-          title: 'Journal unavailable',
-          description: 'The DevChronicle entry could not be retrieved.',
+          title: 'Diario no disponible',
+          description: 'No se pudo obtener la entrada de DevChronicle.',
           path: '/404',
           noindex: true,
         });

@@ -105,17 +105,17 @@ export class ArticlesComponent {
 
   constructor() {
     this.seo.setPage({
-      title: 'Articles',
+      title: 'Artículos',
       description:
-        'Every DevChronicle entry, newest first. Search by title, summary, author, or series, and narrow the archive by tag.',
+        'Todas las entradas de DevChronicle, de la más reciente a la más antigua. Busca por título, resumen, autor o serie, y reduce el archivo con una etiqueta.',
       path: '/articles',
       jsonLd: {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: 'Articles',
+        name: 'Artículos',
         url: `${environment.siteUrl}/articles`,
         description:
-          'Every DevChronicle entry, newest first. Search by title, summary, author, or series, and narrow the archive by tag.',
+          'Todas las entradas de DevChronicle, de la más reciente a la más antigua. Busca por título, resumen, autor o serie, y reduce el archivo con una etiqueta.',
         isPartOf: {
           '@type': 'WebSite',
           name: environment.siteName,

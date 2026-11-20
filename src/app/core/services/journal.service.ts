@@ -38,7 +38,7 @@ export class JournalService {
 
   watchEntry(slug: string): Observable<ArticleBody> {
     if (!SLUG_PATTERN.test(slug)) {
-      return throwError(() => new JournalError('invalid-slug', 'Invalid article slug.'));
+      return throwError(() => new JournalError('invalid-slug', 'Slug de artículo no válido.'));
     }
 
     return new Observable((subscriber) => {
@@ -47,8 +47,14 @@ export class JournalService {
         doc(firebaseFirestore(), 'entries', slug),
         (entry) => {
           stopBody();
+          // Sin red y sin caché, Firestore responde "no existe" desde la caché local.
+          // Eso es una caída, no un artículo faltante.
+          if (isMissingFromCache(entry)) {
+            this.fail(subscriber, { code: 'unavailable' }, 'public');
+            return;
+          }
           if (!entry.exists() || entry.data()['status'] !== 'published') {
-            subscriber.error(new JournalError('not-found', 'Article not found'));
+            subscriber.error(new JournalError('not-found', 'Artículo no encontrado'));
             return;
           }
 
@@ -76,13 +82,13 @@ export class JournalService {
 
   async loadEntry(slug: string): Promise<ArticleBody> {
     if (!SLUG_PATTERN.test(slug)) {
-      throw new JournalError('invalid-slug', 'Invalid article slug.');
+      throw new JournalError('invalid-slug', 'Slug de artículo no válido.');
     }
 
     try {
       const entry = await getDoc(doc(firebaseFirestore(), 'entries', slug));
       if (!entry.exists()) {
-        throw new JournalError('not-found', 'Article not found');
+        throw new JournalError('not-found', 'Artículo no encontrado');
       }
       const body = await getDoc(doc(firebaseFirestore(), 'entries', slug, 'body', 'current'));
       this.offline.set(false);
@@ -104,7 +110,7 @@ export class JournalService {
       if (options?.create) {
         const existing = await getDoc(ref);
         if (existing.exists()) {
-          throw new JournalError('conflict', 'An entry with this slug already exists.');
+          throw new JournalError('conflict', 'Ya existe una entrada con este slug.');
         }
       }
 
@@ -135,7 +141,7 @@ export class JournalService {
 
   async remove(slug: string): Promise<void> {
     if (!SLUG_PATTERN.test(slug)) {
-      throw new JournalError('invalid-slug', 'Invalid article slug.');
+      throw new JournalError('invalid-slug', 'Slug de artículo no válido.');
     }
 
     try {
@@ -157,6 +163,13 @@ export class JournalService {
       onSnapshot(
         entries,
         (snapshot) => {
+          // Sin red y sin caché, Firestore entrega una lista vacía marcada como "desde caché".
+          // Se trata como caída para mostrar el error con "Intentar de nuevo" y no un
+          // diario vacío.
+          if (isEmptyFromCache(snapshot)) {
+            this.fail(subscriber, { code: 'unavailable' }, audience);
+            return;
+          }
           this.offline.set(false);
           subscriber.next(
             snapshot.docs.map((item) => metadataFromSnapshot(item.id, item.data() as DocumentData)),
@@ -186,6 +199,22 @@ export class JournalService {
     }
     return journalError;
   }
+}
+
+/** Lista vacía que Firestore sirvió desde la caché local: no hubo respuesta del servidor. */
+export function isEmptyFromCache(snapshot: {
+  empty: boolean;
+  metadata: { fromCache: boolean };
+}): boolean {
+  return snapshot.empty && snapshot.metadata.fromCache;
+}
+
+/** Documento "inexistente" que solo se comprobó en la caché local: no es un 404 real. */
+export function isMissingFromCache(entry: {
+  exists(): boolean;
+  metadata: { fromCache: boolean };
+}): boolean {
+  return !entry.exists() && entry.metadata.fromCache;
 }
 
 function metadataFromSnapshot(id: string, data: DocumentData): ArticleMetadata {

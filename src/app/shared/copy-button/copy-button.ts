@@ -17,10 +17,13 @@ export class CopyButtonComponent {
     try {
       await navigator.clipboard.writeText(this.value());
       this.copied.set(true);
-      await this.notifications.toast('Copied to clipboard');
+      await this.notifications.toast('Copiado al portapapeles');
       window.setTimeout(() => this.copied.set(false), 1600);
     } catch {
-      await this.notifications.error('Copy failed', 'The browser blocked access to the clipboard.');
+      await this.notifications.error(
+        'No se pudo copiar',
+        'El navegador bloqueó el acceso al portapapeles.',
+      );
     }
   }
 }

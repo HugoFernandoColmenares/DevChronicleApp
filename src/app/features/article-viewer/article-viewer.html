@@ -1,13 +1,13 @@
 <section class="reader">
   <div class="article-canvas">
-    <a class="back" routerLink="/">All entries</a>
+    <a class="back" routerLink="/">Todas las entradas</a>
 
     @if (article(); as entry) {
       <header class="mast">
         <div class="mast__meta">
           @let when = entry.metadata.publishedAt ?? entry.metadata.updatedAt;
-          <time [attr.datetime]="when">{{ when | date: 'MMMM d, y' }}</time>
-          <span>{{ entry.metadata.readingTimeMinutes }} min read</span>
+          <time [attr.datetime]="when">{{ when | date: "d 'de' MMMM 'de' y" }}</time>
+          <span>{{ entry.metadata.readingTimeMinutes }} min de lectura</span>
           <span>{{ entry.metadata.author }}</span>
           <span>{{ entry.metadata.series }}</span>
         </div>
@@ -32,25 +32,27 @@
       <div class="error-state">
         @if (errorKind() === 'not-found') {
           <p class="error-state__code" aria-hidden="true">404</p>
-          <h1>This entry is not published.</h1>
+          <h1>Esta entrada no está publicada.</h1>
           <p class="error-state__copy">
-            The link may be broken, or the entry was removed from the journal.
+            Puede que el enlace esté roto o que la entrada se haya retirado del diario.
           </p>
         } @else {
           <p class="error-state__code" aria-hidden="true">503</p>
-          <h1>The journal could not be loaded.</h1>
+          <h1>No se pudo cargar el diario.</h1>
           <p class="error-state__copy">
-            Check your connection and refresh the page. The reading view will recover when the
-            journal responds.
+            Revisa tu conexión y recarga la página. La vista de lectura se recuperará cuando el
+            diario responda.
           </p>
         }
         <div class="error-state__actions">
           @if (errorKind() === 'unavailable') {
-            <button type="button" class="btn btn--primary" (click)="retry()">Try again</button>
-            <a class="btn" routerLink="/">Back to the journal</a>
+            <button type="button" class="btn btn--primary" (click)="retry()">
+              Intentar de nuevo
+            </button>
+            <a class="btn" routerLink="/">Volver al diario</a>
           } @else {
-            <a class="btn btn--primary" routerLink="/articles">Browse all articles</a>
-            <a class="btn" routerLink="/">Back to the journal</a>
+            <a class="btn btn--primary" routerLink="/articles">Explorar todos los artículos</a>
+            <a class="btn" routerLink="/">Volver al diario</a>
           }
         </div>
       </div>

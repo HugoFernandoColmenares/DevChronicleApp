@@ -13,7 +13,7 @@ export class SyntaxHighlightService {
       const language = this.readLanguage(block);
       block.parentElement?.setAttribute(
         'aria-label',
-        language ? `Code snippet in ${language}` : 'Code snippet',
+        language ? `Fragmento de código en ${language}` : 'Fragmento de código',
       );
 
       if (block.dataset['highlighted'] === 'yes') {

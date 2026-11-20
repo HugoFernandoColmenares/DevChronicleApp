@@ -1,14 +1,14 @@
 <section class="studio">
   <div class="container-fluid">
-    <dev-studio-bar [heading]="editingSlug() ? 'Edit entry' : 'New entry'" />
+    <dev-studio-bar [heading]="editingSlug() ? 'Editar entrada' : 'Nueva entrada'" />
 
     @if (loading()) {
-      <p class="empty">Loading the entry.</p>
+      <p class="empty">Cargando la entrada.</p>
     } @else {
       <div class="studio__editor">
         <form class="studio__form" [formGroup]="form" (submit)="$event.preventDefault()">
           <label class="field">
-            <span>Title</span>
+            <span>Título</span>
             <input type="text" formControlName="title" autocomplete="off" />
           </label>
 
@@ -23,34 +23,34 @@
               />
             </label>
             <label class="field">
-              <span>Author</span>
+              <span>Autor</span>
               <input type="text" formControlName="author" autocomplete="name" />
             </label>
           </div>
 
           <label class="field">
-            <span>Summary</span>
+            <span>Resumen</span>
             <input type="text" formControlName="summary" />
           </label>
 
           <div class="field-row">
             <label class="field">
-              <span>Category</span>
+              <span>Categoría</span>
               <input type="text" formControlName="category" />
             </label>
             <label class="field">
-              <span>Series</span>
+              <span>Serie</span>
               <input type="text" formControlName="series" />
             </label>
           </div>
 
           <div class="field-row">
             <label class="field">
-              <span>Tags</span>
-              <input type="text" formControlName="tags" placeholder="angular, journal" />
+              <span>Etiquetas</span>
+              <input type="text" formControlName="tags" placeholder="angular, diario" />
             </label>
             <label class="field">
-              <span>Published on</span>
+              <span>Publicado el</span>
               <input type="date" formControlName="publishedOn" />
             </label>
           </div>
@@ -62,7 +62,7 @@
 
           <div class="studio__actions">
             <button type="button" class="btn" [disabled]="saving()" (click)="save('draft')">
-              Save draft
+              Guardar borrador
             </button>
             <button
               type="button"
@@ -70,20 +70,20 @@
               [disabled]="saving()"
               (click)="save('published')"
             >
-              Publish
+              Publicar
             </button>
             @if (editingSlug()) {
               <button type="button" class="btn btn--quiet" [disabled]="saving()" (click)="remove()">
-                Delete
+                Eliminar
               </button>
             }
           </div>
         </form>
 
-        <aside class="preview" aria-label="Markdown preview">
-          <h2>Preview</h2>
+        <aside class="preview" aria-label="Vista previa de Markdown">
+          <h2>Vista previa</h2>
           <div class="article-canvas">
-            <h3 class="preview__title">{{ title() || 'Untitled' }}</h3>
+            <h3 class="preview__title">{{ title() || 'Sin título' }}</h3>
             <div
               class="markdown-body"
               [innerHTML]="previewHtml()"

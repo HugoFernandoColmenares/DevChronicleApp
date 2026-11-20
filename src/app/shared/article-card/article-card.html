@@ -1,7 +1,7 @@
 <article class="card" [class.card--featured]="featured()" [class.card--compact]="compact()">
   <div class="card__meta">
     @let when = article().publishedAt ?? article().updatedAt;
-    <time [attr.datetime]="when">{{ when | date: 'MMM d, y' }}</time>
+    <time [attr.datetime]="when">{{ when | date: 'd MMM y' }}</time>
     <span>{{ article().readingTimeMinutes }} min</span>
     <span>{{ article().author }}</span>
   </div>

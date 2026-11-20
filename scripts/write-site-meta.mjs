@@ -1,6 +1,7 @@
-import { writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 import { loadEnv } from './lib/load-env.mjs';
+import { entryFromMarkdown } from './lib/markdown-entry.mjs';
 
 loadEnv();
 
@@ -18,6 +19,25 @@ Disallow: /articulos
 Sitemap: ${siteUrl}/sitemap.xml
 `;
 
+// Cada Markdown publicado de public/content (la fuente de importación) entra al mapa del sitio.
+const contentDir = new URL('../public/content/', import.meta.url);
+const posts = readdirSync(contentDir)
+  .filter((name) => name.endsWith('.md'))
+  .sort()
+  .map((name) =>
+    entryFromMarkdown(name.slice(0, -3), readFileSync(new URL(name, contentDir), 'utf8')),
+  )
+  .filter(({ entry }) => entry.status === 'published')
+  .map(
+    ({ entry }) => `  <url>
+    <loc>${siteUrl}/post/${entry.slug}</loc>
+    <lastmod>${entry.updatedAt.slice(0, 10)}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`,
+  )
+  .join('\n');
+
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -30,6 +50,7 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+${posts}
 </urlset>
 `;
 

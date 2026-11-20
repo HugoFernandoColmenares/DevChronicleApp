@@ -14,22 +14,30 @@ test('imports the existing catalog by filename slug', () => {
     return entryFromMarkdown(slug, raw);
   });
 
+  // El catálogo crece con cada artículo nuevo: se comprueba contra los archivos reales y
+  // se exige que existan los artículos base, sin fijar una lista que quede obsoleta.
   assert.deepEqual(
     entries.map((item) => item.entry.slug),
-    [
-      'angular-signals-in-practice',
-      'civic-terminal-reading',
-      'construyendo-apis-por-capas-dotnet',
-      'construyendo-apis-por-capas-nestjs',
-      'construyendo-apis-por-capas-spring',
-      'markdown-as-source-of-truth',
-      'welcome-to-devchronicle',
-    ],
+    names.map((name) => name.slice(0, -3)),
   );
+  assert.equal(new Set(entries.map((item) => item.entry.slug)).size, entries.length);
+  for (const slug of [
+    'angular-signals-in-practice',
+    'civic-terminal-reading',
+    'construyendo-apis-por-capas-nestjs',
+    'markdown-as-source-of-truth',
+    'welcome-to-devchronicle',
+  ]) {
+    assert.equal(
+      entries.some((item) => item.entry.slug === slug),
+      true,
+      `falta ${slug}`,
+    );
+  }
 
   const welcome = entries.find((item) => item.entry.slug === 'welcome-to-devchronicle');
-  assert.equal(welcome.entry.title, 'Welcome to DevChronicle');
-  assert.equal(welcome.entry.summary.startsWith('Why this portal'), true);
+  assert.equal(welcome.entry.title, 'Bienvenido a DevChronicle');
+  assert.equal(welcome.entry.summary.startsWith('Por qué este portal'), true);
   assert.deepEqual(welcome.entry.tags, ['journal', 'markdown']);
   assert.equal(welcome.entry.status, 'published');
   assert.equal(welcome.entry.publishedAt, '2026-09-08T12:00:00.000Z');

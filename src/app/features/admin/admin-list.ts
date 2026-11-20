@@ -32,8 +32,8 @@ export class AdminListComponent {
         error: () => {
           this.loading.set(false);
           void this.notifications.error(
-            'Unable to load the studio',
-            'Firestore did not return the entries. Confirm this account is in admins.',
+            'No se pudo cargar el estudio',
+            'Firestore no devolvió las entradas. Confirma que esta cuenta esté en admins.',
           );
         },
       });

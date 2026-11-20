@@ -6,7 +6,7 @@ export const environment = {
   authorName: 'Hugo Colmenares',
   siteUrl: 'https://devchronicle-hugo.web.app',
   defaultDescription:
-    'DevChronicle is a markdown-driven journal for software notes, architecture, and Angular practice.',
+    'DevChronicle es un diario basado en Markdown con notas de software, arquitectura y práctica con Angular.',
   socialImage: '/social/devchronicle-cover.png',
   useEmulators: false,
   authEmulatorHost: '127.0.0.1',

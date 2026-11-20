@@ -14,8 +14,8 @@ export class NotFoundComponent {
 
   constructor() {
     this.seo.setPage({
-      title: 'Page not found',
-      description: 'The page you requested is not part of the DevChronicle journal.',
+      title: 'Página no encontrada',
+      description: 'La página que buscas no forma parte del diario DevChronicle.',
       path: '/404',
       noindex: true,
     });

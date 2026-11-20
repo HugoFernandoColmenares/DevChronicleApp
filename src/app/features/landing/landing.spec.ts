@@ -81,8 +81,8 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(fixture.nativeElement.textContent).toContain('Featured entry');
-    expect(fixture.nativeElement.textContent).toContain('Recently published');
+    expect(fixture.nativeElement.textContent).toContain('Entrada destacada');
+    expect(fixture.nativeElement.textContent).toContain('Publicadas recientemente');
     expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
   });
@@ -144,13 +144,13 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     const view = fixture.nativeElement as HTMLElement;
-    expect(view.textContent).toContain('The journal could not be loaded.');
+    expect(view.textContent).toContain('No se pudo cargar el diario.');
     expect(view.textContent).not.toContain('Older note');
 
-    buttonWithText(view, '.empty-state .btn', 'Try again').click();
+    buttonWithText(view, '.empty-state .btn', 'Intentar de nuevo').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(view.textContent).toContain('Featured entry');
+    expect(view.textContent).toContain('Entrada destacada');
   });
 });

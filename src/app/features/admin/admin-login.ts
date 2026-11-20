@@ -48,16 +48,19 @@ export class AdminLoginComponent {
       await this.router.navigateByUrl(allowed ? '/admin' : '/admin/denied');
     } catch (error) {
       if (error instanceof FirebaseError && error.code === 'auth/popup-closed-by-user') {
-        void this.notifications.info('Sign-in cancelled', 'The Google window was closed.');
+        void this.notifications.info(
+          'Inicio de sesión cancelado',
+          'Se cerró la ventana de Google.',
+        );
       } else if (error instanceof FirebaseError && error.code === 'auth/popup-blocked') {
         void this.notifications.error(
-          'Popup blocked',
-          'Allow popups for this site, then try Google sign-in again.',
+          'Ventana emergente bloqueada',
+          'Permite las ventanas emergentes de este sitio y vuelve a intentar con Google.',
         );
       } else {
         void this.notifications.error(
-          'Sign-in failed',
-          'Google sign-in did not finish. Check the Auth emulator or the authorized domain.',
+          'Falló el inicio de sesión',
+          'El inicio de sesión con Google no terminó. Revisa el emulador de Auth o el dominio autorizado.',
         );
       }
     } finally {

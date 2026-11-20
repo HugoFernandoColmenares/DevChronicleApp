@@ -23,8 +23,8 @@ export function journalErrorFromUnknown(
 
   if (code === 'permission-denied') {
     return audience === 'public'
-      ? new JournalError('not-found', 'Article not found')
-      : new JournalError('denied', 'This account cannot change the journal.');
+      ? new JournalError('not-found', 'Artículo no encontrado')
+      : new JournalError('denied', 'Esta cuenta no puede modificar el diario.');
   }
 
   if (
@@ -33,10 +33,10 @@ export function journalErrorFromUnknown(
     code === 'cancelled' ||
     code === 'failed-precondition'
   ) {
-    return new JournalError('offline', 'Firestore is unavailable.');
+    return new JournalError('offline', 'Firestore no está disponible.');
   }
 
-  return new JournalError('invalid', 'The journal request failed.');
+  return new JournalError('invalid', 'La solicitud al diario falló.');
 }
 
 function firebaseCode(error: unknown): string {

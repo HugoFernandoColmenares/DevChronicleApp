@@ -1,106 +1,106 @@
-# Architecture
+# Arquitectura
 
-DevChronicleApp is the Angular 22 client for **DevChronicle**, a markdown-driven software journal. Runtime data lives in Cloud Firestore. The browser compiles Markdown to HTML. Deployment targets the Firebase Spark plan: Authentication (Google), Firestore, and Hosting only—no Cloud Functions, Cloud Storage, or paid add-ons.
+DevChronicleApp es el cliente Angular 22 de **DevChronicle**, un diario de software basado en Markdown. Los datos en ejecución viven en Cloud Firestore. El navegador compila el Markdown a HTML. El despliegue apunta al plan Spark de Firebase: solo Authentication (Google), Firestore y Hosting, sin Cloud Functions, sin Cloud Storage ni complementos de pago.
 
-Related repositories: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) (legacy orchestration) and [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi) (legacy Rust/SQLite API). Neither is the runtime source of truth anymore. `public/content/*.md` remains the **import** source for seeding Firestore.
+Repositorios relacionados: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) (orquestación anterior) y [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi) (API anterior en Rust y SQLite). Ninguno es ya la fuente de verdad en ejecución. `public/content/*.md` sigue siendo la fuente de **importación** para poblar Firestore.
 
-## Runtime topology
+## Topología en ejecución
 
 ```
-Browser (Angular SPA)
-  ├─ Firebase Auth  → Google sign-in (Studio only)
+Navegador (SPA de Angular)
+  ├─ Firebase Auth  → inicio de sesión con Google (solo Estudio)
   └─ Cloud Firestore
-       ├─ entries/{slug}              metadata card
+       ├─ entries/{slug}              tarjeta de metadatos
        ├─ entries/{slug}/body/current { markdown }
-       └─ admins/{uid}                author gate (console/Admin SDK only)
+       └─ admins/{uid}                puerta del autor (solo consola o Admin SDK)
 
-Firebase Hosting → dist/DevChronicle (SPA rewrite to index.html)
+Firebase Hosting → dist/DevChronicle (reescritura de la SPA a index.html)
 ```
 
-Local development uses the Auth (9099), Firestore (8080), and Emulator UI (4000) under project id `demo-devchronicle`. Production placeholder project id is `devchronicle-hugo`.
+El desarrollo local usa Auth (9099), Firestore (8080) y la interfaz de emuladores (4000) con el proyecto `demo-devchronicle`. El proyecto de producción es `devchronicle-hugo`.
 
-## Application structure
+## Estructura de la aplicación
 
-| Path                                         | Responsibility                                                                     |
-| :------------------------------------------- | :--------------------------------------------------------------------------------- |
-| `src/app/core/firebase`                      | App, Auth, and Firestore factories; emulator connects                              |
-| `src/app/core/models`                        | `ArticleMetadata`, entry normalization, `JournalError`                             |
-| `src/app/core/services`                      | Auth, journal CRUD/watch, Markdown+DOMPurify, SEO, syntax highlight, notifications |
-| `src/app/core/guards`                        | `adminGuard`, `unsavedChangesGuard`                                                |
-| `src/app/core/rxjs`                          | `retryTransient` for offline reads                                                 |
-| `src/app/features/landing`                   | Featured + recent + grid catalog with tag filters                                  |
-| `src/app/features/articles`                  | Paginated archive, search, tags                                                    |
-| `src/app/features/article-viewer`            | Reader, 404/503 states                                                             |
-| `src/app/features/not-found`                 | Global wildcard 404                                                                |
-| `src/app/features/admin`                     | Login, denied, list, editor, studio chrome                                         |
-| `src/app/shared`                             | Header, footer, cards, tags, skeleton, copy button, offline medal                  |
-| `public/content`                             | Markdown import corpus                                                             |
-| `scripts/`                                   | Env writer, site meta, importer, emulator admin seed                               |
-| `firestore.rules` / `firestore.indexes.json` | Security + catalog composite index                                                 |
-| `docs/files`                                 | Design, architecture, audit, ops notes                                             |
+| Ruta                                         | Responsabilidad                                                                           |
+| :------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| `src/app/core/firebase`                      | Fábricas de App, Auth y Firestore; conexión a los emuladores                              |
+| `src/app/core/models`                        | `ArticleMetadata`, normalización de entradas, `JournalError`                              |
+| `src/app/core/services`                      | Auth, CRUD y escucha del diario, Markdown + DOMPurify, SEO, resaltado de sintaxis, avisos |
+| `src/app/core/guards`                        | `adminGuard`, `unsavedChangesGuard`                                                       |
+| `src/app/core/rxjs`                          | `retryTransient` para lecturas sin conexión                                               |
+| `src/app/features/landing`                   | Catálogo con destacada, recientes y cuadrícula, con filtros por etiqueta                  |
+| `src/app/features/articles`                  | Archivo paginado, búsqueda y etiquetas                                                    |
+| `src/app/features/article-viewer`            | Lector y estados 404/503                                                                  |
+| `src/app/features/not-found`                 | 404 global de la ruta comodín                                                             |
+| `src/app/features/admin`                     | Acceso, denegado, lista, editor y marco del Estudio                                       |
+| `src/app/shared`                             | Cabecera, pie, tarjetas, etiquetas, esqueleto, botón de copiar, medalla sin conexión      |
+| `public/content`                             | Corpus de Markdown para importar                                                          |
+| `scripts/`                                   | Generador de entorno, metadatos del sitio, importador y semilla del admin de emulador     |
+| `firestore.rules` / `firestore.indexes.json` | Seguridad e índice compuesto del catálogo                                                 |
+| `docs/files`                                 | Diseño, arquitectura, auditoría y notas operativas                                        |
 
-The shell (`App`) always mounts the site header/footer and a `<main>` outlet. Change detection is zoneless (`provideZonelessChangeDetection`). Feature routes are lazy-loaded.
+El shell (`App`) siempre monta la cabecera y el pie del sitio y un `<main>` con el outlet. La detección de cambios es sin zonas (`provideZonelessChangeDetection`). Las rutas de las secciones se cargan de forma diferida. La interfaz y las fechas están en español (`LOCALE_ID` `es`).
 
-## Routes
+## Rutas
 
-| Path                              | Component                | Notes                                   |
-| :-------------------------------- | :----------------------- | :-------------------------------------- |
-| `/`                               | `LandingComponent`       | Public catalog                          |
-| `/articles`                       | `ArticlesComponent`      | Archive; `/articulos` redirects here    |
-| `/post/:slug`                     | `ArticleViewerComponent` | Reader; invalid slug → not-found UI     |
-| `/admin/login`                    | `AdminLoginComponent`    | Google popup                            |
-| `/admin/denied`                   | `AdminDeniedComponent`   | Signed in, missing `admins/{uid}`       |
-| `/admin`                          | `AdminListComponent`     | `adminGuard`                            |
-| `/admin/new`, `/admin/edit/:slug` | `AdminEditorComponent`   | `adminGuard` + `unsavedChangesGuard`    |
-| `/404`, `**`                      | `NotFoundComponent`      | Soft 404 (HTTP 200 via Hosting rewrite) |
+| Ruta                              | Componente               | Notas                                               |
+| :-------------------------------- | :----------------------- | :-------------------------------------------------- |
+| `/`                               | `LandingComponent`       | Catálogo público                                    |
+| `/articles`                       | `ArticlesComponent`      | Archivo; `/articulos` redirige aquí                 |
+| `/post/:slug`                     | `ArticleViewerComponent` | Lector; un slug inválido muestra el no encontrado   |
+| `/admin/login`                    | `AdminLoginComponent`    | Ventana emergente de Google                         |
+| `/admin/denied`                   | `AdminDeniedComponent`   | Con sesión, pero sin `admins/{uid}`                 |
+| `/admin`                          | `AdminListComponent`     | `adminGuard`                                        |
+| `/admin/new`, `/admin/edit/:slug` | `AdminEditorComponent`   | `adminGuard` + `unsavedChangesGuard`                |
+| `/404`, `**`                      | `NotFoundComponent`      | 404 blando (HTTP 200 por la reescritura de Hosting) |
 
-## Auth and authorization
+## Autenticación y autorización
 
-1. Studio uses Google only (`signInWithPopup` + `select_account`).
-2. `AuthService` tracks `user` and `isAdmin` signals. Admin = existence of `admins/{uid}` (no role field).
-3. `adminGuard`: anonymous → `/admin/login`; non-admin → `/admin/denied`.
-4. Clients cannot create/list/update/delete `admins` documents (rules deny). Production admins are created in the Firebase console; emulators use `npm run seed:admin` (`local-admin` / `admin@devchronicle.test`).
+1. El Estudio usa solo Google (`signInWithPopup` + `select_account`).
+2. `AuthService` mantiene los signals `user` e `isAdmin`. Ser admin es que exista `admins/{uid}` (no hay campo de rol).
+3. `adminGuard`: anónimo → `/admin/login`; no admin → `/admin/denied`.
+4. Los clientes no pueden crear, listar, actualizar ni eliminar documentos de `admins` (las reglas lo niegan). Los admins de producción se crean en la consola de Firebase; los emuladores usan `npm run seed:admin` (`local-admin` / `admin@devchronicle.test`).
 
-## Data model
+## Modelo de datos
 
-**`entries/{slug}`** (document id = slug): `slug`, `title`, `summary`, `tags[]`, `category`, `series`, `author`, `status` (`draft`|`published`), `publishedAt` (timestamp or `null` for drafts), `updatedAt`, `readingTimeMinutes`.
+**`entries/{slug}`** (id del documento = slug): `slug`, `title`, `summary`, `tags[]`, `category`, `series`, `author`, `status` (`draft`|`published`), `publishedAt` (timestamp o `null` en borradores), `updatedAt`, `readingTimeMinutes`.
 
-**`entries/{slug}/body/current`**: `{ markdown }` only, max &lt; 200_000 characters. Split so the catalog query does not download essay bodies and so a long note can use the 1 MiB document cap alone.
+**`entries/{slug}/body/current`**: solo `{ markdown }`, con menos de 200_000 caracteres. Se separa para que la consulta del catálogo no descargue los cuerpos de los ensayos y para que una nota larga pueda usar sola el tope de 1 MiB por documento.
 
-**Rules (summary):** public read of published entries and their body; drafts invisible to the public (surfaced as not-found); writes require `isAdmin()` and `validEntry(slug)`; body id must be `current`.
+**Reglas (resumen):** lectura pública de las entradas publicadas y de su cuerpo; los borradores son invisibles para el público (se muestran como no encontrados); las escrituras exigen `isAdmin()` y `validEntry(slug)`; el id del cuerpo debe ser `current`.
 
-**Index:** `status` ASC + `publishedAt` DESC for the public catalog.
+**Índice:** `status` ASC + `publishedAt` DESC para el catálogo público.
 
-Saves use a write batch (metadata + body). Deletes remove both documents. There is no optimistic concurrency on `updatedAt` today—last write wins.
+Los guardados usan un lote de escritura (metadatos + cuerpo). Las eliminaciones borran ambos documentos. Hoy no hay concurrencia optimista sobre `updatedAt`: gana la última escritura.
 
-## Rendering pipeline
+## Flujo de renderizado
 
-1. Catalog: `onSnapshot` query `status == published` ordered by `publishedAt`.
-2. Reader: watch entry + `body/current`, then `MarkdownParserService.compile` (`marked` → `DOMPurify.sanitize`) → `[innerHTML]` via ` DomSanitizer.bypassSecurityTrustHtml`.
-3. Syntax highlighting is lazy-loaded (`highlight.js` chunk) and copy buttons are attached to fences.
-4. Public reads wrap the stream with `retryTransient` (2 attempts, 400 ms then 800 ms) for errors classified as `offline`.
+1. Catálogo: consulta `onSnapshot` con `status == published` ordenada por `publishedAt`.
+2. Lector: escucha la entrada y `body/current`, luego `MarkdownParserService.compile` (`marked` → `DOMPurify.sanitize`) → `[innerHTML]` mediante `DomSanitizer.bypassSecurityTrustHtml`.
+3. El resaltado de sintaxis se carga de forma diferida (fragmento de `highlight.js`) y se agregan botones de copiar a los bloques de código.
+4. Las lecturas públicas envuelven el flujo con `retryTransient` (2 intentos, 400 ms y luego 800 ms) para los errores clasificados como `offline`. Una lista vacía o un documento ausente servidos solo desde la caché local de Firestore también se clasifican como `offline`, para que una caída no se confunda con un diario vacío ni con un 404.
 
-## SEO and hosting
+## SEO y hosting
 
-`SeoService` sets title, description, robots, canonical, Open Graph, Twitter, article meta, and JSON-LD per view. Studio is `noindex` (client + Hosting `X-Robots-Tag`). `robots.txt` and `sitemap.xml` are generated at build from `NG_APP_SITE_URL`. The sitemap currently lists only `/` and `/articles`. Social crawlers do not execute the SPA, so per-article share cards need prerender/SSR (documented debt).
+`SeoService` define por vista el título, la descripción, robots, el canónico, Open Graph, Twitter, los metadatos de artículo y JSON-LD. El Estudio es `noindex` (cliente + cabecera `X-Robots-Tag` de Hosting). `robots.txt` y `sitemap.xml` se generan en la compilación a partir de `NG_APP_SITE_URL`; el mapa del sitio incluye `/`, `/articles` y cada artículo de `public/content`. Los rastreadores sociales no ejecutan la SPA, así que las tarjetas para compartir por artículo necesitan prerenderizado o SSR (deuda documentada).
 
-## Build and verification
+## Compilación y verificación
 
-| Command                                                | Role                                                                    |
-| :----------------------------------------------------- | :---------------------------------------------------------------------- |
-| `npm start`                                            | `ng serve` against emulators (`environment.development.ts`)             |
-| `npm run build`                                        | Write production env + site meta, then `ng build` → `dist/DevChronicle` |
-| `npm test`                                             | Angular Vitest unit suite (~43 tests)                                   |
-| `npm run test:import`                                  | Node tests for the Markdown importer                                    |
-| `npm run test:rules`                                   | Firestore rules via emulator + Vitest                                   |
-| `npm run lint`                                         | Prettier check                                                          |
-| `npm run emulators` / `import:emulator` / `seed:admin` | Local stack                                                             |
+| Comando                                                | Función                                                                                            |
+| :----------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `npm start`                                            | `ng serve` contra los emuladores (`environment.development.ts`)                                    |
+| `npm run build`                                        | Escribe el entorno de producción y los metadatos del sitio, luego `ng build` → `dist/DevChronicle` |
+| `npm test`                                             | Suite unitaria de Vitest de Angular (~47 pruebas)                                                  |
+| `npm run test:import`                                  | Pruebas de Node del importador de Markdown                                                         |
+| `npm run test:rules`                                   | Reglas de Firestore con emulador + Vitest                                                          |
+| `npm run lint`                                         | Verificación con Prettier                                                                          |
+| `npm run emulators` / `import:emulator` / `seed:admin` | Pila local                                                                                         |
 
-CI: `.github/workflows/firebase-hosting.yml` builds on `main` and deploys Hosting when secrets are present.
+CI: `.github/workflows/firebase-hosting.yml` compila en `main` y despliega Hosting cuando están los secretos.
 
-## Constraints (by design)
+## Restricciones (por diseño)
 
-- Spark-only: no Cloud Functions, no managed backups, no App Check yet.
-- Single binary admin gate; no multi-author roles.
-- No local Markdown/`index.json` runtime fallback if Firestore is down.
-- Soft 404s remain HTTP 200 under the Hosting SPA rewrite.
+- Solo Spark: sin Cloud Functions, sin copias de seguridad administradas, sin App Check por ahora.
+- Una sola puerta binaria de admin; sin roles de varios autores.
+- Sin respaldo local con Markdown o `index.json` si Firestore no responde.
+- Los 404 blandos siguen siendo HTTP 200 con la reescritura de la SPA en Hosting.

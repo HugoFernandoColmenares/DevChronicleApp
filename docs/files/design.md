@@ -1,59 +1,59 @@
-# Design — Civic Terminal
+# Diseño — Civic Terminal
 
-DevChronicle’s public surface is nicknamed **Civic Terminal**: a reading room for working software notes. The product promise is retrieval and readability—chrome should disappear behind prose and code.
+La superficie pública de DevChronicle se apoda **Civic Terminal**: una sala de lectura para notas de software que funciona. La promesa del producto es encontrar y leer con comodidad: el marco debe desaparecer detrás de la prosa y el código.
 
-Spanish operational notes for the same tokens live in [`diseno.md`](./diseno.md). This file is the English source of truth for the current UI system as implemented in `src/styles.css` and feature styles.
+Las notas operativas en español sobre los mismos tokens están en [`diseno.md`](./diseno.md). Este archivo describe el sistema de interfaz actual tal como está implementado en `src/styles.css` y en los estilos de cada sección.
 
-## Brand and voice
+## Marca y voz
 
-- **Name:** DevChronicle (hero-level on landing as the header brand; landing H1 is the product line “Field notes for working software.”)
-- **Voice:** Direct, technical, bilingual content (UI English; many entries and tags in Spanish).
-- **Mark:** A 1×1 accent square beside the wordmark—functional, not illustrative.
+- **Nombre:** DevChronicle (marca en la cabecera; el H1 de la portada es la línea del producto, "Notas de campo para software que funciona.")
+- **Voz:** directa y técnica. La interfaz y el contenido están en español; algunas etiquetas conservan términos técnicos en inglés.
+- **Marca gráfica:** un cuadrado de acento de 1×1 junto al nombre: funcional, no ilustrativo.
 
-## Tokens (`:root` in `src/styles.css`)
+## Tokens (`:root` en `src/styles.css`)
 
-| Token                                | Value                     | Role                                       |
-| :----------------------------------- | :------------------------ | :----------------------------------------- |
-| `--color-canvas`                     | `#fafafa`                 | Page background                            |
-| `--color-slate`                      | `#1e293b`                 | Header, footer, featured card, code chrome |
-| `--color-accent`                     | `#0ea5e9`                 | Links, CTAs, focus ring, tag washes        |
-| `--color-accent-ink`                 | `#0369a1`                 | Accent text on light surfaces              |
-| `--color-ink`                        | `#0f172a`                 | Body text                                  |
-| `--color-muted`                      | `#64748b`                 | Secondary copy, kickers                    |
-| `--color-divider`                    | `#e2e8f0`                 | Rules, card borders                        |
-| `--color-string` / `--color-keyword` | `#10b981` / `#8b5cf6`     | Syntax accents                             |
-| `--font-ui`                          | Inter (+ system fallback) | UI and prose                               |
-| `--font-mono`                        | JetBrains Mono            | Code, editor, 404 numerals                 |
+| Token                                | Valor                            | Rol                                                      |
+| :----------------------------------- | :------------------------------- | :------------------------------------------------------- |
+| `--color-canvas`                     | `#fafafa`                        | Fondo de la página                                       |
+| `--color-slate`                      | `#1e293b`                        | Cabecera, pie, tarjeta destacada y marco del código      |
+| `--color-accent`                     | `#0ea5e9`                        | Enlaces, llamadas a la acción, anillo de foco, etiquetas |
+| `--color-accent-ink`                 | `#0369a1`                        | Texto de acento sobre superficies claras                 |
+| `--color-ink`                        | `#0f172a`                        | Texto del cuerpo                                         |
+| `--color-muted`                      | `#64748b`                        | Texto secundario y antetítulos                           |
+| `--color-divider`                    | `#e2e8f0`                        | Líneas y bordes de tarjetas                              |
+| `--color-string` / `--color-keyword` | `#10b981` / `#8b5cf6`            | Acentos de sintaxis                                      |
+| `--font-ui`                          | Inter (con respaldo del sistema) | Interfaz y prosa                                         |
+| `--font-mono`                        | JetBrains Mono                   | Código, editor y números del 404                         |
 
-Self-hosted fonts live under `public/fonts`. Focus uses a 2px accent outline (`:focus-visible`).
+Las fuentes están alojadas en `public/fonts`. El foco usa un contorno de acento de 2 px (`:focus-visible`).
 
-## Layout patterns
+## Patrones de composición
 
-- **Landing:** Intro copy → dense tag filters → featured slate card → “Recently published” compact rail → “Earlier entries” grid.
-- **Archive (`/articles`):** Intro + back button → search → tags → result count → paginated grid (6 per page).
-- **Reader (`/post/:slug`):** ~70ch column (`.article-canvas`), slate code fences, copy control per fence.
-- **Studio:** Same tokens; list rows with status pills; editor is a two-column form + live Markdown preview. SweetAlert2 confirms discard/delete and is themed to the palette.
-- **Shell:** Slate header (Journal / Articles / Studio) and slate footer. Offline medal appears in the header when `JournalService.offline` is true.
+- **Portada:** texto de introducción → filtros de etiquetas → tarjeta destacada color pizarra → riel compacto "Publicadas recientemente" → cuadrícula "Entradas anteriores".
+- **Archivo (`/articles`):** introducción y botón de regreso → búsqueda → etiquetas → conteo de resultados → cuadrícula paginada (6 por página).
+- **Lector (`/post/:slug`):** columna de ~70ch (`.article-canvas`), bloques de código color pizarra y control de copiar en cada uno.
+- **Estudio:** mismos tokens; filas de lista con indicadores de estado; el editor es un formulario de dos columnas con vista previa de Markdown en vivo. SweetAlert2 confirma descartar o eliminar y usa la paleta del sitio.
+- **Shell:** cabecera color pizarra (Diario / Artículos / Estudio) y pie color pizarra. La medalla "Diario sin conexión" aparece en la cabecera cuando `JournalService.offline` es verdadero.
 
-## Components
+## Componentes
 
-Cards (`.article-card`) are the primary interactive catalog unit—bordered light cards, featured variant fills slate. Tags are accent-washed chips. Pills mark draft/published in Studio. Skeleton loaders reserve catalog space while Firestore resolves.
+Las tarjetas (`.article-card`) son la unidad interactiva principal del catálogo: tarjetas claras con borde, y la variante destacada se rellena de color pizarra. Las etiquetas son chips con un tinte de acento. Los indicadores marcan borrador o publicada en el Estudio. Los esqueletos de carga reservan el espacio del catálogo mientras Firestore responde.
 
-## Motion and atmosphere
+## Movimiento y atmósfera
 
-Motion is minimal: underline/gradient link treatments and hover border shifts on cards. There is no hero imagery, illustration system, or ambient texture—atmosphere comes almost entirely from typography contrast (slate vs canvas) and the featured card.
+El movimiento es mínimo: subrayados o degradados en los enlaces y cambios de borde al pasar el cursor sobre las tarjetas. No hay imágenes de portada, sistema de ilustración ni texturas de ambiente: la atmósfera sale casi por completo del contraste tipográfico (pizarra frente al lienzo) y de la tarjeta destacada.
 
-## Accessibility baselines present today
+## Accesibilidad que existe hoy
 
-- Landmark `<main>`, primary `nav` label, filter `role="group"`, pager labels, `aria-live` on archive results, `aria-current` on pages, decorative `aria-hidden` marks, focus-visible styles.
-- Gaps (skip link, route focus management, contrast on some muted/accent mixes, SweetAlert focus traps) are tracked in the audit.
+- Región `<main>`, etiqueta en la navegación principal, `role="group"` en los filtros, etiquetas en el paginador, `aria-live` en los resultados del archivo, `aria-current` en las páginas, marcas decorativas con `aria-hidden` y estilos de foco visibles.
+- Los pendientes (enlace para saltar al contenido, manejo del foco entre rutas, contraste en algunas combinaciones de gris y acento, y trampas de foco de SweetAlert) están registrados en la auditoría.
 
-## Screenshots
+## Capturas
 
-Captures under `docs/screenshots/` were taken against `ng serve` + emulators at 1440×900 (desktop) and 390×844 (mobile), including Studio authenticated flows via the Auth emulator account `admin@devchronicle.test`.
+Las capturas de `docs/screenshots/` se tomaron con `ng serve` + emuladores a 1440×900 (escritorio) y 390×844 (móvil), incluidos los flujos autenticados del Estudio con la cuenta `admin@devchronicle.test` del emulador de Auth. Las capturas de la auditoría muestran la interfaz en inglés de esa fecha; las capturas de la portada, el archivo, el lector, el 404 y la vista móvil que usa el README se actualizaron a la interfaz en español.
 
-## Art direction (current vs intended)
+## Dirección de arte (actual frente a la prevista)
 
-**Current:** Clean developer-blog utilitarian. Distinctive mostly in naming (“Civic Terminal”, slate featured card) but visually close to a default Inter + sky-blue Tailwind-like kit.
+**Actual:** blog de desarrollo limpio y utilitario. Distintivo sobre todo por el nombre ("Civic Terminal", la tarjeta destacada color pizarra), pero visualmente cercano a un kit por defecto de Inter y azul cielo al estilo Tailwind.
 
-**Intended refresh (see improvement plan Phase 3):** Treat the journal like a field notebook—tactile paper grain or subtle ruled canvas, a display face with more authorship than Inter, monospace as a first-class brand signal, and fewer pill clusters. Keep the slate/code relationship; evolve the landing so the brand and the first entry share one composition instead of a dashboard of filters-then-cards.
+**Renovación prevista (ver la Fase 3 del plan de mejoras):** tratar el diario como un cuaderno de campo: grano de papel táctil o un lienzo con renglones sutiles, una tipografía de titulares con más carácter de autor que Inter, la monoespaciada como señal de marca de primer nivel y menos grupos de indicadores. Mantener la relación pizarra/código y evolucionar la portada para que la marca y la primera entrada compartan una sola composición, en lugar de un tablero de filtros y luego tarjetas.

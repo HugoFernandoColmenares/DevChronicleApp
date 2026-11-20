@@ -75,7 +75,7 @@ describe('ArticleViewerComponent', () => {
     expect(view.querySelector('.markdown-body h2')?.textContent).toContain(
       'Inputs without decorators',
     );
-    expect(view.textContent).toContain('4 min read');
+    expect(view.textContent).toContain('4 min de lectura');
     expect(view.textContent).toContain('Signals');
     expect(view.textContent).not.toContain('excerpt:');
     expect(TestBed.inject(Title).getTitle()).toBe('Angular signals in practice · DevChronicle');
@@ -86,10 +86,10 @@ describe('ArticleViewerComponent', () => {
     const fixture = await open('missing-entry');
     const view = fixture.nativeElement as HTMLElement;
 
-    expect(view.querySelector('.error-state')?.textContent).toContain('not published');
-    expect(view.textContent).toContain('Browse all articles');
-    expect(view.textContent).not.toContain('Try again');
-    expect(TestBed.inject(Title).getTitle()).toBe('Article not found · DevChronicle');
+    expect(view.querySelector('.error-state')?.textContent).toContain('no está publicada');
+    expect(view.textContent).toContain('Explorar todos los artículos');
+    expect(view.textContent).not.toContain('Intentar de nuevo');
+    expect(TestBed.inject(Title).getTitle()).toBe('Artículo no encontrado · DevChronicle');
     expect(TestBed.inject(Meta).getTag('name="robots"')?.content).toBe('noindex, nofollow');
   });
 
@@ -105,11 +105,13 @@ describe('ArticleViewerComponent', () => {
     const fixture = await open('offline-entry');
     const view = fixture.nativeElement as HTMLElement;
 
-    expect(view.querySelector('.error-state')?.textContent).toContain('could not be loaded');
-    expect(view.textContent).toContain('Try again');
+    expect(view.querySelector('.error-state')?.textContent).toContain(
+      'No se pudo cargar el diario',
+    );
+    expect(view.textContent).toContain('Intentar de nuevo');
 
     const retry = [...view.querySelectorAll('button')].find((button) =>
-      button.textContent?.includes('Try again'),
+      button.textContent?.includes('Intentar de nuevo'),
     ) as HTMLButtonElement;
     retry.click();
     await fixture.whenStable();

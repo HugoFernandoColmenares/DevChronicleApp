@@ -50,7 +50,7 @@ export class SeoService {
 
     this.meta.updateTag({ property: 'og:type', content: type });
     this.meta.updateTag({ property: 'og:site_name', content: environment.siteName });
-    this.meta.updateTag({ property: 'og:locale', content: 'en_US' });
+    this.meta.updateTag({ property: 'og:locale', content: 'es_LA' });
     this.meta.updateTag({ property: 'og:title', content: fullTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
     this.meta.updateTag({ property: 'og:url', content: url });
@@ -100,7 +100,7 @@ export class SeoService {
         image,
         keywords: article.tags.join(', '),
         articleSection: article.category || undefined,
-        inLanguage: 'en',
+        inLanguage: 'es',
       },
     });
 
@@ -113,7 +113,7 @@ export class SeoService {
     this.meta.updateTag({ property: 'article:section', content: article.category });
   }
 
-  setPrivate(title = 'Studio', description = 'Authoring studio for DevChronicle.'): void {
+  setPrivate(title = 'Estudio', description = 'Estudio de autoría de DevChronicle.'): void {
     this.setPage({ title, description, path: '/admin', noindex: true });
   }
 
