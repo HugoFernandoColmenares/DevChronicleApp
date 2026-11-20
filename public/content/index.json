@@ -62,5 +62,29 @@
     "date": "2026-11-11",
     "tags": ["angular", "fastapi", "typst", "python", "bookpublisher"],
     "excerpt": "Un recorrido por BookPublisher, un estudio local para pasar de un manuscrito a un PDF de aspecto profesional, con cuatro temas: Códice, Novela clásica, Manual técnico y Sencillo."
+  },
+  {
+    "slug": "comparar-comunidades-microbianas-acero-corroido-sedimento-pandas-scikit-bio",
+    "title": "Cómo comparar comunidades microbianas de acero corroído y sedimento con pandas y scikit-bio",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-20",
+    "tags": ["python", "pandas", "scikit-bio", "bioinformatica", "16s", "corrosion", "analisis-de-datos", "plotly", "uv"],
+    "excerpt": "Tutorial paso a paso en Python 3.14: descargo sin clave una tabla de abundancias 16S de MGnify y los metadatos de la ENA de un estudio público de 10 años sobre corrosión de cadenas de acero en el fondo marino, parto el linaje taxonómico con pandas, calculo diversidad alfa y beta, PCoA y PERMANOVA con scikit-bio, y dibujo las gráficas con plotly. Todas las cifras salen de correr el código."
+  },
+  {
+    "slug": "leer-archivos-mdp-medibang-navegador-typescript-fflate-web-worker-angular-22",
+    "title": "Cómo leer archivos .mdp de MediBang Paint en el navegador con TypeScript, fflate y un Web Worker en Angular 22",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-20",
+    "tags": ["angular", "typescript", "web-worker", "fflate", "archivos-binarios", "medibang", "canvas", "vitest", "proyectos"],
+    "excerpt": "Bitácora paso a paso de cómo escribí un lector del formato .mdp (MDIPACK) de MediBang Paint en TypeScript puro: cabecera binaria con DataView, XML de capas, chunks PAC, tiles comprimidos con zlib vía fflate, conversión BGRA a RGBA, aplanado con modos de fusión y máscaras de recorte, todo dentro de un Web Worker de Angular 22.3 que devuelve un PNG por prenda. Con pruebas en Vitest sobre archivos .mdp sintéticos."
+  },
+  {
+    "slug": "servidor-mcp-propio-react-zustand-json-rpc-http-stdio-sse",
+    "title": "Cómo exponer el estado de una app React a agentes de IA con un servidor MCP propio: JSON-RPC por HTTP, puente stdio y sincronización por SSE",
+    "author": "Hugo Colmenares",
+    "date": "2026-11-20",
+    "tags": ["mcp", "json-rpc", "react", "zustand", "express", "sse", "typescript", "agentes-ia", "proyectos"],
+    "excerpt": "Bitácora paso a paso de cómo le di a un editor 3D de interiores en React 19 + Zustand una superficie MCP (Model Context Protocol) escrita a mano: herramientas descritas con JSON Schema, un despachador JSON-RPC 2.0 en Express, un puente stdio que reenvía al servidor vivo, historial de deshacer en el servidor y sincronización con el navegador por Server-Sent Events sin bucles de eco. Con llamadas curl reales."
   }
 ]
