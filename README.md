@@ -14,6 +14,7 @@ Las notas operativas están en `docs/files`. Repositorios relacionados: [DevChro
 | [`docs/files/design.md`](docs/files/design.md)                     | Libreta de apuntes: tokens, tipografía, composición y estados sin conexión |
 | [`docs/files/audit.md`](docs/files/audit.md)                       | Hallazgos ordenados (de críticos a bajos) con capturas como evidencia      |
 | [`docs/files/improvement-plan.md`](docs/files/improvement-plan.md) | Plan por fases (mejoras rápidas → seguridad → diseño → extras)             |
+| [`docs/files/PENDIENTES.md`](docs/files/PENDIENTES.md)             | Cambios que quedan por aplicar, con pasos y forma de verificarlos          |
 | [`docs/screenshots/`](docs/screenshots/)                           | Capturas de escritorio y móvil de los estados públicos y del Estudio       |
 
 Las notas operativas (`autenticacion.md`, `modelo-de-datos.md`, `robustez-mvp.md` y otras) conviven en `docs/files` con el conjunto de auditoría.
