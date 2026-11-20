@@ -1,6 +1,12 @@
 <section class="studio">
   <div class="container-fluid">
-    <dev-studio-bar heading="Entradas" [showNew]="true" />
+    <dev-studio-bar
+      heading="Entradas"
+      [showNew]="true"
+      [showExport]="true"
+      [exporting]="exporting()"
+      (exportRequested)="exportBackup()"
+    />
 
     @if (loading()) {
       <p class="empty">Cargando entradas.</p>
@@ -11,7 +17,7 @@
         @for (entry of entries(); track entry.slug) {
           <a class="studio__row" [routerLink]="['/admin/edit', entry.slug]">
             <span class="pill" [class.pill--on]="entry.status === 'published'">{{
-              entry.status
+              entry.status === 'published' ? 'publicada' : 'borrador'
             }}</span>
             <span class="studio__row-title">{{ entry.title }}</span>
             <span class="studio__row-meta">

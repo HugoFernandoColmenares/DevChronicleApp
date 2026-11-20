@@ -2,7 +2,7 @@
 title: Civic Terminal, pensado para leer
 author: Hugo Colmenares
 date: 2026-09-11
-tags: [design, typography]
+tags: [diseno, tipografia]
 excerpt: Un lienzo claro, una consola color pizarra y una medida de 70 caracteres: las reglas que mantienen tranquilas las sesiones largas de lectura.
 ---
 

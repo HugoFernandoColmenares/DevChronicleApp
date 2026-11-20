@@ -11,8 +11,10 @@ const dialog = Swal.mixin({
     actions: 'dc-swal__actions',
   },
   buttonsStyling: false,
-  background: '#FAFAFA',
-  color: '#0F172A',
+  background: '#f7f8f3',
+  color: '#14201a',
+  showClass: { popup: 'swal2-show' },
+  hideClass: { popup: 'swal2-hide' },
 });
 
 const toast = Swal.mixin({
@@ -27,8 +29,8 @@ const toast = Swal.mixin({
     timerProgressBar: 'dc-swal__timer',
   },
   buttonsStyling: false,
-  background: '#1E293B',
-  color: '#FAFAFA',
+  background: '#162032',
+  color: '#f7faf6',
 });
 
 @Injectable({ providedIn: 'root' })
@@ -46,23 +48,40 @@ export class NotificationService {
   }
 
   toast(title: string, icon: SweetAlertIcon = 'success'): Promise<SweetAlertResult> {
-    return toast.fire({ icon, title });
+    return toast.fire({ icon, title, showConfirmButton: false });
   }
 
   confirm(title: string, text?: string): Promise<boolean> {
     return dialog
       .fire({
-        icon: 'question',
+        icon: undefined,
         title,
         text,
         showCancelButton: true,
+        focusCancel: true,
         confirmButtonText: 'Continuar',
         cancelButtonText: 'Cancelar',
+        returnFocus: true,
       })
       .then((result) => result.isConfirmed);
   }
 
   private alert(icon: SweetAlertIcon, title: string, text?: string): Promise<SweetAlertResult> {
-    return dialog.fire({ icon, title, text, confirmButtonText: 'Cerrar' });
+    return dialog.fire({
+      icon: undefined,
+      title,
+      text,
+      confirmButtonText: 'Cerrar',
+      returnFocus: true,
+      // Keep semantic role for screen readers without the generic glyph.
+      customClass: {
+        popup: `dc-swal dc-swal--${icon}`,
+        title: 'dc-swal__title',
+        htmlContainer: 'dc-swal__text',
+        confirmButton: 'dc-swal__confirm',
+        cancelButton: 'dc-swal__cancel',
+        actions: 'dc-swal__actions',
+      },
+    });
   }
 }

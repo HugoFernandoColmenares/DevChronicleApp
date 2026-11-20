@@ -2,7 +2,7 @@
 title: Markdown como fuente de verdad
 author: Hugo Colmenares
 date: 2026-09-12
-tags: [markdown, architecture]
+tags: [markdown, arquitectura]
 excerpt: Frontmatter, un importador y una frontera de parseo para que la interfaz nunca sea dueña del formato del contenido.
 ---
 

@@ -9,6 +9,10 @@ export const environment = {
     'DevChronicle es un diario basado en Markdown con notas de software, arquitectura y práctica con Angular.',
   socialImage: '/social/devchronicle-cover.png',
   useEmulators: false,
+  /** reCAPTCHA v3 site key; leave empty to skip App Check until configured. */
+  appCheckSiteKey: '',
+  /** Optional Sentry DSN for the GlobalErrorHandler envelope reporter. */
+  sentryDsn: '',
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,
   firestoreEmulatorHost: '127.0.0.1',

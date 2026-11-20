@@ -46,6 +46,15 @@ jobs:
       - name: Firestore rules tests
         run: npm run test:rules
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke against emulators
+        run: >
+          npx firebase emulators:exec
+          --project demo-devchronicle
+          "npm run import:emulator && npm run seed:admin && npm run test:e2e"
+
       - name: Check Firebase secrets
         id: gate
         env:
@@ -79,6 +88,8 @@ jobs:
           FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
           FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_APPCHECK_SITE_KEY: ${{ secrets.FIREBASE_APPCHECK_SITE_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           NG_APP_SITE_URL: ${{ vars.NG_APP_SITE_URL }}
         run: npm run build
 
@@ -94,6 +105,15 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         run: npx firebase deploy --only hosting,firestore:rules,firestore:indexes --project devchronicle-hugo --non-interactive
+
+      # Opcional: sobrescribe en Firestore las entradas con el Markdown del repo (upsert por slug).
+      # Desactivado por defecto para no pisar ediciones hechas desde el Estudio. Para activarlo,
+      # crea la variable de repositorio IMPORT_MARKDOWN_ON_DEPLOY=true.
+      - name: Import Markdown corpus into Firestore
+        if: steps.gate.outputs.deploy == 'true' && vars.IMPORT_MARKDOWN_ON_DEPLOY == 'true'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: node scripts/import-content.mjs --project devchronicle-hugo
 
       - name: Skip deploy
         if: steps.gate.outputs.deploy != 'true'

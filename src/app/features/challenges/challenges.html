@@ -1,0 +1,35 @@
+<section class="page">
+  <div class="container-fluid">
+    <header class="intro">
+      <div class="intro__copy">
+        <p class="kicker">Práctica</p>
+        <h1>Desafíos de programación.</h1>
+        <p>
+          Ejercicios cortos para resolver en el editor que prefieras. Cada uno trae un enunciado,
+          una pista para arrancar y una posible solución; descúbrelas cuando estés listo.
+        </p>
+      </div>
+      <a class="btn" routerLink="/">Volver al diario</a>
+    </header>
+
+    <ul class="challenge-list">
+      @for (challenge of challenges; track challenge.slug) {
+        <li>
+          <a class="challenge-card" [routerLink]="['/challenges', challenge.slug]">
+            <div class="challenge-card__meta">
+              <span class="difficulty">{{ labelFor(challenge.difficulty) }}</span>
+              <span class="language">{{ challenge.language }}</span>
+            </div>
+            <h2 class="challenge-card__title">{{ challenge.title }}</h2>
+            <p class="challenge-card__summary">{{ challenge.summary }}</p>
+            <div class="challenge-card__tags">
+              @for (tag of challenge.tags; track tag) {
+                <span class="chip">{{ tag }}</span>
+              }
+            </div>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>

@@ -15,13 +15,14 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/**
 Disallow: /articulos
+Disallow: /desafios
 
 Sitemap: ${siteUrl}/sitemap.xml
 `;
 
-// Cada Markdown publicado de public/content (la fuente de importación) entra al mapa del sitio.
 const contentDir = new URL('../public/content/', import.meta.url);
-const posts = readdirSync(contentDir)
+// Cada Markdown publicado de public/content (la fuente de importación) entra al mapa del sitio.
+const articleUrls = readdirSync(contentDir)
   .filter((name) => name.endsWith('.md'))
   .sort()
   .map((name) =>
@@ -33,7 +34,7 @@ const posts = readdirSync(contentDir)
     <loc>${siteUrl}/post/${entry.slug}</loc>
     <lastmod>${entry.updatedAt.slice(0, 10)}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>`,
   )
   .join('\n');
@@ -50,7 +51,12 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-${posts}
+  <url>
+    <loc>${siteUrl}/challenges</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+${articleUrls}
 </urlset>
 `;
 

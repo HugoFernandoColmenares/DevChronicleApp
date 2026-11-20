@@ -8,6 +8,7 @@ import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
 import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
+import { OfflineSnapshotService } from '@core/services/offline-snapshot.service';
 
 import { ArticlesComponent } from './articles';
 
@@ -106,9 +107,12 @@ function search(root: HTMLElement, value: string): void {
 }
 
 describe('ArticlesComponent', () => {
+  // Por defecto no hay copia sin conexión: las pruebas de caída ven el estado de error.
+  let snapshot: { list: ReturnType<typeof vi.fn>; entry: ReturnType<typeof vi.fn> };
   let watchPublished: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    snapshot = { list: vi.fn(async () => null), entry: vi.fn(async () => null) };
     watchPublished = vi.fn(() => of(articles));
     TestBed.configureTestingModule({
       imports: [ArticlesComponent],
@@ -116,6 +120,7 @@ describe('ArticlesComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        { provide: OfflineSnapshotService, useValue: snapshot },
         {
           provide: JournalService,
           useValue: { offline: signal(false), watchPublished },
@@ -203,8 +208,10 @@ describe('ArticlesComponent', () => {
       'Construyendo APIs por capas: NestJS',
       'Construyendo APIs por capas: Spring Boot',
       'Construyendo APIs por capas: .NET 10',
+      'Angular signals in practice',
+      'Markdown as the source of truth',
     ]);
-    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–3 de 3 artículos');
+    expect(fixture.nativeElement.textContent).toContain('Mostrando 1–5 de 5 artículos');
 
     search(fixture.nativeElement, 'nothing matches this');
     await fixture.whenStable();
@@ -225,10 +232,13 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
-    const architecture = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const unified = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const english = filters.filter((node) => node.textContent?.trim() === 'architecture');
 
-    expect(architecture).toHaveLength(1);
-    expect(filters).toHaveLength(12);
+    expect(unified).toHaveLength(1);
+    expect(english).toHaveLength(0);
+    // All + 10 normalized tags (architecture/arquitectura unidas).
+    expect(filters).toHaveLength(11);
   });
 
   it('falls back to updatedAt when an entry has no publish date', async () => {
@@ -284,7 +294,7 @@ describe('ArticlesComponent', () => {
 
   it('offers a manual retry after a Firestore failure without a local fallback', async () => {
     watchPublished.mockReturnValueOnce(
-      throwError(() => new JournalError('offline', 'Firestore is unavailable.')),
+      throwError(() => new JournalError('offline', 'Firestore no está disponible.')),
     );
     const fixture = TestBed.createComponent(ArticlesComponent);
     await fixture.whenStable();
@@ -305,5 +315,23 @@ describe('ArticlesComponent', () => {
       'Markdown as the source of truth',
     ]);
     expect(view.textContent).toContain('Mostrando 1–6 de 8 artículos');
+  });
+
+  it('falls back to the offline copy, labelled as possibly outdated', async () => {
+    watchPublished.mockReturnValueOnce(
+      throwError(() => new JournalError('offline', 'Firestore no está disponible.')),
+    );
+    snapshot.list.mockResolvedValueOnce({
+      generatedAt: '2026-11-20T17:00:00.000Z',
+      entries: articles.slice(0, 2),
+    });
+    const fixture = TestBed.createComponent(ArticlesComponent);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.querySelector('.sticky-note')?.textContent).toContain('Puede estar desactualizada');
+    expect(view.textContent).toContain('Mostrando 1–2 de 2 artículos');
+    expect(view.querySelector('.empty-state[role="alert"]')).toBeNull();
   });
 });

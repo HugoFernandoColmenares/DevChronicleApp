@@ -42,7 +42,7 @@ export function entryFromMarkdown(slug, raw) {
     throw new Error(`${slug} has status "${status}". Use draft or published.`);
   }
 
-  const category = cleanLabel(fields.category, 'journal');
+  const category = cleanLabel(fields.category, 'diario');
   const series = cleanLabel(fields.series, category);
   const publishedAt = status === 'published' ? toNoonUtc(fields.date, slug) : null;
   const updatedAt = toNoonUtc(fields.updated ?? fields.date, slug);

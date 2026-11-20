@@ -8,6 +8,7 @@ import { ArticleMetadata } from '@core/models/article.model';
 import { JournalError } from '@core/models/journal-error';
 import { READ_RETRY } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
+import { OfflineSnapshotService } from '@core/services/offline-snapshot.service';
 
 import { LandingComponent } from './landing';
 
@@ -58,9 +59,12 @@ function buttonWithText(root: HTMLElement, selector: string, text: string): HTML
 }
 
 describe('LandingComponent', () => {
+  // Por defecto no hay copia sin conexión: las pruebas de caída ven el estado de error.
+  let snapshot: { list: ReturnType<typeof vi.fn>; entry: ReturnType<typeof vi.fn> };
   let watchPublished: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    snapshot = { list: vi.fn(async () => null), entry: vi.fn(async () => null) };
     watchPublished = vi.fn(() => of(articles));
     TestBed.configureTestingModule({
       imports: [LandingComponent],
@@ -68,6 +72,7 @@ describe('LandingComponent', () => {
         provideZonelessChangeDetection(),
         provideRouter([]),
         { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        { provide: OfflineSnapshotService, useValue: snapshot },
         {
           provide: JournalService,
           useValue: { offline: signal(false), watchPublished },
@@ -81,7 +86,8 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(fixture.nativeElement.textContent).toContain('Entrada destacada');
+    expect(fixture.nativeElement.textContent).toContain('DevChronicle');
+    expect(fixture.nativeElement.textContent).toContain('Notas de campo para');
     expect(fixture.nativeElement.textContent).toContain('Publicadas recientemente');
     expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
@@ -138,7 +144,7 @@ describe('LandingComponent', () => {
 
   it('offers a manual retry after a Firestore failure without a local fallback', async () => {
     watchPublished.mockReturnValueOnce(
-      throwError(() => new JournalError('offline', 'Firestore is unavailable.')),
+      throwError(() => new JournalError('offline', 'Firestore no está disponible.')),
     );
     const fixture = TestBed.createComponent(LandingComponent);
     await fixture.whenStable();
@@ -151,6 +157,86 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(view.textContent).toContain('Entrada destacada');
+    expect(view.textContent).toContain('DevChronicle');
+  });
+
+  it('shows Try again when the journal is marked offline even if the list is empty', async () => {
+    const offline = signal(true);
+    watchPublished.mockReturnValue(of([]));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [LandingComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        { provide: OfflineSnapshotService, useValue: snapshot },
+        {
+          provide: JournalService,
+          useValue: { offline, watchPublished },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(view.textContent).toContain('No se pudo cargar el diario.');
+    expect(view.textContent).not.toContain('Aún no hay entradas publicadas.');
+    expect(buttonWithText(view, '.empty-state .btn', 'Intentar de nuevo')).toBeTruthy();
+  });
+
+  it('shows the offline copy with a sticky note and a retry when Firestore fails', async () => {
+    watchPublished.mockReturnValueOnce(
+      throwError(() => new JournalError('offline', 'Firestore no está disponible.')),
+    );
+    snapshot.list.mockResolvedValueOnce({
+      generatedAt: '2026-11-20T17:00:00.000Z',
+      entries: articles,
+    });
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(snapshot.list).toHaveBeenCalledTimes(1);
+    expect(view.querySelector('.sticky-note')?.textContent).toContain('Estás leyendo sin conexión');
+    expect(view.textContent).toContain('Puede estar desactualizada');
+    expect(view.querySelector('.sticky-note time')?.getAttribute('datetime')).toBe(
+      '2026-11-20T17:00:00.000Z',
+    );
+    expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
+
+    buttonWithText(view, '.sticky-note .btn', 'Intentar de nuevo').click();
+    await fixture.whenStable();
+
+    expect(watchPublished).toHaveBeenCalledTimes(2);
+    expect(view.querySelector('.sticky-note')).toBeNull();
+  });
+
+  it('never hides an outage: cached entries while offline still carry the notice', async () => {
+    const offline = signal(true);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [LandingComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: READ_RETRY, useValue: { attempts: 0, baseDelayMs: 1 } },
+        { provide: OfflineSnapshotService, useValue: snapshot },
+        { provide: JournalService, useValue: { offline, watchPublished } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(LandingComponent);
+    await fixture.whenStable();
+
+    const view = fixture.nativeElement as HTMLElement;
+    expect(titles(fixture)).toHaveLength(2);
+    expect(view.querySelector('.sticky-note')?.textContent).toContain(
+      'última copia guardada en este navegador',
+    );
+    expect(snapshot.list).not.toHaveBeenCalled();
   });
 });

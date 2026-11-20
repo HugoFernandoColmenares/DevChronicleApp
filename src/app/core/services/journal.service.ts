@@ -4,9 +4,11 @@ import {
   doc,
   DocumentData,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
+  runTransaction,
   Timestamp,
   where,
   writeBatch,
@@ -18,9 +20,27 @@ import { ArticleBody, ArticleMetadata, EntryDraft } from '@core/models/article.m
 import { normalizeDraft, readingTimeMinutes, SLUG_PATTERN } from '@core/models/entry.logic';
 import { JournalError, journalErrorFromUnknown } from '@core/models/journal-error';
 
+export interface SaveOptions {
+  create?: boolean;
+  /** ISO timestamp from the last loaded revision; required for updates. */
+  expectedUpdatedAt?: string | null;
+}
+
+export interface JournalExportEntry {
+  entry: ArticleMetadata;
+  markdown: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class JournalService {
   readonly offline = signal(false);
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => this.offline.set(false));
+      window.addEventListener('offline', () => this.offline.set(true));
+    }
+  }
 
   watchPublished(): Observable<ArticleMetadata[]> {
     const published = query(
@@ -45,22 +65,39 @@ export class JournalService {
       let stopBody = () => {};
       const stopEntry = onSnapshot(
         doc(firebaseFirestore(), 'entries', slug),
+        { includeMetadataChanges: true },
         (entry) => {
           stopBody();
-          // Sin red y sin caché, Firestore responde "no existe" desde la caché local.
-          // Eso es una caída, no un artículo faltante.
-          if (isMissingFromCache(entry)) {
-            this.fail(subscriber, { code: 'unavailable' }, 'public');
-            return;
-          }
           if (!entry.exists() || entry.data()['status'] !== 'published') {
+            // Sin red y sin caché, Firestore responde "no existe" desde la caché local:
+            // es una caída, no un artículo faltante.
+            if (
+              isMissingFromCache(entry) ||
+              (entry.metadata.fromCache && this.isBrowserOffline())
+            ) {
+              this.fail(
+                subscriber,
+                new JournalError('offline', 'Firestore no está disponible.'),
+                'public',
+              );
+              return;
+            }
             subscriber.error(new JournalError('not-found', 'Artículo no encontrado'));
             return;
           }
 
           stopBody = onSnapshot(
             doc(firebaseFirestore(), 'entries', slug, 'body', 'current'),
+            { includeMetadataChanges: true },
             (body) => {
+              if (body.metadata.fromCache && this.isBrowserOffline()) {
+                this.fail(
+                  subscriber,
+                  new JournalError('offline', 'Firestore no está disponible.'),
+                  'public',
+                );
+                return;
+              }
               this.offline.set(false);
               subscriber.next({
                 metadata: metadataFromSnapshot(slug, entry.data()),
@@ -101,39 +138,53 @@ export class JournalService {
     }
   }
 
-  async save(draft: EntryDraft, options?: { create?: boolean }): Promise<void> {
+  async save(draft: EntryDraft, options?: SaveOptions): Promise<string> {
     const entry = normalizeDraft(draft);
     const ref = doc(firebaseFirestore(), 'entries', entry.slug);
     const bodyRef = doc(firebaseFirestore(), 'entries', entry.slug, 'body', 'current');
+    const nextUpdatedAt = Timestamp.now();
 
     try {
-      if (options?.create) {
-        const existing = await getDoc(ref);
-        if (existing.exists()) {
-          throw new JournalError('conflict', 'Ya existe una entrada con este slug.');
-        }
-      }
+      await runTransaction(firebaseFirestore(), async (tx) => {
+        const existing = await tx.get(ref);
 
-      const batch = writeBatch(firebaseFirestore());
-      batch.set(ref, {
-        slug: entry.slug,
-        title: entry.title,
-        summary: entry.summary,
-        tags: entry.tags,
-        category: entry.category,
-        series: entry.series,
-        author: entry.author,
-        status: entry.status,
-        publishedAt:
-          entry.status === 'published' && entry.publishedAt
-            ? Timestamp.fromDate(entry.publishedAt)
-            : null,
-        updatedAt: Timestamp.now(),
-        readingTimeMinutes: readingTimeMinutes(entry.markdown),
+        if (options?.create) {
+          if (existing.exists()) {
+            throw new JournalError('conflict', 'Ya existe una entrada con este slug.');
+          }
+        } else if (existing.exists()) {
+          const currentUpdatedAt = timestampToIso(existing.data()['updatedAt']);
+          const expected = options?.expectedUpdatedAt ?? null;
+          if (expected && currentUpdatedAt && currentUpdatedAt !== expected) {
+            throw new JournalError(
+              'conflict',
+              'Esta entrada cambió en otra pestaña. Vuelve a cargarla antes de guardar.',
+            );
+          }
+        } else if (options?.expectedUpdatedAt) {
+          throw new JournalError('not-found', 'Artículo no encontrado');
+        }
+
+        tx.set(ref, {
+          slug: entry.slug,
+          title: entry.title,
+          summary: entry.summary,
+          tags: entry.tags,
+          category: entry.category,
+          series: entry.series,
+          author: entry.author,
+          status: entry.status,
+          publishedAt:
+            entry.status === 'published' && entry.publishedAt
+              ? Timestamp.fromDate(entry.publishedAt)
+              : null,
+          updatedAt: nextUpdatedAt,
+          readingTimeMinutes: readingTimeMinutes(entry.markdown),
+        });
+        tx.set(bodyRef, { markdown: entry.markdown });
       });
-      batch.set(bodyRef, { markdown: entry.markdown });
-      await batch.commit();
       this.offline.set(false);
+      return nextUpdatedAt.toDate().toISOString();
     } catch (error) {
       throw this.asError(error, 'admin');
     }
@@ -155,29 +206,80 @@ export class JournalService {
     }
   }
 
+  async exportAll(): Promise<JournalExportEntry[]> {
+    try {
+      const listed = await getDocs(
+        query(collection(firebaseFirestore(), 'entries'), orderBy('updatedAt', 'desc')),
+      );
+      const pack: JournalExportEntry[] = [];
+      for (const item of listed.docs) {
+        const metadata = metadataFromSnapshot(item.id, item.data() as DocumentData);
+        const body = await getDoc(
+          doc(firebaseFirestore(), 'entries', metadata.slug, 'body', 'current'),
+        );
+        pack.push({
+          entry: metadata,
+          markdown: markdownFromSnapshot(body.data()),
+        });
+      }
+      this.offline.set(false);
+      return pack;
+    } catch (error) {
+      throw this.asError(error, 'admin');
+    }
+  }
+
   private watchQuery(
     entries: ReturnType<typeof query>,
     audience: 'public' | 'admin',
   ): Observable<ArticleMetadata[]> {
-    return new Observable((subscriber) =>
-      onSnapshot(
+    return new Observable((subscriber) => {
+      let sawServer = false;
+
+      const stop = onSnapshot(
         entries,
+        { includeMetadataChanges: true },
         (snapshot) => {
-          // Sin red y sin caché, Firestore entrega una lista vacía marcada como "desde caché".
-          // Se trata como caída para mostrar el error con "Intentar de nuevo" y no un
-          // diario vacío.
-          if (isEmptyFromCache(snapshot)) {
-            this.fail(subscriber, { code: 'unavailable' }, audience);
-            return;
+          if (snapshot.metadata.fromCache) {
+            // Una lista vacía servida solo desde la caché significa que el servidor no respondió:
+            // se trata como caída para no mostrar un diario vacío (C2 de la auditoría).
+            if (!sawServer && isEmptyFromCache(snapshot)) {
+              this.fail(
+                subscriber,
+                new JournalError('offline', 'Firestore no está disponible.'),
+                audience,
+              );
+              return;
+            }
+            if (this.isBrowserOffline()) {
+              this.offline.set(true);
+              if (!sawServer) {
+                this.fail(
+                  subscriber,
+                  new JournalError('offline', 'Firestore no está disponible.'),
+                  audience,
+                );
+              }
+              return;
+            }
+          } else {
+            sawServer = true;
+            this.offline.set(false);
           }
-          this.offline.set(false);
+
           subscriber.next(
             snapshot.docs.map((item) => metadataFromSnapshot(item.id, item.data() as DocumentData)),
           );
         },
         (error) => this.fail(subscriber, error, audience),
-      ),
-    );
+      );
+
+      return () => stop();
+    });
+  }
+
+  private isBrowserOffline(): boolean {
+    return typeof navigator !== 'undefined' && navigator.onLine === false;
   }
 
   private fail(

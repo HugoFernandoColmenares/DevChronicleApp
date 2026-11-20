@@ -2,7 +2,7 @@
 title: Angular Signals en la práctica
 author: Hugo Colmenares
 date: 2026-09-10
-tags: [angular, architecture]
+tags: [angular, arquitectura]
 excerpt: Cómo las entradas con signals, el estado derivado y las vistas diferidas mantienen un sitio de contenido pequeño y explícito.
 ---
 

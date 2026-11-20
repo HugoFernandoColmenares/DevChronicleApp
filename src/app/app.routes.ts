@@ -14,6 +14,20 @@ export const routes: Routes = [
     redirectTo: 'articles',
   },
   {
+    path: 'challenges',
+    loadComponent: () =>
+      import('./features/challenges/challenges').then((m) => m.ChallengesComponent),
+  },
+  {
+    path: 'desafios',
+    redirectTo: 'challenges',
+  },
+  {
+    path: 'challenges/:slug',
+    loadComponent: () =>
+      import('./features/challenges/challenge-detail').then((m) => m.ChallengeDetailComponent),
+  },
+  {
     path: 'post/:slug',
     loadComponent: () =>
       import('./features/article-viewer/article-viewer').then((m) => m.ArticleViewerComponent),

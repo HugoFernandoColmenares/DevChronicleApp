@@ -23,6 +23,12 @@ docs/architecture_guidelines.md
 docs/files/design_guidelines.md
 docs/files/architecture_guidelines.md
 
+# Copia sin conexión generada en cada build (scripts/write-offline-snapshot.mjs)
+/public/offline/
+
+# Local / CI Firestore exports
+/exports/
+
 # Compiled output
 /dist
 /tmp
@@ -65,3 +71,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Playwright
+/test-results/
+/playwright-report/

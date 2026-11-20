@@ -1,6 +1,6 @@
 # Acabado público: 404, metadatos y rastreo
 
-El catálogo, el lector y Studio ya estaban cubiertos. Este documento describe el acabado que
+El catálogo, el lector y el Estudio ya estaban cubiertos. Este documento describe el acabado que
 convierte el cliente en un sitio publicable: página 404, título y descripción por vista, canonical,
 Open Graph, Twitter Cards, datos estructurados, `robots.txt`, `sitemap.xml` y la imagen social.
 
@@ -15,7 +15,7 @@ metadatos de Firestore.
 - **Lector `/post/:slug`:** título, descripción, `og:type=article`, fechas, autor y JSON-LD
   `BlogPosting`.
 - **404 y errores:** `noindex, nofollow` y sin datos estructurados.
-- **Studio:** `noindex` desde el cliente y desde Hosting.
+- **Estudio:** `noindex` desde el cliente y desde Hosting.
 
 El servicio actualiza, sin duplicar:
 

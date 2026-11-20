@@ -37,6 +37,7 @@ export class AdminEditorComponent {
   private readonly formBuilder = inject(FormBuilder);
   private slugTouched = false;
   private baseline = '';
+  private expectedUpdatedAt: string | null = null;
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -49,8 +50,8 @@ export class AdminEditorComponent {
     title: ['', Validators.required],
     slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
     summary: ['', Validators.required],
-    category: ['journal', Validators.required],
-    series: ['journal', Validators.required],
+    category: ['diario', Validators.required],
+    series: ['diario', Validators.required],
     author: [environment.authorName, Validators.required],
     tags: [''],
     publishedOn: [dateToInput(null), Validators.required],
@@ -125,7 +126,7 @@ export class AdminEditorComponent {
     this.saving.set(true);
     try {
       const creating = !this.editingSlug();
-      await this.journal.save(
+      const updatedAt = await this.journal.save(
         {
           slug: value.slug,
           title: value.title,
@@ -138,14 +139,28 @@ export class AdminEditorComponent {
           publishedAt,
           markdown: value.markdown,
         },
-        { create: creating },
+        {
+          create: creating,
+          expectedUpdatedAt: creating ? null : this.expectedUpdatedAt,
+        },
       );
+      this.expectedUpdatedAt = updatedAt;
       this.markClean();
       void this.notifications.toast(status === 'published' ? 'Publicada' : 'Borrador guardado');
       if (creating) {
         await this.router.navigate(['/admin/edit', value.slug], { replaceUrl: true });
       }
     } catch (error) {
+      if (error instanceof JournalError && error.code === 'conflict' && this.editingSlug()) {
+        const reload = await this.notifications.confirm(
+          'La entrada cambió en otra pestaña',
+          'Otra pestaña guardó una versión más reciente. ¿Quieres cargarla? Se descartarán tus ediciones actuales.',
+        );
+        if (reload) {
+          await this.open(this.editingSlug());
+        }
+        return;
+      }
       void this.notifications.error('No se pudo guardar', this.message(error));
     } finally {
       this.saving.set(false);
@@ -182,13 +197,14 @@ export class AdminEditorComponent {
     this.slugTouched = false;
     if (!slug) {
       this.editingSlug.set(null);
+      this.expectedUpdatedAt = null;
       this.form.controls.slug.enable();
       this.form.reset({
         title: '',
         slug: '',
         summary: '',
-        category: 'journal',
-        series: 'journal',
+        category: 'diario',
+        series: 'diario',
         author: environment.authorName,
         tags: '',
         publishedOn: dateToInput(null),
@@ -205,6 +221,7 @@ export class AdminEditorComponent {
     try {
       const entry = await this.journal.loadEntry(slug);
       this.editingSlug.set(slug);
+      this.expectedUpdatedAt = entry.metadata.updatedAt;
       this.form.controls.slug.disable();
       this.form.reset({
         title: entry.metadata.title,

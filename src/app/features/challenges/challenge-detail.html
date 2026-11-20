@@ -1,0 +1,66 @@
+<section class="page">
+  <div class="article-canvas">
+    <a class="back" routerLink="/challenges">← Todos los desafíos</a>
+
+    @if (challenge(); as item) {
+      <header class="mast">
+        <div class="mast__meta">
+          <span class="difficulty">{{ labelFor(item.difficulty) }}</span>
+          <span>{{ item.language }}</span>
+        </div>
+        <h1>{{ item.title }}</h1>
+        <p class="lede">{{ item.summary }}</p>
+        <div class="mast__tags">
+          @for (tag of item.tags; track tag) {
+            <span class="chip">{{ tag }}</span>
+          }
+        </div>
+      </header>
+
+      <section class="panel">
+        <h2>Enunciado</h2>
+        <div class="prose">{{ item.prompt }}</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Pista</h2>
+          <button type="button" class="btn btn--quiet" (click)="toggleHint()">
+            {{ showHint() ? 'Ocultar pista' : 'Ver pista' }}
+          </button>
+        </div>
+        @if (showHint()) {
+          <pre class="fence"><code>{{ item.hint }}</code></pre>
+        } @else {
+          <p class="muted">
+            Un esqueleto para arrancar cuando necesites un empujón, no la respuesta completa.
+          </p>
+        }
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2>Una posible solución</h2>
+          <button type="button" class="btn btn--quiet" (click)="toggleSolution()">
+            {{ showSolution() ? 'Ocultar solución' : 'Ver solución' }}
+          </button>
+        </div>
+        @if (showSolution()) {
+          <pre class="fence"><code>{{ item.solution }}</code></pre>
+        } @else {
+          <p class="muted">Inténtalo primero por tu cuenta. Hay muchos enfoques válidos.</p>
+        }
+      </section>
+    } @else {
+      <div class="error-state">
+        <p class="error-state__code" aria-hidden="true">404</p>
+        <h1>Desafío no encontrado.</h1>
+        <p class="error-state__copy">Ese slug no está en el catálogo de práctica.</p>
+        <div class="error-state__actions">
+          <a class="btn btn--primary" routerLink="/challenges">Ver los desafíos</a>
+          <a class="btn" routerLink="/">Volver al diario</a>
+        </div>
+      </div>
+    }
+  </div>
+</section>

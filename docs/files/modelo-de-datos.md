@@ -32,6 +32,6 @@ Un documento de Firestore no puede pasar de 1 MiB. Las notas de este diario hoy 
 - El documento del cuerpo puede crecer hasta cerca de 1 MiB sin competir con los campos de la ficha.
 - Abrir una nota son dos lecturas: la ficha y `body/current`. En un diario personal eso cabe en la cuota gratuita (50 000 lecturas al día).
 
-El tope práctico es 199 999 caracteres y 900 KiB en UTF-8. El importador y Studio rechazan lo que se pase. Si una nota se acerca a ese tamaño, conviene partirla en varias entradas. No hace falta otra subcolección.
+El tope práctico es 199 999 caracteres y 900 KiB en UTF-8. El importador y el Estudio rechazan lo que se pase. Si una nota se acerca a ese tamaño, conviene partirla en varias entradas. No hace falta otra subcolección.
 
 Las fechas que vienen como `YYYY-MM-DD` se guardan a las 12:00 UTC para que el calendario no cambie de día en América.

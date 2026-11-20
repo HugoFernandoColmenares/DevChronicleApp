@@ -17,6 +17,7 @@ export class AdminLoginComponent {
 
   readonly ready = signal(false);
   readonly busy = signal(false);
+  readonly emulatorAuth = this.auth.emulatorAuth;
 
   constructor() {
     effect(() => {
@@ -47,24 +48,38 @@ export class AdminLoginComponent {
       const allowed = await this.auth.refreshAdmin(result.user);
       await this.router.navigateByUrl(allowed ? '/admin' : '/admin/denied');
     } catch (error) {
-      if (error instanceof FirebaseError && error.code === 'auth/popup-closed-by-user') {
-        void this.notifications.info(
-          'Inicio de sesión cancelado',
-          'Se cerró la ventana de Google.',
-        );
-      } else if (error instanceof FirebaseError && error.code === 'auth/popup-blocked') {
-        void this.notifications.error(
-          'Ventana emergente bloqueada',
-          'Permite las ventanas emergentes de este sitio y vuelve a intentar con Google.',
-        );
-      } else {
-        void this.notifications.error(
-          'Falló el inicio de sesión',
-          'El inicio de sesión con Google no terminó. Revisa el emulador de Auth o el dominio autorizado.',
-        );
-      }
+      this.reportSignInFailure(error);
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  async continueWithEmulatorAdmin(): Promise<void> {
+    this.busy.set(true);
+    try {
+      const result = await this.auth.signInEmulatorAdmin();
+      const allowed = await this.auth.refreshAdmin(result.user);
+      await this.router.navigateByUrl(allowed ? '/admin' : '/admin/denied');
+    } catch (error) {
+      this.reportSignInFailure(error);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  private reportSignInFailure(error: unknown): void {
+    if (error instanceof FirebaseError && error.code === 'auth/popup-closed-by-user') {
+      void this.notifications.info('Inicio de sesión cancelado', 'Se cerró la ventana de Google.');
+    } else if (error instanceof FirebaseError && error.code === 'auth/popup-blocked') {
+      void this.notifications.error(
+        'Ventana emergente bloqueada',
+        'Permite las ventanas emergentes de este sitio y vuelve a intentar con Google.',
+      );
+    } else {
+      void this.notifications.error(
+        'Falló el inicio de sesión',
+        'El inicio de sesión no terminó. Revisa el emulador de Auth, seed:admin o el dominio autorizado.',
+      );
     }
   }
 }

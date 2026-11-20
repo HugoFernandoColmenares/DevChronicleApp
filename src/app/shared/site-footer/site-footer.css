@@ -1,7 +1,6 @@
 .foot {
   margin-top: auto;
-  background: var(--color-slate);
-  color: #94a3b8;
+  color: var(--color-muted);
 }
 
 .foot__inner {
@@ -9,7 +8,9 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: 1.5rem;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2rem;
   font-size: 0.875rem;
 }
 
@@ -17,17 +18,21 @@
   margin: 0;
 }
 
+.foot__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
 .foot a {
-  color: #e2e8f0;
-  text-decoration: none;
-  background-image: linear-gradient(var(--color-accent), var(--color-accent));
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  background-size: 0 0.1rem;
-  transition: background-size 180ms ease;
+  color: var(--color-accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  text-underline-offset: 0.2em;
 }
 
 .foot a:hover,
 .foot a:focus-visible {
-  background-size: 100% 0.1rem;
+  text-decoration-color: currentColor;
 }

@@ -38,11 +38,11 @@ test('imports the existing catalog by filename slug', () => {
   const welcome = entries.find((item) => item.entry.slug === 'welcome-to-devchronicle');
   assert.equal(welcome.entry.title, 'Bienvenido a DevChronicle');
   assert.equal(welcome.entry.summary.startsWith('Por qué este portal'), true);
-  assert.deepEqual(welcome.entry.tags, ['journal', 'markdown']);
+  assert.deepEqual(welcome.entry.tags, ['diario', 'markdown']);
   assert.equal(welcome.entry.status, 'published');
   assert.equal(welcome.entry.publishedAt, '2026-09-08T12:00:00.000Z');
-  assert.equal(welcome.entry.category, 'journal');
-  assert.equal(welcome.entry.series, 'journal');
+  assert.equal(welcome.entry.category, 'diario');
+  assert.equal(welcome.entry.series, 'diario');
   assert.equal(welcome.markdown.startsWith('---'), false);
   assert.equal(welcome.entry.readingTimeMinutes >= 1, true);
 });

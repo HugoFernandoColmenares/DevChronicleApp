@@ -8,7 +8,7 @@
 
 Este documento ordena los hallazgos por gravedad. **No** implementa correcciones.
 
-> **Estado posterior (revisión del 20 nov 2026, tarde):** después de esta auditoría se corrigieron C1 (DOMPurify actualizado a 3.4.18), C2 (una caída de Firestore ya no se muestra como diario vacío), H2 (el mapa del sitio incluye cada artículo), H6 (la prueba del importador ya no fija una lista de slugs), M8 (conteos del README) y L5 en parte (los cuatro ensayos base se reescribieron en español y describen Firestore como fuente en ejecución). Quedan abiertos el resto de los hallazgos, entre ellos H5 en lo que depende de Angular y Firebase. Las capturas de esta auditoría muestran la interfaz en inglés de esa fecha, antes de pasarla a español.
+> **Estado posterior (20 nov 2026, noche):** corregidos C1, C2, H2, H4, H6, H7, H8, M1, M3, M4, M5 (en lo que toca a textos), M6, M7 (App Check queda preparado detrás de `FIREBASE_APPCHECK_SITE_KEY`), M8, L1, L2, L3 y L5. Siguen abiertos H1 y H3 (requieren prerenderizado o Functions, fuera de Spark), H5 en lo que depende de Firebase (`@grpc/grpc-js`, `zod`), M2 en parte, L4 y L6 (entorno local). **Las capturas enlazadas se regeneraron con la interfaz corregida** (libreta de apuntes, en español); muestran el estado actual, no el que se auditó. El seguimiento por punto está en [`improvement-plan.md`](./improvement-plan.md).
 
 ---
 

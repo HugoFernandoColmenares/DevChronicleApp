@@ -9,7 +9,7 @@
 - La ficha solo acepta los campos del modelo. El Markdown no puede colarse en `entries/{slug}`.
 - El cuerpo solo puede llamarse `current`, solo tiene `markdown`, y no llega a 200 000 caracteres.
 - Un borrador guarda `publishedAt` en `null`. Una nota publicada guarda un timestamp.
-- Nadie puede listar ni escribir `admins` desde el cliente. Cada persona autenticada puede leer únicamente `admins/{su uid}` para saber si entra a Studio. Aunque sea autora, no puede crear ni editar ese documento.
+- Nadie puede listar ni escribir `admins` desde el cliente. Cada persona autenticada puede leer únicamente `admins/{su uid}` para saber si entra a Estudio. Aunque sea autora, no puede crear ni editar ese documento.
 
 Los índices están en `firestore.indexes.json`. El índice compuesto es `status` ascendente y `publishedAt` descendente, que es la consulta del índice público. Las etiquetas se filtran en el navegador sobre esa lista, así que no piden otro índice. Ordenar el studio por `updatedAt` usa el índice de campo único que Firestore crea solo.
 
