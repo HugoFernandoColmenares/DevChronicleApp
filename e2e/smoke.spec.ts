@@ -4,11 +4,10 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('public smoke', () => {
   test('landing, archive, challenges, and 404 stay reachable', async ({ page }) => {
     await page.goto('/');
-    await expect(
-      page.getByRole('heading', { name: /Field notes for working software/i }),
-    ).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'DevChronicle' })).toBeVisible({
       timeout: 30_000,
     });
+    await expect(page.getByText('Field notes for working software.')).toBeVisible();
 
     const landingA11y = await new AxeBuilder({ page }).exclude('.filters').analyze();
     expect(landingA11y.violations.filter((item) => item.impact === 'critical')).toEqual([]);

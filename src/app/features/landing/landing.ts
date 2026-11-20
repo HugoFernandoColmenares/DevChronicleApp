@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, of, switchMap, tap } from 'rxjs';
 
 import { ArticleMetadata } from '@core/models/article.model';
+import { normalizeTag, normalizeTags } from '@core/models/tag-normalize';
 import { READ_RETRY, retryTransient } from '@core/rxjs/retry-transient';
 import { JournalService } from '@core/services/journal.service';
 import { SeoService } from '@core/services/seo.service';
@@ -26,6 +27,7 @@ export class LandingComponent {
   private readonly retryOptions = inject(READ_RETRY);
   private readonly attempt = signal(0);
 
+  readonly siteName = environment.siteName;
   readonly selectedTag = signal<string | null>(null);
   readonly tagsExpanded = signal(false);
   readonly loading = signal(true);
@@ -58,13 +60,11 @@ export class LandingComponent {
   );
 
   readonly tags = computed(() => {
-    const unique = new Set<string>();
+    const all: string[] = [];
     for (const article of this.articles()) {
-      for (const tag of article.tags) {
-        unique.add(tag);
-      }
+      all.push(...article.tags);
     }
-    return [...unique].sort((a, b) => a.localeCompare(b));
+    return normalizeTags(all);
   });
 
   readonly featured = computed(() => this.filtered()[0] ?? null);
@@ -106,7 +106,9 @@ export class LandingComponent {
   private filtered(): ArticleMetadata[] {
     const tag = this.selectedTag();
     const items = this.sortByDate(this.articles());
-    return tag ? items.filter((article) => article.tags.includes(tag)) : items;
+    return tag
+      ? items.filter((article) => article.tags.some((item) => normalizeTag(item) === tag))
+      : items;
   }
 
   private sortByDate(items: ArticleMetadata[]): ArticleMetadata[] {

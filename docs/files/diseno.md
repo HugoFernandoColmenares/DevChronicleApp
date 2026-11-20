@@ -1,9 +1,9 @@
 # Diseño
 
-La interfaz sigue siendo Civic Terminal. Esta migración no cambia la lectura: lienzo `#fafafa`, cromo `#1e293b`, acento `#0ea5e9`, texto `#0f172a` y texto secundario `#64748b`. Inter para la interfaz y JetBrains Mono para el código y el editor. Las fuentes siguen en `public/fonts`.
+La interfaz sigue siendo **Civic Terminal** (refresh Phase 3). Lienzo de papel rayado frío `#ecefe6`, cromo/pizarra `#162032`, acento tinta teal `#0f766e`, texto `#14201a` y secundario `#3f5349`. **Source Serif 4** para marca y titulares, **Source Sans 3** para UI/prosa, **JetBrains Mono** para código, kickers y la marca DC. Fuentes en `public/fonts`.
 
-La portada destaca la nota más reciente en una tarjeta pizarra, separa las siguientes tres en una franja de notas recientes y deja el resto en una grilla. El archivo `/articles` reúne todas las publicaciones de la más reciente a la más antigua, con búsqueda dinámica, filtros por etiqueta y paginación. La columna de lectura mide unos 70 caracteres. Los bloques de código usan el fondo pizarra y el botón de copiar.
+La portada es una sola composición: marca DevChronicle, una línea de producto, un CTA y la entrada destacada a sangre (plano pizarra). Los filtros van después. El archivo `/articles` reúne publicaciones con búsqueda, etiquetas normalizadas (p. ej. `arquitectura` → `architecture`) y paginación. La columna de lectura mide unos 70 caracteres. Los bloques de código usan el fondo pizarra; la barra de copiar aparece al pasar el cursor.
 
-Studio reutiliza esos tokens: botones con el mismo acento, filas con el borde `#e2e8f0` y la vista previa dentro de `.markdown-body`. No hay un tema paralelo para el área de autoría.
+Studio reutiliza esos tokens. Los diálogos de confirmación siguen SweetAlert2, restilizados sin el icono genérico de interrogación.
 
-Las capturas de `docs/screenshots` se tomaron con la app en `ng serve` contra los emuladores.
+Las capturas de `docs/screenshots` son anteriores al refresh visual y conviene regenerarlas.

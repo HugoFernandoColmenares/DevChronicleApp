@@ -81,7 +81,8 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(fixture.nativeElement.textContent).toContain('Featured entry');
+    expect(fixture.nativeElement.textContent).toContain('DevChronicle');
+    expect(fixture.nativeElement.textContent).toContain('Field notes for working software.');
     expect(fixture.nativeElement.textContent).toContain('Recently published');
     expect(fixture.nativeElement.querySelectorAll('.card--compact').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('2 min');
@@ -151,7 +152,7 @@ describe('LandingComponent', () => {
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual(['Angular signals in practice', 'Older note']);
-    expect(view.textContent).toContain('Featured entry');
+    expect(view.textContent).toContain('DevChronicle');
   });
 
   it('shows Try again when the journal is marked offline even if the list is empty', async () => {

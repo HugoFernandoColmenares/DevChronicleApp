@@ -23,6 +23,9 @@ docs/architecture_guidelines.md
 docs/files/design_guidelines.md
 docs/files/architecture_guidelines.md
 
+# Local / CI Firestore exports
+/exports/
+
 # Compiled output
 /dist
 /tmp

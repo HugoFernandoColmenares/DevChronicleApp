@@ -123,7 +123,14 @@ npm run lint
 
 `test` runs the Vitest suite through the Angular unit-test builder. `test:import` checks the Markdown parser used by the importer. `test:rules` starts a dedicated Firestore emulator on port 8180 (`firebase.rules-test.json`) so it does not collide with `npm run emulators`. `test:e2e` runs Playwright smoke (public + Studio via **Emulator author**); start emulators, import, and `seed:admin` first. `lint` runs Prettier.
 
-Node **22** is the supported engine (`engines` in `package.json`). Optional App Check uses `FIREBASE_APPCHECK_SITE_KEY` (see `docs/files/hosting.md`).
+Node **22** is the supported engine (`engines` in `package.json`). Optional App Check uses `FIREBASE_APPCHECK_SITE_KEY`; optional Sentry uses `SENTRY_DSN` (see `docs/files/hosting.md` and `docs/files/ops-phase4.md`).
+
+```bash
+npm run export:emulator
+npm run export:cloud
+```
+
+Writes a JSON backup of every Firestore entry (scheduled weekly in CI when secrets exist).
 
 ```bash
 npm run import:emulator

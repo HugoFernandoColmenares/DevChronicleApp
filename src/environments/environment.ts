@@ -11,6 +11,8 @@ export const environment = {
   useEmulators: false,
   /** reCAPTCHA v3 site key; leave empty to skip App Check until configured. */
   appCheckSiteKey: '',
+  /** Optional Sentry DSN for the GlobalErrorHandler envelope reporter. */
+  sentryDsn: '',
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,
   firestoreEmulatorHost: '127.0.0.1',

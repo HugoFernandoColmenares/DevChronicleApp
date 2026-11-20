@@ -1,23 +1,13 @@
 <section class="page">
-  <div class="container-fluid">
-    <header class="intro">
-      <h1>Field notes for working software.</h1>
-      <p>
-        DevChronicle collects architecture notes, Angular practice, and reading-room essays. Open an
-        entry. Copy the examples. Leave with something you can use.
-      </p>
-      <div class="intro__links">
-        <a class="intro__link" routerLink="/articles">
-          Browse every article, newest first
-          <span aria-hidden="true">→</span>
-        </a>
-        <a class="intro__link" routerLink="/challenges">
-          Try a coding challenge
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
+  <div class="hero-wrap">
+    <header class="hero container-fluid">
+      <h1 class="hero__brand">{{ siteName }}</h1>
+      <p class="hero__line">Field notes for working software.</p>
+      <a class="btn btn--primary hero__cta" routerLink="/articles">Browse the archive</a>
     </header>
+  </div>
 
+  <div class="container-fluid">
     @if (loading()) {
       <dev-skeleton-loader />
     } @else if (failed() || offline()) {
@@ -29,11 +19,7 @@
       <p class="empty">No entries are published yet.</p>
     } @else {
       @if (featured(); as lead) {
-        <section class="block">
-          <header class="block__head">
-            <h2 class="block__title">Featured entry</h2>
-            <span class="block__hint">The newest note in the journal</span>
-          </header>
+        <section class="featured-plane" aria-label="Featured entry">
           <dev-article-card [article]="lead" [featured]="true" />
         </section>
       } @else if (selectedTag()) {
@@ -41,7 +27,12 @@
       }
 
       @if (tags().length > 0) {
-        <div class="filters" role="group" aria-label="Filter by tag">
+        <div
+          class="filters"
+          [class.filters--open]="tagsExpanded()"
+          role="group"
+          aria-label="Filter by tag"
+        >
           <button
             type="button"
             class="filter"

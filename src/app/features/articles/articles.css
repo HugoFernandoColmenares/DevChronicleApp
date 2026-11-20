@@ -20,6 +20,7 @@
 .kicker {
   margin: 0 0 0.6rem;
   color: var(--color-accent-ink);
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;

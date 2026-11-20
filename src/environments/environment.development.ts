@@ -8,6 +8,7 @@ export const environment = {
   socialImage: '/social/devchronicle-cover.png',
   useEmulators: true,
   appCheckSiteKey: '',
+  sentryDsn: '',
   authEmulatorHost: '127.0.0.1',
   authEmulatorPort: 9099,
   firestoreEmulatorHost: '127.0.0.1',

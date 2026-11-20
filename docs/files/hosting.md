@@ -38,12 +38,27 @@ La clave web viaja en el bundle. No es una credencial de administrador. La cuent
 3. Activar enforcement para Firestore (y Auth si se desea) solo cuando el sitio de producción ya envía tokens.
 4. Con emuladores o sin clave, `initAppCheck` es un no-op: el cliente arranca igual.
 
-## Workflow
+## Workflows
 
-`.github/workflows/firebase-hosting.yml` corre en cada push a `main` y se puede lanzar a mano. Instala dependencias, corre lint, pruebas unitarias, pruebas del importador y pruebas de reglas, y después construye. Si falta cualquier secreto, el job escribe el motivo y termina en verde sin desplegar. Si están todos, despliega Hosting, las reglas y los índices a `devchronicle-hugo`.
+| Workflow | Disparo | Qué hace |
+| :------- | :------ | :------- |
+| `firebase-hosting.yml` | push a `main` / manual | Lint, tests, E2E en emuladores, build; deploy Hosting+rules+indexes si hay secretos |
+| `firebase-hosting-preview.yml` | pull request | Build + `hosting:channel:deploy pr-<n>` (7 días) si hay secretos |
+| `uptime.yml` | cron cada 6 h | HTTP 200 en `/`, `/articles`, `/challenges` |
+| `scheduled-export.yml` | domingo 06:00 UTC / manual | Export JSON de Firestore → artifact 30 días |
+
+Si falta cualquier secreto de Firebase, los jobs de deploy/export escriben el motivo y terminan en verde sin fallar el pipeline.
 
 La primera carga de notas en la nube es manual:
 
 ```bash
 node scripts/import-content.mjs --project devchronicle-hugo
 ```
+
+Backup programado (además del botón **Export backup** en Studio):
+
+```bash
+npm run export:cloud
+```
+
+Más detalle en [`ops-phase4.md`](./ops-phase4.md).

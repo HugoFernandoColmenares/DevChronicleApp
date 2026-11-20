@@ -196,15 +196,17 @@ describe('ArticlesComponent', () => {
     buttonWithText(fixture.nativeElement, '.pager__step', 'Next').click();
     await fixture.whenStable();
 
-    buttonWithText(fixture.nativeElement, '.filter', 'arquitectura').click();
+    buttonWithText(fixture.nativeElement, '.filter', 'architecture').click();
     await fixture.whenStable();
 
     expect(titles(fixture)).toEqual([
       'Construyendo APIs por capas: NestJS',
       'Construyendo APIs por capas: Spring Boot',
       'Construyendo APIs por capas: .NET 10',
+      'Angular signals in practice',
+      'Markdown as the source of truth',
     ]);
-    expect(fixture.nativeElement.textContent).toContain('Showing 1–3 of 3 articles');
+    expect(fixture.nativeElement.textContent).toContain('Showing 1–5 of 5 articles');
 
     search(fixture.nativeElement, 'nothing matches this');
     await fixture.whenStable();
@@ -223,10 +225,13 @@ describe('ArticlesComponent', () => {
     await fixture.whenStable();
 
     const filters = [...fixture.nativeElement.querySelectorAll('.filter')] as HTMLElement[];
-    const architecture = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
+    const architecture = filters.filter((node) => node.textContent?.trim() === 'architecture');
+    const spanishDuplicate = filters.filter((node) => node.textContent?.trim() === 'arquitectura');
 
     expect(architecture).toHaveLength(1);
-    expect(filters).toHaveLength(12);
+    expect(spanishDuplicate).toHaveLength(0);
+    // All + 10 normalized tags (architecture/arquitectura collapsed).
+    expect(filters).toHaveLength(11);
   });
 
   it('falls back to updatedAt when an entry has no publish date', async () => {
