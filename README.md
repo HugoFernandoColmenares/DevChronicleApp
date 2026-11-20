@@ -6,6 +6,18 @@ The Spark plan is the deployment target: Firebase Authentication (Google) for th
 
 Operational notes in Spanish live in `docs/files`. Related repositories: [DevChronicle](https://github.com/HugoFernandoColmenares/DevChronicle) and [DevChronicleApi](https://github.com/HugoFernandoColmenares/DevChronicleApi). The Firebase project id placeholder is `devchronicle-hugo`. Local emulators use `demo-devchronicle`.
 
+## Documentation
+
+| Document                                                           | Contents                                                        |
+| :----------------------------------------------------------------- | :-------------------------------------------------------------- |
+| [`docs/files/architecture.md`](docs/files/architecture.md)         | Runtime topology, routes, data model, build commands            |
+| [`docs/files/design.md`](docs/files/design.md)                     | Civic Terminal tokens, layout patterns, art direction           |
+| [`docs/files/audit.md`](docs/files/audit.md)                       | Ranked findings (Critical → Low) with screenshot evidence       |
+| [`docs/files/improvement-plan.md`](docs/files/improvement-plan.md) | Phased backlog (quick wins → security → design → nice-to-haves) |
+| [`docs/screenshots/`](docs/screenshots/)                           | Desktop and mobile captures of public and Studio states         |
+
+Spanish operational notes (`autenticacion.md`, `modelo-de-datos.md`, `robustez-mvp.md`, and others) remain alongside the English audit set in `docs/files`.
+
 ## Surfaces
 
 The landing page separates the newest entry in a featured slate card from a compact recent-entries rail, then lists the remaining articles in a responsive grid. Tags filter the catalog without leaving the page.
@@ -76,11 +88,11 @@ In the Auth emulator sign-in widget, use `admin@devchronicle.test` after `npm ru
 
 Run the four commands above, then walk the surface with real emulator data:
 
-1. `/` renders the featured entry, the recent rail, all 7 published entries, and the tag filters.
-2. `/articles` shows 6 entries per page with “Showing 1–6 of 7 articles”. Search for `nestjs` returns one entry, and changing a filter resets pagination.
+1. `/` renders the featured entry, the recent rail, the published entries from the importer, and the tag filters.
+2. `/articles` shows 6 entries per page (for example “Showing 1–6 of 11 articles” after a full `import:emulator`). Search for `nestjs` returns one entry, and changing a filter resets pagination.
 3. `/post/construyendo-apis-por-capas-nestjs` renders the Markdown body, 19 `h2` headings, and code fences with the `TS`/`HTML` toolbar and copy control.
 4. `/ruta-inexistente` and `/post/no-existe` render the 404 view with `noindex` and links back to the archive and the journal.
-5. `/admin` accepts `admin@devchronicle.test`; the list shows all 7 entries, and the editor previews Markdown before publishing.
+5. `/admin` accepts `admin@devchronicle.test`; the list shows every imported entry, and the editor previews Markdown before publishing.
 6. Edit the title or Markdown, then click **All entries**: Studio asks before discarding. Cancel keeps the draft; confirm leaves.
 7. Stop the Firestore emulator, reload `/articles`, and confirm the inline **Try again** state. Start Firestore again and use the button; the catalog recovers without a reload.
 8. Each route sets its own `<title>`, description, canonical, Open Graph tags, and JSON-LD.
@@ -128,7 +140,7 @@ The importer upserts `public/content/*.md` by slug. A cloud import requires `--p
 | `firestore.rules`        | Public read of published entries, admin writes, console-only `admins`            |
 | `firestore.indexes.json` | `status` + `publishedAt` for the public catalog                                  |
 | `firebase.json`          | Hosting SPA rewrite and emulator ports                                           |
-| `docs/files`             | Spanish notes, one file per aspect                                               |
+| `docs/files`             | English architecture/design/audit/plan plus Spanish operational notes            |
 
 Routing lives in `src/app/app.routes.ts`. The catalog is `/`. The archive is `/articles` (the alias `/articulos` redirects there). The viewer is `/post/:slug`. Studio is `/admin`. The wildcard route renders the 404 view, and `/404` is an explicit alias.
 
