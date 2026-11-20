@@ -30,6 +30,7 @@ El proyecto sigue en el **plan Spark** (Auth + Firestore + Hosting). Nada de lo 
    ```
 
    El hueco ya existe en `.env.example`.
+
 5. Despliega para que el bundle lleve la clave: un push a `main` o un disparo manual de `firebase-hosting.yml`. Los emuladores (`npm run emulators`) siguen sin App Check, a propósito.
 6. Durante unos días revisa las métricas de App Check en la consola (tokens válidos frente a rechazados).
 7. **Solo entonces** activa el enforcement: App Check → Firestore → Enforce. Si lo activas antes, los visitantes con un bundle viejo (sin token) quedan fuera. Auth se puede endurecer después, con la misma precaución.
@@ -204,12 +205,12 @@ Nunca uses credenciales reales. Verifica visualmente portada, lector, copia sin 
 
 Tras los PR #7, #8 y #9, estas ramas en `origin` no tienen commits por delante de `main` y se pueden eliminar:
 
-| Rama | Motivo |
-| :-- | :-- |
-| `fix/revision-y-traduccion-es` | Fusionada en el PR #8 |
-| `cursor/application-audit-0414` | La primera parte se fusionó en el PR #7; el resto llegó con el PR #9 |
-| `feat/libreta-auditoria` | Fusionada en el PR #9 |
-| `content/tres-tutoriales-20-nov` | Ya está en `main` (0 commits por delante) |
+| Rama                             | Motivo                                                               |
+| :------------------------------- | :------------------------------------------------------------------- |
+| `fix/revision-y-traduccion-es`   | Fusionada en el PR #8                                                |
+| `cursor/application-audit-0414`  | La primera parte se fusionó en el PR #7; el resto llegó con el PR #9 |
+| `feat/libreta-auditoria`         | Fusionada en el PR #9                                                |
+| `content/tres-tutoriales-20-nov` | Ya está en `main` (0 commits por delante)                            |
 
 ```bash
 # Revisa una última vez
@@ -224,10 +225,10 @@ git push origin --delete content/tres-tutoriales-20-nov
 
 **No borres todavía** (tienen commits que no están en `main`; revísalas antes):
 
-| Rama | Commits por delante de `main` |
-| :-- | :-- |
-| `cursor/devchronicle-api-tutorials-767f` | 2 (`4028b7e`, `3f25c65`: guías de APIs por capas, incluida NestJS) |
-| `cursor/firebase-spark-journal-f945` | 1 (`720ee0b`: el trabajo original del diario en Firestore / Spark; casi seguro ya superado, pero confírmalo) |
+| Rama                                     | Commits por delante de `main`                                                                                |
+| :--------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `cursor/devchronicle-api-tutorials-767f` | 2 (`4028b7e`, `3f25c65`: guías de APIs por capas, incluida NestJS)                                           |
+| `cursor/firebase-spark-journal-f945`     | 1 (`720ee0b`: el trabajo original del diario en Firestore / Spark; casi seguro ya superado, pero confírmalo) |
 
 **Cómo verificarlo.** `git branch -r` ya no lista las borradas; `gh pr list` no queda huérfano; las dos ramas conservadas siguen accesibles hasta que decidas.
 
