@@ -8,4 +8,7 @@ export interface Challenge {
   hint: string;
   solution: string;
   language: string;
+  /** Optional link to the DevChronicle tutorial this drill belongs to. */
+  articleSlug?: string;
+  articleTitle?: string;
 }

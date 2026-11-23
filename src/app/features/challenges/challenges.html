@@ -22,6 +22,9 @@
             </div>
             <h2 class="challenge-card__title">{{ challenge.title }}</h2>
             <p class="challenge-card__summary">{{ challenge.summary }}</p>
+            @if (challenge.articleSlug) {
+              <p class="challenge-card__related">Tutorial relacionado</p>
+            }
             <div class="challenge-card__tags">
               @for (tag of challenge.tags; track tag) {
                 <span class="chip">{{ tag }}</span>

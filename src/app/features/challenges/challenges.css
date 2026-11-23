@@ -108,3 +108,10 @@
   font-size: 0.75rem;
   font-weight: 600;
 }
+
+.challenge-card__related {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
