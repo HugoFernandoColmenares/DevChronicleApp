@@ -150,3 +150,12 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
+
+.related {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+}
+
+.related a {
+  color: inherit;
+}

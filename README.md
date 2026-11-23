@@ -92,7 +92,7 @@ En el widget de inicio de sesión del emulador de Auth, usa `admin@devchronicle.
 Ejecuta los cuatro comandos anteriores y recorre la superficie con datos reales del emulador:
 
 1. `/` muestra la entrada destacada, el riel de recientes, las entradas publicadas que trajo el importador y los filtros por etiqueta.
-2. `/articles` muestra 6 entradas por página (por ejemplo "Mostrando 1–6 de 11 artículos" después de un `import:emulator` completo). Buscar `nestjs` devuelve una entrada, y cambiar un filtro reinicia la paginación.
+2. `/articles` muestra 6 entradas por página (por ejemplo "Mostrando 1–6 de 25 artículos" después de un `import:emulator` completo). Buscar `nestjs` devuelve una entrada, y cambiar un filtro reinicia la paginación.
 3. `/post/construyendo-apis-por-capas-nestjs` muestra el cuerpo en Markdown, 19 encabezados `h2` y bloques de código con la barra `TS`/`HTML` y el control de copiar.
 4. `/ruta-inexistente` y `/post/no-existe` muestran la vista 404 con `noindex` y enlaces al archivo y al diario.
 5. `/admin` acepta `admin@devchronicle.test`; la lista muestra todas las entradas importadas y el editor previsualiza el Markdown antes de publicar.
