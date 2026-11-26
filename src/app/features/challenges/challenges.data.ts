@@ -781,6 +781,51 @@ Conclusión: se escribe la diferencia. Si el LCP casi no se mueve, se dice «no 
 
 (Una tabla equivalente vale para la app, midiendo scroll o tiempo de apertura con React Native DevTools, y cambiando un .map en ScrollView por FlatList.)`,
   },
+  {
+    slug: 'crear-base-api-dotnet-bloqueo-de-cuenta',
+    title: 'Bloqueo de cuenta tras intentos fallidos en .NET',
+    summary:
+      'Bloquea la cuenta 15 minutos después de cinco contraseñas incorrectas seguidas en la API base de .NET 10.',
+    difficulty: 'practice',
+    tags: ['dotnet', 'csharp', 'efcore', 'seguridad', 'crear-base-api'],
+    language: 'C#',
+    articleSlug: 'crear-base-api-dotnet',
+    articleTitle: 'Crear base API: .NET 10 con EF Core, FluentValidation y MailKit',
+    prompt: `Agrega a User las propiedades FailedLogins (int) y LockedUntil (DateTimeOffset?), con su migración. En LoginAsync: si la cuenta está bloqueada responde 401 con el mismo mensaje genérico; si la clave falla, suma un intento y al quinto bloquea 15 minutos; si entra bien, reinicia el contador. Escribe una prueba con un TimeProvider que puedas adelantar.`,
+    hint: `Pon la lógica en métodos del dominio (RegisterFailedLogin, ResetFailedLogins, IsLocked) para que el servicio siga delgado. Para la prueba, una clase que herede de TimeProvider con un campo Now modificable.`,
+    solution: `// User.cs
+public int FailedLogins { get; private set; }
+public DateTimeOffset? LockedUntil { get; private set; }
+
+public bool IsLocked(DateTimeOffset now) => LockedUntil is not null && LockedUntil > now;
+
+public void RegisterFailedLogin(DateTimeOffset now)
+{
+    FailedLogins++;
+    if (FailedLogins >= 5) { LockedUntil = now.AddMinutes(15); FailedLogins = 0; }
+    UpdatedAt = now;
+}
+
+public void ResetFailedLogins() { FailedLogins = 0; LockedUntil = null; }
+
+// AuthService.LoginAsync
+var now = clock.GetUtcNow();
+var user = await users.FindByEmailAsync(email, ct);
+if (user is null) throw DomainException.InvalidCredentials();
+if (user.IsLocked(now)) throw DomainException.InvalidCredentials();
+if (!hasher.Verify(req.Password, user.PasswordHash))
+{
+    user.RegisterFailedLogin(now);
+    await users.UpdateAsync(user, ct);
+    throw DomainException.InvalidCredentials();
+}
+user.ResetFailedLogins();
+await users.UpdateAsync(user, ct);
+
+// AppDbContext: e.Property(x => x.FailedLogins).HasColumnName("failed_logins");
+//               e.Property(x => x.LockedUntil).HasColumnName("locked_until");
+// dotnet ef migrations add AccountLockout -p src/BaseApi.Infrastructure -s src/BaseApi.Api`,
+  },
 ];
 
 export function challengeBySlug(slug: string): Challenge | undefined {
