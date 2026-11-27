@@ -826,6 +826,37 @@ await users.UpdateAsync(user, ct);
 //               e.Property(x => x.LockedUntil).HasColumnName("locked_until");
 // dotnet ef migrations add AccountLockout -p src/BaseApi.Infrastructure -s src/BaseApi.Api`,
   },
+  {
+  slug: 'crear-base-api-contrato-resend-verification',
+  title: 'Diseña el endpoint resend-verification',
+  summary: 'Agrega al contrato OpenAPI y a e2e.sh un endpoint que reenvía el correo de verificación sin revelar qué cuentas existen.',
+  difficulty: 'warmup',
+  tags: ['api', 'openapi', 'seguridad', 'crear-base-api'],
+  language: 'YAML',
+  articleSlug: 'crear-base-api-introduccion',
+  articleTitle: 'Crear base API: el diseño común (DDD, DI, JWT y correo)',
+  prompt: 'Agrega a openapi.yaml la ruta POST /api/v1/auth/resend-verification. Recibe {email} y debe responder igual exista o no la cuenta. Después agrega a e2e.sh un paso que registre un usuario, llame al endpoint y compruebe en Mailpit que llegaron dos correos de bienvenida.',
+  hint: 'Copia la forma de forgot-password: mismo cuerpo, mismo 202. Para contar correos en Mailpit, la búsqueda devuelve messages_count.',
+  solution: `# openapi.yaml (dentro de paths)
+  /api/v1/auth/resend-verification:
+    post:
+      tags: [auth]
+      summary: Reenvía el correo de verificación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EmailRequest' }
+      responses:
+        '202': { description: Aceptado (exista o no la cuenta) }
+        '400': { $ref: '#/components/responses/Problem' }
+
+# e2e.sh (después del registro)
+expect "$(status POST /api/v1/auth/resend-verification "{\\"email\\":\\"$EMAIL\\"}")" 202 "reenviar verificación"
+sleep 1
+COUNT=$(curl -s "$MAIL/api/v1/search?query=to:$EMAIL%20subject:confirma" | jq .messages_count)
+[ "$COUNT" = "2" ] && ok "llegaron dos correos" || fail "esperaba 2 correos y hay $COUNT"`,
+},
 ];
 
 export function challengeBySlug(slug: string): Challenge | undefined {
