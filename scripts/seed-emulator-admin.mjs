@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
 process.env.METADATA_SERVER_DETECTION = process.env.METADATA_SERVER_DETECTION || 'none';
 
@@ -30,6 +30,11 @@ const googleProvider = {
 initializeApp({ projectId });
 
 const auth = getAuth();
+const db = getFirestore();
+
+const publisherUid = 'local-publisher';
+const publisherEmail = 'publicador@devchronicle.test';
+const publisherPassword = 'devchronicle-publicador';
 
 async function createGoogleAdmin() {
   await auth.importUsers([
@@ -57,7 +62,7 @@ try {
   await createGoogleAdmin();
 }
 
-await getFirestore().doc(`admins/${uid}`).set(
+await db.doc(`admins/${uid}`).set(
   {
     email,
     displayName,
@@ -66,5 +71,37 @@ await getFirestore().doc(`admins/${uid}`).set(
   { merge: true },
 );
 
+async function ensurePublisher() {
+  try {
+    await auth.updateUser(publisherUid, {
+      email: publisherEmail,
+      password: publisherPassword,
+      emailVerified: true,
+      displayName: 'Emulator publisher',
+    });
+  } catch {
+    await auth.createUser({
+      uid: publisherUid,
+      email: publisherEmail,
+      password: publisherPassword,
+      emailVerified: true,
+      displayName: 'Emulator publisher',
+    });
+  }
+
+  await db.doc(`editors/${publisherUid}`).set(
+    {
+      label: 'Emulator publisher (API/MCP)',
+      createdAt: Timestamp.now(),
+      note: 'Emulator-only role. Production editors are created in the Firebase console.',
+    },
+    { merge: true },
+  );
+}
+
+await ensurePublisher();
+
 console.log(`Emulator admin ready in ${projectId}: uid=${uid} email=${email}`);
+console.log(`Emulator publisher ready: uid=${publisherUid} email=${publisherEmail}`);
+console.log(`Publisher password (local only): ${publisherPassword}`);
 console.log('In the Auth emulator sign-in widget, choose admin@devchronicle.test.');

@@ -29,4 +29,24 @@ export const adminRoutes: Routes = [
     canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./admin-editor').then((m) => m.AdminEditorComponent),
   },
+  {
+    path: 'challenges',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin-challenge-list').then((m) => m.AdminChallengeListComponent),
+  },
+  {
+    path: 'challenges/new',
+    canActivate: [adminGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./admin-challenge-editor').then((m) => m.AdminChallengeEditorComponent),
+  },
+  {
+    path: 'challenges/edit/:slug',
+    canActivate: [adminGuard],
+    canDeactivate: [unsavedChangesGuard],
+    loadComponent: () =>
+      import('./admin-challenge-editor').then((m) => m.AdminChallengeEditorComponent),
+  },
 ];

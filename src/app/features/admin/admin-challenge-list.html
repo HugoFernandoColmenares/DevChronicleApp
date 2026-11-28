@@ -1,0 +1,34 @@
+<section class="studio">
+  <div class="container-fluid">
+    <dev-studio-bar
+      heading="Challenges"
+      [showNew]="true"
+      newLink="/admin/challenges/new"
+      newLabel="New challenge"
+    />
+
+    @if (loading()) {
+      <p class="empty">Loading challenges.</p>
+    } @else if (challenges().length === 0) {
+      <p class="empty">No challenges yet. Create the first drill.</p>
+    } @else {
+      <div class="studio__rows">
+        @for (challenge of challenges(); track challenge.slug) {
+          <a class="studio__row" [routerLink]="['/admin/challenges/edit', challenge.slug]">
+            <span class="pill" [class.pill--on]="challenge.status === 'published'">{{
+              challenge.status
+            }}</span>
+            <span class="studio__row-title">{{ challenge.title }}</span>
+            <span class="studio__row-meta">
+              {{ labelFor(challenge.difficulty) }} · {{ challenge.language }}
+              @if (challenge.articleTitle) {
+                · {{ challenge.articleTitle }}
+              }
+              · {{ challenge.updatedAt | date: 'MMM d, y' }}
+            </span>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</section>

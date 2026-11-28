@@ -16,6 +16,7 @@ import {
 import { Observable, throwError } from 'rxjs';
 
 import { firebaseFirestore } from '@core/firebase/firestore';
+import { timestampToIso } from '@core/firebase/firestore-helpers';
 import { ArticleBody, ArticleMetadata, EntryDraft } from '@core/models/article.model';
 import { normalizeDraft, readingTimeMinutes, SLUG_PATTERN } from '@core/models/entry.logic';
 import { JournalError, journalErrorFromUnknown } from '@core/models/journal-error';
@@ -319,25 +320,4 @@ function markdownFromSnapshot(data: DocumentData | undefined): string {
 function text(data: DocumentData, key: string): string {
   const value = data[key];
   return typeof value === 'string' ? value : '';
-}
-
-function timestampToIso(value: unknown): string | null {
-  if (!value) {
-    return null;
-  }
-  if (value instanceof Timestamp) {
-    return value.toDate().toISOString();
-  }
-  if (
-    typeof value === 'object' &&
-    value &&
-    'toDate' in value &&
-    typeof value.toDate === 'function'
-  ) {
-    return (value.toDate as () => Date)().toISOString();
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  return null;
 }

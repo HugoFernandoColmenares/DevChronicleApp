@@ -19,4 +19,17 @@ Without `--emulator` the script requires `--project` and credentials: `GOOGLE_AP
 
 A `demo-*` project id is only accepted with `--emulator`. Local development uses `demo-devchronicle`.
 
-Production deploys that have Firebase secrets also run this importer after Hosting deploy so updated essays land in Firestore automatically.
+Production deploys no longer run this importer by default: a full `set` of `public/content` would overwrite edits made in the Studio. The workflow step is gated behind the repository variable `IMPORT_MARKDOWN_ON_DEPLOY=true`; leave it undefined for normal deploys. To publish one article, use the Studio or the MCP `create_article_draft` / `update_article` tools.
+
+## Challenges
+
+Challenges are not Markdown files. `scripts/migrate-challenges.ts` creates the bundled drills from `src/app/features/challenges/challenges.fallback.ts` with `DocumentReference.create()`, so it never overwrites a drill edited in the Studio:
+
+```bash
+npm run migrate:challenges:emulator            # dry run
+npm run migrate:challenges:emulator -- --apply
+npx tsx scripts/migrate-challenges.ts --project devchronicle-hugo           # dry run
+npx tsx scripts/migrate-challenges.ts --project devchronicle-hugo --apply
+```
+
+The cloud run needs `FIREBASE_SERVICE_ACCOUNT` (JSON or base64) or `GOOGLE_APPLICATION_CREDENTIALS`. After that, new drills come from `/admin/challenges` or the MCP server; no repository change is required.

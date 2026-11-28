@@ -1,8 +1,8 @@
 rules_version = '2';
 
-// Public readers can only see published entries. Studio writes require a document
-// at admins/{uid}. Those admin documents are created in the Firebase console
-// (or by the Admin SDK). Clients cannot write them.
+// Lectura pública: solo lo publicado. Escritura: admins/{uid} (Studio, todo) o
+// editors/{uid} (API/MCP: crea y edita, nunca borra). Ambos documentos se crean
+// en la consola de Firebase; ningún cliente puede escribirlos.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
@@ -10,47 +10,87 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    function isEditor() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/editors/$(request.auth.uid));
+    }
+
+    function canWrite() {
+      return isAdmin() || isEditor();
+    }
+
+    // Variante "solo borradores" para la API: si la activas, el editor (agente) solo
+    // escribe en borrador y solo toca documentos que siguen en borrador. Tú publicas
+    // desde el Studio. Para permitir que el agente publique, cambia el cuerpo a `true`.
+    function editorStatusAllowed() {
+      return isAdmin()
+        || (request.resource.data.status == 'draft'
+            && (resource == null || resource.data.status == 'draft'));
+    }
+
+    function validSlug(slug) {
+      return slug.matches('^[a-z0-9]+(-[a-z0-9]+)*$');
+    }
+
+    function validTags(tags) {
+      return tags is list && tags.size() < 16;
+    }
+
     function validEntry(slug) {
       let data = request.resource.data;
       return data.keys().hasOnly([
-          'slug',
-          'title',
-          'summary',
-          'tags',
-          'category',
-          'series',
-          'author',
-          'status',
-          'publishedAt',
-          'updatedAt',
-          'readingTimeMinutes',
+          'slug', 'title', 'summary', 'tags', 'category', 'series',
+          'author', 'status', 'publishedAt', 'updatedAt', 'readingTimeMinutes',
         ])
         && data.slug == slug
-        && slug.matches('^[a-z0-9]+(-[a-z0-9]+)*$')
-        && data.title is string
-        && data.title.size() > 0
-        && data.title.size() < 180
-        && data.summary is string
-        && data.summary.size() < 600
-        && data.tags is list
-        && data.tags.size() < 16
-        && data.category is string
-        && data.category.size() > 0
-        && data.category.size() < 80
-        && data.series is string
-        && data.series.size() > 0
-        && data.series.size() < 80
-        && data.author is string
-        && data.author.size() > 0
-        && data.author.size() < 120
+        && validSlug(slug)
+        && data.title is string && data.title.size() > 0 && data.title.size() < 180
+        && data.summary is string && data.summary.size() < 600
+        && validTags(data.tags)
+        && data.category is string && data.category.size() > 0 && data.category.size() < 80
+        && data.series is string && data.series.size() > 0 && data.series.size() < 80
+        && data.author is string && data.author.size() > 0 && data.author.size() < 120
         && data.status in ['draft', 'published']
         && data.updatedAt is timestamp
         && data.readingTimeMinutes is int
-        && data.readingTimeMinutes > 0
-        && data.readingTimeMinutes < 600
+        && data.readingTimeMinutes > 0 && data.readingTimeMinutes < 600
         && (
           (data.status == 'published' && data.publishedAt is timestamp)
           || (data.status == 'draft' && data.publishedAt == null)
+        );
+    }
+
+    function validChallenge(slug) {
+      let d = request.resource.data;
+      return d.keys().hasAll([
+          'slug', 'title', 'summary', 'difficulty', 'tags', 'language', 'prompt',
+          'hint', 'solution', 'order', 'status', 'publishedAt', 'updatedAt',
+        ])
+        && d.keys().hasOnly([
+          'slug', 'title', 'summary', 'difficulty', 'tags', 'language', 'prompt',
+          'hint', 'solution', 'order', 'status', 'publishedAt', 'updatedAt',
+          'articleSlug', 'articleTitle',
+        ])
+        && d.slug == slug
+        && validSlug(slug)
+        && d.title is string && d.title.size() > 0 && d.title.size() < 180
+        && d.summary is string && d.summary.size() < 600
+        && d.difficulty in ['warmup', 'practice', 'stretch']
+        && validTags(d.tags)
+        && d.language is string && d.language.size() > 0 && d.language.size() < 40
+        && d.prompt is string && d.prompt.size() > 0 && d.prompt.size() < 20000
+        && d.hint is string && d.hint.size() < 20000
+        && d.solution is string && d.solution.size() < 50000
+        && d.order is int && d.order >= 0 && d.order < 100000
+        && (!('articleSlug' in d) || d.articleSlug == null
+            || (d.articleSlug is string && validSlug(d.articleSlug)))
+        && (!('articleTitle' in d) || d.articleTitle == null
+            || (d.articleTitle is string && d.articleTitle.size() < 180))
+        && d.status in ['draft', 'published']
+        && d.updatedAt is timestamp
+        && (
+          (d.status == 'published' && d.publishedAt is timestamp)
+          || (d.status == 'draft' && d.publishedAt == null)
         );
     }
 
@@ -59,26 +99,37 @@ service cloud.firestore {
       allow list, create, update, delete: if false;
     }
 
+    match /editors/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
     match /entries/{slug} {
-      allow get, list: if isAdmin() || resource.data.status == 'published';
-      allow create, update: if isAdmin() && validEntry(slug);
+      allow get, list: if canWrite() || resource.data.status == 'published';
+      allow create, update: if canWrite() && validEntry(slug) && editorStatusAllowed();
       allow delete: if isAdmin();
 
-      // The markdown body is a separate document so the public catalog does not
-      // download every essay, and so a long note can use the 1 MiB document cap
-      // on its own. 200_000 characters stays under that cap even for 4-byte text.
       match /body/{bodyId} {
-        allow get: if isAdmin()
+        allow get: if canWrite()
           || get(/databases/$(database)/documents/entries/$(slug)).data.status == 'published';
         allow list: if false;
-        allow create, update: if isAdmin()
+        allow create, update: if canWrite()
           && bodyId == 'current'
           && request.resource.data.keys().hasOnly(['markdown'])
           && request.resource.data.markdown is string
           && request.resource.data.markdown.size() > 0
-          && request.resource.data.markdown.size() < 200000;
+          && request.resource.data.markdown.size() < 200000
+          // Un editor solo cambia el cuerpo de un artículo que (tras la escritura) sigue en borrador.
+          && (isAdmin()
+              || getAfter(/databases/$(database)/documents/entries/$(slug)).data.status == 'draft');
         allow delete: if isAdmin();
       }
+    }
+
+    match /challenges/{slug} {
+      allow get, list: if canWrite() || resource.data.status == 'published';
+      allow create, update: if canWrite() && validChallenge(slug) && editorStatusAllowed();
+      allow delete: if isAdmin();
     }
   }
 }

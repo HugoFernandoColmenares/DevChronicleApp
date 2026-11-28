@@ -26,6 +26,10 @@ docs/files/architecture_guidelines.md
 # Local / CI Firestore exports
 /exports/
 
+# Playwright artifacts
+/test-results/
+/playwright-report/
+
 # Compiled output
 /dist
 /tmp
@@ -34,6 +38,7 @@ docs/files/architecture_guidelines.md
 
 # Node
 /node_modules
+tools/**/node_modules/
 npm-debug.log
 yarn-error.log
 

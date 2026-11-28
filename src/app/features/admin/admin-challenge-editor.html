@@ -1,0 +1,135 @@
+<section class="studio">
+  <div class="container-fluid">
+    <dev-studio-bar [heading]="editingSlug() ? 'Edit challenge' : 'New challenge'" />
+
+    @if (loading()) {
+      <p class="empty">Loading the challenge.</p>
+    } @else {
+      <div class="studio__editor">
+        <form class="studio__form" [formGroup]="form" (submit)="$event.preventDefault()">
+          <label class="field">
+            <span>Title</span>
+            <input type="text" formControlName="title" autocomplete="off" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Slug</span>
+              <input
+                type="text"
+                formControlName="slug"
+                autocomplete="off"
+                (input)="markSlugTouched()"
+              />
+            </label>
+            <label class="field">
+              <span>Difficulty</span>
+              <select formControlName="difficulty">
+                <option value="warmup">Warm-up</option>
+                <option value="practice">Practice</option>
+                <option value="stretch">Stretch</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Summary</span>
+            <input type="text" formControlName="summary" />
+          </label>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Language</span>
+              <input type="text" formControlName="language" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span>Order</span>
+              <input type="number" formControlName="order" min="0" max="99999" step="10" />
+            </label>
+          </div>
+
+          <div class="field-row">
+            <label class="field">
+              <span>Tags</span>
+              <input type="text" formControlName="tags" placeholder="javascript, loops" />
+            </label>
+            <label class="field">
+              <span>Published on</span>
+              <input type="date" formControlName="publishedOn" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Related article</span>
+            <select formControlName="articleSlug">
+              <option value="">No related article</option>
+              @for (article of articles(); track article.slug) {
+                <option [value]="article.slug">{{ article.title }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Prompt</span>
+            <textarea formControlName="prompt" spellcheck="true"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Hint</span>
+            <textarea formControlName="hint" spellcheck="true"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Solution</span>
+            <textarea formControlName="solution" spellcheck="true"></textarea>
+          </label>
+
+          <div class="studio__actions">
+            <button type="button" class="btn" [disabled]="saving()" (click)="save('draft')">
+              Save draft
+            </button>
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="saving()"
+              (click)="save('published')"
+            >
+              Publish
+            </button>
+            @if (editingSlug()) {
+              <button type="button" class="btn btn--quiet" [disabled]="saving()" (click)="remove()">
+                Delete
+              </button>
+            }
+          </div>
+        </form>
+
+        <aside class="preview" aria-label="Challenge preview">
+          <h2>Preview</h2>
+          <div class="article-canvas">
+            <h3 class="preview__title">{{ title() || 'Untitled' }}</h3>
+            <p class="challenge-preview__meta">
+              <span>{{ form.controls.difficulty.value }}</span>
+              <span>{{ form.controls.language.value }}</span>
+            </p>
+
+            <div class="markdown-body">
+              <h4>Prompt</h4>
+              <p class="challenge-preview__text">{{ prompt() }}</p>
+
+              <h4>Hint</h4>
+              <div [devCodeBlocks]="hint()">
+                <pre><code>{{ hint() }}</code></pre>
+              </div>
+
+              <h4>One possible solution</h4>
+              <div [devCodeBlocks]="solution()">
+                <pre><code>{{ solution() }}</code></pre>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</section>

@@ -39,6 +39,31 @@ function entry(slug: string, status: 'draft' | 'published', extra: Record<string
   };
 }
 
+function challenge(
+  slug: string,
+  status: 'draft' | 'published',
+  extra: Record<string, unknown> = {},
+) {
+  return {
+    slug,
+    title: slug,
+    summary: 'Summary',
+    difficulty: 'warmup',
+    tags: ['javascript'],
+    language: 'javascript',
+    prompt: 'Write a function.',
+    hint: 'Starter skeleton.',
+    solution: 'One possible answer.',
+    articleSlug: null,
+    articleTitle: null,
+    order: 10,
+    status,
+    publishedAt: status === 'published' ? publishedAt : null,
+    updatedAt: publishedAt,
+    ...extra,
+  };
+}
+
 describe('firestore rules', () => {
   let testEnv: RulesTestEnvironment;
 
@@ -56,10 +81,13 @@ describe('firestore rules', () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       const db = context.firestore();
       await setDoc(doc(db, 'admins/author-1'), { email: 'admin@devchronicle.test' });
+      await setDoc(doc(db, 'editors/editor-1'), { label: 'API publisher' });
       await setDoc(doc(db, 'entries/public-note'), entry('public-note', 'published'));
       await setDoc(doc(db, 'entries/public-note/body/current'), { markdown: '# Public' });
       await setDoc(doc(db, 'entries/secret-note'), entry('secret-note', 'draft'));
       await setDoc(doc(db, 'entries/secret-note/body/current'), { markdown: 'secret' });
+      await setDoc(doc(db, 'challenges/public-drill'), challenge('public-drill', 'published'));
+      await setDoc(doc(db, 'challenges/secret-drill'), challenge('secret-drill', 'draft'));
     });
   });
 
@@ -131,5 +159,86 @@ describe('firestore rules', () => {
 
     await assertSucceeds(deleteDoc(doc(db, 'entries/secret-note/body/current')));
     await assertSucceeds(deleteDoc(doc(db, 'entries/secret-note')));
+  });
+
+  it('lets the public read and list only published challenges', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(getDoc(doc(db, 'challenges/public-drill')));
+    await assertFails(getDoc(doc(db, 'challenges/secret-drill')));
+
+    const published = query(
+      collection(db, 'challenges'),
+      where('status', '==', 'published'),
+      orderBy('order', 'asc'),
+    );
+    const snap = await assertSucceeds(getDocs(published));
+    expect(snap.docs.map((item) => item.id)).toEqual(['public-drill']);
+    await assertFails(getDocs(collection(db, 'challenges')));
+  });
+
+  it('validates challenge fields and lets an admin create, edit, and delete', async () => {
+    const db = testEnv.authenticatedContext('author-1').firestore();
+    await assertSucceeds(setDoc(doc(db, 'challenges/new-drill'), challenge('new-drill', 'draft')));
+    await assertSucceeds(
+      setDoc(doc(db, 'challenges/new-drill'), challenge('new-drill', 'published')),
+    );
+    await assertSucceeds(deleteDoc(doc(db, 'challenges/new-drill')));
+
+    await assertFails(
+      setDoc(doc(db, 'challenges/extra'), challenge('extra', 'draft', { unexpected: 'field' })),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, 'challenges/bad-date'),
+        challenge('bad-date', 'published', { publishedAt: null }),
+      ),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, 'challenges/bad-level'),
+        challenge('bad-level', 'draft', { difficulty: 'hard' }),
+      ),
+    );
+    await assertFails(
+      setDoc(doc(db, 'challenges/bad-order'), challenge('bad-order', 'draft', { order: -1 })),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, 'challenges/bad-link'),
+        challenge('bad-link', 'draft', { articleSlug: 'Mal Slug' }),
+      ),
+    );
+  });
+
+  it('lets an editor write drafts but not publish, delete, or touch roles', async () => {
+    const db = testEnv.authenticatedContext('editor-1').firestore();
+    await assertSucceeds(getDoc(doc(db, 'editors/editor-1')));
+    await assertSucceeds(getDoc(doc(db, 'challenges/secret-drill')));
+
+    await assertSucceeds(
+      setDoc(doc(db, 'challenges/editor-drill'), challenge('editor-drill', 'draft')),
+    );
+    await assertFails(
+      setDoc(doc(db, 'challenges/editor-drill'), challenge('editor-drill', 'published')),
+    );
+    await assertFails(
+      setDoc(doc(db, 'challenges/public-drill'), challenge('public-drill', 'draft')),
+    );
+    await assertFails(deleteDoc(doc(db, 'challenges/editor-drill')));
+
+    await assertFails(setDoc(doc(db, 'editors/editor-1'), { label: 'changed' }));
+    await assertFails(setDoc(doc(db, 'admins/editor-1'), { email: 'editor@devchronicle.test' }));
+  });
+
+  it('lets an editor create a draft entry and its body, but not publish it', async () => {
+    const db = testEnv.authenticatedContext('editor-1').firestore();
+    await assertSucceeds(setDoc(doc(db, 'entries/editor-note'), entry('editor-note', 'draft')));
+    await assertSucceeds(
+      setDoc(doc(db, 'entries/editor-note/body/current'), { markdown: 'Draft body' }),
+    );
+    await assertFails(setDoc(doc(db, 'entries/editor-note'), entry('editor-note', 'published')));
+    await assertFails(
+      setDoc(doc(db, 'entries/public-note/body/current'), { markdown: 'Edited published body' }),
+    );
   });
 });

@@ -109,3 +109,19 @@
   font-size: 0.75rem;
   font-weight: 600;
 }
+
+.empty {
+  color: var(--color-muted);
+}
+
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+
+.muted {
+  margin: 0 0 1.25rem;
+  color: var(--color-muted);
+}

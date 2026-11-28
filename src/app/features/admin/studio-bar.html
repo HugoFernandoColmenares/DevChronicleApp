@@ -7,6 +7,15 @@
         <p class="studio__who">{{ account.email }}</p>
       }
     }
+    <nav class="studio__tabs" aria-label="Studio sections">
+      <a
+        routerLink="/admin"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        >Articles</a
+      >
+      <a routerLink="/admin/challenges" routerLinkActive="is-active">Challenges</a>
+    </nav>
   </div>
   <div class="studio__actions">
     @if (showExport()) {
@@ -21,7 +30,7 @@
       </button>
     }
     @if (showNew()) {
-      <a class="btn btn--primary" routerLink="/admin/new">New entry</a>
+      <a class="btn btn--primary" [routerLink]="newLink()">{{ newLabel() }}</a>
     } @else {
       <a class="btn" routerLink="/admin">All entries</a>
     }

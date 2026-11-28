@@ -8,10 +8,22 @@
 npm run emulators
 npm run import:emulator
 npm run seed:admin
+npm run migrate:challenges:emulator -- --apply
 npm start
 ```
 
 Emulator UI: `http://127.0.0.1:4000`. App: `http://127.0.0.1:4200`.
+
+`npm run seed:admin` creates two accounts:
+
+| Account                        | Password                  | Role                                |
+| :----------------------------- | :------------------------ | :---------------------------------- |
+| `admin@devchronicle.test`      | Google emulator account   | `admins/local-admin` (Studio)       |
+| `publicador@devchronicle.test` | `devchronicle-publicador` | `editors/local-publisher` (API/MCP) |
+
+The publisher password is local-only. Never reuse it in the cloud.
+
+`npm run migrate:challenges:emulator` is a dry run; add `-- --apply` to create the bundled drills with `create()` so existing edits are never overwritten.
 
 `npm run test:rules` starts **its own** Firestore emulator via `firebase emulators:exec`, project `demo-devchronicle`, and config `firebase.rules-test.json` (port **8180**). It can run while `npm run emulators` already owns 8080. A JRE 21 is required.
 
@@ -21,6 +33,7 @@ Playwright smoke (public + Studio via **Emulator author**):
 npm run emulators
 npm run import:emulator
 npm run seed:admin
+npm run migrate:challenges:emulator -- --apply
 npm run test:e2e
 ```
 

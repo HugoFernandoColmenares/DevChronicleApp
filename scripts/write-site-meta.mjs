@@ -1,5 +1,6 @@
 import { readdirSync, writeFileSync } from 'node:fs';
 
+import { listPublished } from './lib/firestore-public.mjs';
 import { loadEnv } from './lib/load-env.mjs';
 
 loadEnv();
@@ -20,10 +21,28 @@ Sitemap: ${siteUrl}/sitemap.xml
 `;
 
 const contentDir = new URL('../public/content/', import.meta.url);
-const articleUrls = readdirSync(contentDir)
+const repoSlugs = readdirSync(contentDir)
   .filter((name) => name.endsWith('.md'))
-  .map((name) => name.slice(0, -3))
-  .sort()
+  .map((name) => name.slice(0, -3));
+
+let remoteEntries = [];
+let remoteChallenges = [];
+try {
+  [remoteEntries, remoteChallenges] = await Promise.all([
+    listPublished('entries'),
+    listPublished('challenges'),
+  ]);
+} catch (error) {
+  console.warn(`Sitemap: continuing with repository content only (${error.message}).`);
+}
+
+const articleSlugs = unique([
+  ...repoSlugs,
+  ...remoteEntries.map((item) => item.slug).filter(Boolean),
+]).sort();
+const challengeSlugs = unique(remoteChallenges.map((item) => item.slug).filter(Boolean)).sort();
+
+const articleUrls = articleSlugs
   .map(
     (slug) => `  <url>
     <loc>${siteUrl}/post/${slug}</loc>
@@ -32,6 +51,18 @@ const articleUrls = readdirSync(contentDir)
   </url>`,
   )
   .join('\n');
+
+const challengeUrls = challengeSlugs
+  .map(
+    (slug) => `  <url>
+    <loc>${siteUrl}/challenges/${slug}</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`,
+  )
+  .join('\n');
+
+const detailUrls = [articleUrls, challengeUrls].filter(Boolean).join('\n');
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -50,11 +81,17 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-${articleUrls}
+${detailUrls}
 </urlset>
 `;
 
 writeFileSync(new URL('../public/robots.txt', import.meta.url), robots);
 writeFileSync(new URL('../public/sitemap.xml', import.meta.url), sitemap);
 
-console.log(`Wrote robots.txt and sitemap.xml for ${siteUrl}.`);
+console.log(
+  `Wrote robots.txt and sitemap.xml for ${siteUrl} (${articleSlugs.length} articles, ${challengeSlugs.length} challenges).`,
+);
+
+function unique(values) {
+  return [...new Set(values)];
+}
