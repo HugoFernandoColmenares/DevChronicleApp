@@ -859,6 +859,47 @@ sleep 1
 COUNT=$(curl -s "$MAIL/api/v1/search?query=to:$EMAIL%20subject:confirma" | jq .messages_count)
 [ "$COUNT" = "2" ] && ok "llegaron dos correos" || fail "esperaba 2 correos y hay $COUNT"`,
   },
+  {
+    slug: 'crear-base-api-express-rate-limit-login',
+    title: 'Frena los ataques de fuerza bruta al login',
+    summary:
+      'Agrega un límite de intentos por IP a /login en la API base de Express, con respuesta Problem Details.',
+    difficulty: 'practice',
+    tags: ['express', 'typescript', 'seguridad', 'crear-base-api'],
+    language: 'TypeScript',
+    articleSlug: 'crear-base-api-node-express',
+    articleTitle: 'Crear base API: Node.js y TypeScript con Express 5',
+    prompt:
+      'Escribe un middleware rateLimit(max, windowMs) sin librerías externas que cuente las peticiones por IP en una ventana de tiempo. Aplícalo solo a POST /login con 5 intentos por minuto. Al pasarse, responde 429 con Problem Details y la cabecera Retry-After en segundos.',
+    hint: 'Un Map<string, { count: number; resetAt: number }> alcanza. La IP está en req.ip. Usa la misma forma de error que errorHandler.',
+    solution: `import type { RequestHandler } from 'express';
+
+export function rateLimit(max: number, windowMs: number): RequestHandler {
+  const hits = new Map<string, { count: number; resetAt: number }>();
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = req.ip ?? 'desconocida';
+    const entry = hits.get(key);
+    if (!entry || entry.resetAt <= now) {
+      hits.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+    if (++entry.count > max) {
+      res.setHeader('Retry-After', Math.ceil((entry.resetAt - now) / 1000));
+      return res.status(429).type('application/problem+json').json({
+        type: 'about:blank', title: 'Demasiadas peticiones', status: 429,
+        detail: 'Espera un momento antes de volver a intentarlo',
+      });
+    }
+    next();
+  };
+}
+
+// routes.ts
+r.post('/login', rateLimit(5, 60_000), validate(LoginSchema), async (req, res) => {
+  res.json(await auth.login(req.body));
+});`,
+  },
 ];
 
 export function challengeBySlug(slug: string): Challenge | undefined {
