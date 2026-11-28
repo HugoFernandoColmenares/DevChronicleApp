@@ -1,6 +1,10 @@
-import { Challenge } from '@core/models/challenge.model';
+import { Challenge, LegacyChallenge } from '@core/models/challenge.model';
 
-export const CHALLENGES: Challenge[] = [
+/**
+ * Offline fallback for the drills that shipped in the bundle before challenges moved to
+ * Firestore. Remove this file once the offline snapshot covers challenges.
+ */
+export const CHALLENGES: LegacyChallenge[] = [
   {
     slug: 'suma-numeros-pares',
     title: 'Suma de números pares',
@@ -902,6 +906,18 @@ r.post('/login', rateLimit(5, 60_000), validate(LoginSchema), async (req, res) =
   },
 ];
 
-export function challengeBySlug(slug: string): Challenge | undefined {
-  return CHALLENGES.find((item) => item.slug === slug);
+export function fallbackChallenges(): Challenge[] {
+  return CHALLENGES.map((item, index) => ({
+    ...item,
+    articleSlug: item.articleSlug ?? null,
+    articleTitle: item.articleTitle ?? null,
+    order: (index + 1) * 10,
+    status: 'published' as const,
+    publishedAt: null,
+    updatedAt: new Date(0).toISOString(),
+  }));
+}
+
+export function fallbackChallengeBySlug(slug: string): Challenge | undefined {
+  return fallbackChallenges().find((item) => item.slug === slug);
 }

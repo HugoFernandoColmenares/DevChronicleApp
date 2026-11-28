@@ -689,6 +689,38 @@ pre:has(code)::-webkit-scrollbar-thumb {
   gap: 0.5rem;
 }
 
+.studio__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+}
+
+.studio__tabs a {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-divider);
+  border-radius: 999px;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.studio__tabs a:hover,
+.studio__tabs a:focus-visible {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-divider));
+  color: var(--color-ink);
+}
+
+.studio__tabs a.is-active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent-ink);
+}
+
 .studio__rows {
   display: flex;
   flex-direction: column;

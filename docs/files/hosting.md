@@ -16,8 +16,9 @@ Firebase Hosting sirve el build de Angular como SPA. `firebase.json` publica `di
 3. Activar Authentication → Google.
 4. Registrar una app web y copiar la configuración a los secretos y a `.env` (ver `.env.example`).
 5. Anotar el uid de la cuenta autora y crear `admins/{uid}` en Firestore.
-6. Agregar los dominios de Hosting a los dominios autorizados de Google.
-7. Crear una cuenta de servicio para GitHub (rol `Firebase Admin`) y guardar el JSON completo, o en base64, en el secreto `FIREBASE_SERVICE_ACCOUNT`.
+6. Activar Authentication → Correo/contraseña, crear la cuenta de publicación y crear `editors/{uid}` en Firestore. Desactivar el registro público si la consola lo ofrece.
+7. Agregar los dominios de Hosting a los dominios autorizados de Google.
+8. Crear una cuenta de servicio para GitHub (rol `Firebase Admin`) y guardar el JSON completo, o en base64, en el secreto `FIREBASE_SERVICE_ACCOUNT`.
 
 ## Secretos y variables de GitHub
 
@@ -48,20 +49,22 @@ El código ya está listo y queda apagado mientras no haya clave (`initAppCheck`
 
 ## Workflows
 
-| Workflow                       | Disparador                  | Qué hace                                                                                                        |
-| :----------------------------- | :-------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| `firebase-hosting.yml`         | push a `main` / manual      | Lint, pruebas unitarias, importador, reglas, E2E contra emuladores y build; despliega Hosting, reglas e índices |
-| `firebase-hosting-preview.yml` | pull request                | Build y `hosting:channel:deploy pr-<n>` (7 días) si hay secretos                                                |
-| `uptime.yml`                   | cada 6 horas / manual       | HTTP 200 en `/`, `/articles`, `/challenges` y `/offline/journal.json`                                           |
-| `scheduled-export.yml`         | domingos 06:00 UTC / manual | Exportación JSON de Firestore como artefacto (30 días)                                                          |
+| Workflow                       | Disparador                      | Qué hace                                                                                                        |
+| :----------------------------- | :------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| `firebase-hosting.yml`         | push a `main` / manual / diario | Lint, pruebas unitarias, importador, reglas, E2E contra emuladores y build; despliega Hosting, reglas e índices |
+| `firebase-hosting-preview.yml` | pull request                    | Build y `hosting:channel:deploy pr-<n>` (7 días) si hay secretos                                                |
+| `uptime.yml`                   | cada 6 horas / manual           | HTTP 200 en `/`, `/articles`, `/challenges` y `/offline/journal.json`                                           |
+| `scheduled-export.yml`         | domingos 06:00 UTC / manual     | Exportación JSON de Firestore como artefacto (30 días)                                                          |
 
 Si faltan secretos, los pasos de despliegue, vista previa o exportación explican el motivo y el job termina en verde.
 
-La importación de `public/content` a Firestore **no** corre por defecto al desplegar, porque sobrescribe por slug lo que se haya editado en el Estudio. Se lanza a mano cuando el repositorio es la fuente de la verdad:
+La importación de `public/content` a Firestore **no** corre por defecto al desplegar, porque sobrescribe por slug lo que se haya editado en el Estudio. Se lanza a mano (o con `IMPORT_MARKDOWN_ON_DEPLOY=true`) cuando el repositorio es la fuente de la verdad:
 
 ```bash
 node scripts/import-content.mjs --project devchronicle-hugo
 ```
+
+La ejecución diaria programada refresca `sitemap.xml` desde Firestore sin reimportar contenido.
 
 Copia de seguridad local (además de «Exportar copia de seguridad» en el Estudio):
 

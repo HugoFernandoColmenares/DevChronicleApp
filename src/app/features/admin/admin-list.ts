@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { ArticleMetadata } from '@core/models/article.model';
+import { ChallengeService } from '@core/services/challenge.service';
 import { JournalService } from '@core/services/journal.service';
 import { NotificationService } from '@core/services/notification.service';
 import { StudioBarComponent } from './studio-bar';
@@ -15,6 +16,7 @@ import { StudioBarComponent } from './studio-bar';
 })
 export class AdminListComponent {
   private readonly journal = inject(JournalService);
+  private readonly challenges = inject(ChallengeService);
   private readonly notifications = inject(NotificationService);
 
   readonly entries = signal<ArticleMetadata[]>([]);
@@ -44,11 +46,13 @@ export class AdminListComponent {
     this.exporting.set(true);
     try {
       const pack = await this.journal.exportAll();
+      const challenges = await this.challenges.exportAll();
       const stamp = new Date().toISOString().slice(0, 10);
       const payload = {
         exportedAt: new Date().toISOString(),
         site: 'DevChronicle',
         entries: pack,
+        challenges,
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: 'application/json',
@@ -60,7 +64,7 @@ export class AdminListComponent {
       anchor.click();
       URL.revokeObjectURL(url);
       void this.notifications.toast(
-        `${pack.length} ${pack.length === 1 ? 'entrada exportada' : 'entradas exportadas'}`,
+        `Exportadas ${pack.length} ${pack.length === 1 ? 'entrada' : 'entradas'} y ${challenges.length} ${challenges.length === 1 ? 'desafío' : 'desafíos'}`,
       );
     } catch {
       void this.notifications.error(

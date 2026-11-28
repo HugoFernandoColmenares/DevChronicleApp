@@ -1,0 +1,15 @@
+{
+  "name": "devchronicle-mcp",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "devchronicle-mcp": "./server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1",
+    "zod": "^3.25"
+  }
+}

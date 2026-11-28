@@ -14,6 +14,7 @@
     "emulators": "firebase emulators:start --project demo-devchronicle",
     "import:emulator": "node scripts/import-content.mjs --emulator --project demo-devchronicle",
     "seed:admin": "node scripts/seed-emulator-admin.mjs --emulator --project demo-devchronicle",
+    "migrate:challenges:emulator": "tsx scripts/migrate-challenges.ts --emulator --project demo-devchronicle",
     "export:emulator": "node scripts/export-firestore.mjs --emulator --project demo-devchronicle",
     "export:cloud": "node scripts/export-firestore.mjs --project devchronicle-hugo",
     "screenshots": "node scripts/capture-screenshots.mjs",
@@ -55,6 +56,7 @@
     "firebase-tools": "^15.34.2",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
   }

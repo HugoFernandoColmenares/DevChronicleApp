@@ -1,11 +1,11 @@
 import { Component, inject, input, output } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'dev-studio-bar',
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './studio-bar.html',
 })
 export class StudioBarComponent {
@@ -16,6 +16,8 @@ export class StudioBarComponent {
   readonly showNew = input(false);
   readonly showExport = input(false);
   readonly exporting = input(false);
+  readonly newLink = input('/admin/new');
+  readonly newLabel = input('Nueva entrada');
   readonly exportRequested = output<void>();
   readonly user = this.auth.user;
 

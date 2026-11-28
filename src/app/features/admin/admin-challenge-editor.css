@@ -1,0 +1,17 @@
+.challenge-preview__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.challenge-preview__text {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.65;
+}

@@ -12,27 +12,46 @@
       <a class="btn" routerLink="/">Volver al diario</a>
     </header>
 
-    <ul class="challenge-list">
-      @for (challenge of challenges; track challenge.slug) {
-        <li>
-          <a class="challenge-card" [routerLink]="['/challenges', challenge.slug]">
-            <div class="challenge-card__meta">
-              <span class="difficulty">{{ labelFor(challenge.difficulty) }}</span>
-              <span class="language">{{ challenge.language }}</span>
-            </div>
-            <h2 class="challenge-card__title">{{ challenge.title }}</h2>
-            <p class="challenge-card__summary">{{ challenge.summary }}</p>
-            @if (challenge.articleSlug) {
-              <p class="challenge-card__related">Tutorial relacionado</p>
-            }
-            <div class="challenge-card__tags">
-              @for (tag of challenge.tags; track tag) {
-                <span class="chip">{{ tag }}</span>
-              }
-            </div>
-          </a>
-        </li>
+    @if (state().status === 'loading') {
+      <dev-skeleton-loader />
+    } @else if (state().status === 'error') {
+      <div class="empty-state" role="alert">
+        <p class="empty">
+          No se pudieron cargar los desafíos. Revisa tu conexión e inténtalo de nuevo.
+        </p>
+        <button type="button" class="btn" (click)="retry()">Intentar de nuevo</button>
+      </div>
+    } @else if (state().items.length === 0) {
+      <p class="empty">Aún no hay desafíos publicados.</p>
+    } @else {
+      @if (usingFallback()) {
+        <p class="muted" role="status">
+          Mostrando los desafíos incluidos mientras Firestore está sin conexión.
+        </p>
       }
-    </ul>
+
+      <ul class="challenge-list">
+        @for (challenge of state().items; track challenge.slug) {
+          <li>
+            <a class="challenge-card" [routerLink]="['/challenges', challenge.slug]">
+              <div class="challenge-card__meta">
+                <span class="difficulty">{{ labelFor(challenge.difficulty) }}</span>
+                <span class="language">{{ challenge.language }}</span>
+              </div>
+              <h2 class="challenge-card__title">{{ challenge.title }}</h2>
+              <p class="challenge-card__summary">{{ challenge.summary }}</p>
+              @if (challenge.articleSlug) {
+                <p class="challenge-card__related">Tutorial relacionado</p>
+              }
+              <div class="challenge-card__tags">
+                @for (tag of challenge.tags; track tag) {
+                  <span class="chip">{{ tag }}</span>
+                }
+              </div>
+            </a>
+          </li>
+        }
+      </ul>
+    }
   </div>
 </section>
